@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Отчёт">
+<link rel="manifest" href="manifest.json">
 <title>Отчёт о работе</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
@@ -291,7 +297,7 @@
 
 <div class="totals-bar" id="totalsBar">
   <div class="mob-total">
-    <div class="total-label">Моб</div>
+    <div class="total-label">Мобильная</div>
     <div class="total-val" id="totalMob">0</div>
   </div>
   <div class="total-card">
@@ -390,7 +396,7 @@ function render() {
           <div class="section-label">Мобильная</div>
           <div class="fields-grid">
             <div class="field mob">
-              <label>Моб</label>
+              <label>Мобильная</label>
               <input type="text" inputmode="decimal" class="formula-input" value="${r.mob||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
             </div>
@@ -554,6 +560,10 @@ function restoreData(event) {
 }
 
 render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
