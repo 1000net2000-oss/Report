@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Отчёт о работе</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0f0f12;
+    --surface: #1a1a22;
+    --surface2: #22222e;
+    --accent: #6ee7b7;
+    --accent2: #818cf8;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --danger: #f87171;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    background: var(--surface);
+    padding: 18px 16px 14px;
+    border-bottom: 1px solid #2a2a38;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .month-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .month-btn {
+    background: var(--surface2);
+    border: none;
+    color: var(--text);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .month-btn:active { background: #2e2e42; }
+
+  .month-label {
+    flex: 1;
+    text-align: center;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .totals-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid #2a2a38;
+  }
+
+  .total-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .total-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  .total-name { color: var(--muted); }
+  .total-val { font-weight: 600; color: var(--accent); font-family: 'Unbounded', sans-serif; font-size: 13px; }
+
+  .mob-total {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mob-total .total-label { margin-bottom: 0; }
+  .mob-total .total-val { color: var(--accent2); }
+
+  .days-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .day-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid #2a2a38;
+    transition: border-color 0.2s;
+  }
+
+  .day-card.has-data { border-color: #2e3a4e; }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .day-date {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .day-weekday {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .day-preview {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .preview-chip {
+    background: #1e3a2e;
+    color: var(--accent);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .preview-chip.mob { background: #1e1e3a; color: var(--accent2); }
+
+  .chevron {
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  .day-card.open .chevron { transform: rotate(180deg); }
+
+  .day-body {
+    display: none;
+    padding: 0 14px 14px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .day-card.open .day-body { display: flex; }
+
+  .section-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    margin-top: 4px;
+  }
+
+  .fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field label {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .field input {
+    background: var(--surface2);
+    border: 1px solid #2a2a38;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 16px;
+    padding: 8px 10px;
+    width: 100%;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 600;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .field.mob input:focus { border-color: var(--accent2); }
+
+  .clear-btn {
+    background: none;
+    border: 1px solid #2a2a38;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    align-self: flex-end;
+    transition: all 0.15s;
+  }
+  .clear-btn:active { background: #2a2a38; color: var(--danger); }
+
+  .divider {
+    height: 1px;
+    background: #2a2a38;
+  }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+  input.formula-input { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="header-title" style="margin-bottom:0">Отчёт о работе</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="backupData()" style="background:#1e3a2e;border:none;color:#6ee7b7;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">💾 Бэкап</button>
+      <label style="background:#1e1e3a;border:none;color:#818cf8;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">
+        📂 Загрузить<input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
+      </label>
+    </div>
+  </div>
+  <div class="month-selector">
+    <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="month-btn" onclick="changeMonth(1)">›</button>
+  </div>
+</header>
+
+<div class="totals-bar" id="totalsBar">
+  <div class="mob-total">
+    <div class="total-label">Моб</div>
+    <div class="total-val" id="totalMob">0</div>
+  </div>
+  <div class="total-card">
+    <div class="total-label">Итого сушилка</div>
+    <div class="total-row"><span class="total-name">Сушилка</span><span class="total-val" id="totalSush">0</span></div>
+    <div class="total-row"><span class="total-name">МБ суш</span><span class="total-val" id="totalMbSush">0</span></div>
+    <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px"><span class="total-name">Сумма</span><span class="total-val" id="totalSushSum" style="color:#f9a8d4">0</span></div>
+  </div>
+  <div class="total-card">
+    <div class="total-label">Итого склад</div>
+    <div class="total-row"><span class="total-name">Склад</span><span class="total-val" id="totalSklad">0</span></div>
+    <div class="total-row"><span class="total-name">МБ склад</span><span class="total-val" id="totalMbSklad">0</span></div>
+    <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px"><span class="total-name">Сумма</span><span class="total-val" id="totalSkladSum" style="color:#f9a8d4">0</span></div>
+  </div>
+</div>
+
+<div class="days-list" id="daysList"></div>
+
+<script>
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WEEKDAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const COLS = ['mob','sush','sklad','mbSush','mbSklad'];
+
+let now = new Date();
+let year = now.getFullYear();
+let month = now.getMonth();
+let data = {};
+
+function storageKey() { return `report_${year}_${month}`; }
+
+function load() {
+  try { data = JSON.parse(localStorage.getItem(storageKey()) || '{}'); } catch(e) { data = {}; }
+}
+
+function save() {
+  localStorage.setItem(storageKey(), JSON.stringify(data));
+}
+
+function getWorkdays(y, m) {
+  const days = [];
+  const d = new Date(y, m, 1);
+  while (d.getMonth() === m) {
+    const wd = d.getDay();
+    if (wd !== 0 && wd !== 6) days.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return days;
+}
+
+function formatDate(d) {
+  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
+}
+
+function hasData(dateStr) {
+  const r = data[dateStr];
+  if (!r) return false;
+  return COLS.some(c => r[c] && r[c] !== '');
+}
+
+function getPreview(dateStr) {
+  const r = data[dateStr];
+  if (!r) return '';
+  let chips = '';
+  if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
+  if (r.sush || r.mbSush) chips += `<span class="preview-chip">С:${(+r.sush||0)+(+r.mbSush||0)}</span>`;
+  if (r.sklad || r.mbSklad) chips += `<span class="preview-chip">Скл:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
+  return chips;
+}
+
+function render() {
+  load();
+  document.getElementById('monthLabel').textContent = `${MONTHS[month]} ${year}`;
+  const days = getWorkdays(year, month);
+  const list = document.getElementById('daysList');
+  list.innerHTML = '';
+
+  days.forEach(d => {
+    const dateStr = formatDate(d);
+    const wd = WEEKDAYS[d.getDay()];
+    const hd = hasData(dateStr);
+    const r = data[dateStr] || {};
+
+    const card = document.createElement('div');
+    card.className = 'day-card' + (hd ? ' has-data' : '');
+    card.innerHTML = `
+      <div class="day-header" onclick="toggle(this)">
+        <div>
+          <div class="day-date">${dateStr}</div>
+          <div class="day-weekday">${wd}</div>
+        </div>
+        <div class="day-preview">${getPreview(dateStr)}</div>
+        <div class="chevron">▼</div>
+      </div>
+      <div class="day-body">
+        <div>
+          <div class="section-label">Мобильная</div>
+          <div class="fields-grid">
+            <div class="field mob">
+              <label>Моб</label>
+              <input type="text" inputmode="decimal" class="formula-input" value="${r.mob||''}" placeholder="0"
+                onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div>
+          <div class="section-label">Стационарная</div>
+          <div class="fields-grid">
+            <div class="field">
+              <label>Сушилка</label>
+              <input type="text" inputmode="decimal" class="formula-input" value="${r.sush||''}" placeholder="0"
+                onblur="evalField(this,'${dateStr}','sush')" onfocus="focusField(this,'${dateStr}','sush')">
+            </div>
+            <div class="field">
+              <label>Склад</label>
+              <input type="text" inputmode="decimal" class="formula-input" value="${r.sklad||''}" placeholder="0"
+                onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
+            </div>
+            <div class="field">
+              <label>МБ суш</label>
+              <input type="text" inputmode="decimal" class="formula-input" value="${r.mbSush||''}" placeholder="0"
+                onblur="evalField(this,'${dateStr}','mbSush')" onfocus="focusField(this,'${dateStr}','mbSush')">
+            </div>
+            <div class="field">
+              <label>МБ склад</label>
+              <input type="text" inputmode="decimal" class="formula-input" value="${r.mbSklad||''}" placeholder="0"
+                onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
+            </div>
+          </div>
+        </div>
+        <button class="clear-btn" onclick="clearDay('${dateStr}')">Очистить день</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  updateTotals();
+}
+
+function toggle(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+function setVal(dateStr, col, val, formula) {
+  if (!data[dateStr]) data[dateStr] = {};
+  data[dateStr][col] = val;
+  if (formula !== undefined) {
+    data[dateStr][col + '_formula'] = formula;
+  }
+  save();
+  updateTotals();
+  updateCard(dateStr);
+}
+
+function clearDay(dateStr) {
+  delete data[dateStr];
+  save();
+  render();
+}
+
+function updateCard(dateStr) {
+  const cards = document.querySelectorAll('.day-card');
+  cards.forEach(card => {
+    const date = card.querySelector('.day-date');
+    if (date && date.textContent === dateStr) {
+      const hd = hasData(dateStr);
+      card.classList.toggle('has-data', hd);
+      const preview = card.querySelector('.day-preview');
+      if (preview) preview.innerHTML = getPreview(dateStr);
+    }
+  });
+}
+
+function updateTotals() {
+  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0;
+  Object.values(data).forEach(r => {
+    mob += +r.mob||0;
+    sush += +r.sush||0;
+    sklad += +r.sklad||0;
+    mbSush += +r.mbSush||0;
+    mbSklad += +r.mbSklad||0;
+  });
+  document.getElementById('totalMob').textContent = mob;
+  document.getElementById('totalSush').textContent = sush;
+  document.getElementById('totalSklad').textContent = sklad;
+  document.getElementById('totalMbSush').textContent = mbSush;
+  document.getElementById('totalMbSklad').textContent = mbSklad;
+  document.getElementById('totalSkladSum').textContent = sklad + mbSklad;
+  document.getElementById('totalSushSum').textContent = sush + mbSush;
+}
+
+function changeMonth(dir) {
+  month += dir;
+  if (month > 11) { month = 0; year++; }
+  if (month < 0) { month = 11; year--; }
+  render();
+}
+
+function evalField(input, dateStr, col) {
+  let val = input.value.trim();
+  if (val === '') { setVal(dateStr, col, '', ''); return; }
+  let formula = val;
+  let result = val;
+  if (/^[\d\s\+\-\*\/\.]+$/.test(val) && /[\+\-\*\/]/.test(val)) {
+    try {
+      const r = Function('"use strict"; return (' + val + ')')();
+      if (isFinite(r)) {
+        result = String(Math.round(r * 100) / 100);
+      }
+    } catch(e) {}
+  } else {
+    formula = '';
+  }
+  input.value = result;
+  setVal(dateStr, col, result, formula);
+}
+
+function focusField(input, dateStr, col) {
+  const r = data[dateStr];
+  if (r && r[col + '_formula']) {
+    input.value = r[col + '_formula'];
+  }
+  input.select();
+}
+
+function backupData() {
+  const allData = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('report_')) {
+      allData[key] = JSON.parse(localStorage.getItem(key));
+    }
+  }
+  const blob = new Blob([JSON.stringify(allData, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
+  a.click();
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const allData = JSON.parse(e.target.result);
+      Object.keys(allData).forEach(key => {
+        localStorage.setItem(key, JSON.stringify(allData[key]));
+      });
+      render();
+      alert('Данные восстановлены!');
+    } catch(err) {
+      alert('Ошибка при загрузке файла');
+    }
+  };
+  reader.readAsText(file);
+}
+
+render();
+</script>
+</body>
+</html>
