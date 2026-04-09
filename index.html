@@ -1,855 +1,93 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#0f0f12">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content=" ">
-<link rel="manifest" href="manifest.json">
-<title>Отчёт о работе</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@300;400;500&display=swap');
-
-  :root {
-    --bg: #0f0f12;
-    --surface: #1a1a22;
-    --surface2: #22222e;
-    --accent: #6ee7b7;
-    --accent2: #818cf8;
-    --accent3: #f9a8d4;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --danger: #f87171;
-    --orange: #fb923c;
-    --radius: 14px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    padding-bottom: 40px;
-  }
-
-  .page { display: none; min-height: 100vh; }
-  .page.active { display: block; }
-
-  header {
-    background: var(--surface);
-    padding: 18px 16px 14px;
-    border-bottom: 1px solid #2a2a38;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-title {
-    font-family: 'Unbounded', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  .month-selector { display: flex; align-items: center; gap: 10px; }
-
-  .month-btn {
-    background: var(--surface2);
-    border: none;
-    color: var(--text);
-    width: 38px; height: 38px;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .month-btn:active { background: #2e2e42; }
-
-  .month-label {
-    flex: 1;
-    text-align: center;
-    font-family: 'Unbounded', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  .totals-bar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 12px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid #2a2a38;
-  }
-
-  .total-card {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 10px 12px;
-  }
-
-  .total-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
-  }
-
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    margin-bottom: 2px;
-  }
-
-  .total-name { color: var(--muted); }
-  .total-val { font-weight: 600; color: var(--accent); font-family: 'Unbounded', sans-serif; font-size: 13px; }
-
-  .mob-total {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 10px 12px;
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .mob-total .total-label { margin-bottom: 0; }
-  .mob-total .total-val { color: var(--accent2); }
-
-  .extra-totals {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 10px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid #2a2a38;
-  }
-
-  .extra-total-btn {
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 10px;
-    padding: 10px 12px;
-    cursor: pointer;
-    text-align: left;
-    transition: border-color 0.2s;
-  }
-  .extra-total-btn:active { border-color: var(--orange); }
-  .extra-total-btn.travel:active { border-color: var(--accent2); }
-  .extra-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--orange); }
-  .extra-total-btn.travel .extra-total-val { color: var(--accent2); }
-  .extra-total-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
-  .extra-total-arrow { font-size: 10px; color: var(--muted); margin-top: 4px; }
-
-  .days-list {
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .day-card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid #2a2a38;
-  }
-  .day-card.has-data { border-color: #2e3a4e; }
-
-  .day-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .day-date { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; }
-  .day-weekday { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .day-preview { display: flex; gap: 6px; flex-wrap: wrap; }
-
-  .preview-chip {
-    background: #1e3a2e;
-    color: var(--accent);
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 600;
-  }
-  .preview-chip.mob    { background: #1e1e3a; color: var(--accent2); }
-  .preview-chip.extra  { background: #2a1e0e; color: var(--orange); }
-  .preview-chip.travel { background: #1a1e2e; color: var(--accent2); }
-
-  .chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
-  .day-card.open .chevron { transform: rotate(180deg); }
-
-  .day-body { display: none; padding: 0 14px 14px; flex-direction: column; gap: 10px; }
-  .day-card.open .day-body { display: flex; }
-
-  .section-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 6px;
-    margin-top: 4px;
-  }
-
-  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 11px; color: var(--muted); }
-  .field input {
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 16px;
-    padding: 8px 10px;
-    width: 100%;
-    font-family: 'Unbounded', sans-serif;
-    font-weight: 600;
-    transition: border-color 0.15s;
-    -webkit-appearance: none;
-  }
-  .field input:focus { outline: none; border-color: var(--accent); }
-  .field.mob input:focus { border-color: var(--accent2); }
-
-  .work-row { display: flex; gap: 6px; align-items: stretch; width: 100%; }
-  .work-desc {
-    min-width: 0;
-    flex: 1 1 auto;
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    padding: 8px 10px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .work-desc:focus { border-color: var(--orange); }
-  .work-mins {
-    width: 58px;
-    min-width: 58px;
-    max-width: 58px;
-    flex: 0 0 58px;
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Unbounded', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 8px 4px;
-    text-align: center;
-    outline: none;
-    -webkit-appearance: none;
-    transition: border-color 0.15s;
-  }
-  .work-mins:focus { border-color: var(--orange); }
-  .add-work-btn {
-    background: var(--orange);
-    border: none;
-    border-radius: 8px;
-    color: #0f0f12;
-    font-size: 18px;
-    width: 38px;
-    min-width: 38px;
-    max-width: 38px;
-    flex: 0 0 38px;
-    cursor: pointer;
-    font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .add-work-btn:active { opacity: 0.8; }
-
-  .travel-row { display: flex; gap: 8px; }
-  .travel-mins {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Unbounded', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 8px 10px;
-    text-align: center;
-    outline: none;
-    -webkit-appearance: none;
-    transition: border-color 0.15s;
-  }
-  .travel-mins:focus { border-color: var(--accent2); }
-  .add-travel-btn {
-    background: var(--accent2);
-    border: none;
-    border-radius: 8px;
-    color: #0f0f12;
-    font-size: 18px;
-    width: 38px;
-    flex-shrink: 0;
-    cursor: pointer;
-    font-weight: 700;
-  }
-  .add-travel-btn:active { opacity: 0.8; }
-
-  .day-time-totals { display: flex; gap: 8px; }
-  .day-time-chip {
-    flex: 1;
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 7px 10px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .day-time-chip span { display: block; font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 600; color: var(--orange); margin-top: 2px; }
-  .day-time-chip.travel span { color: var(--accent2); }
-
-  .work-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    background: var(--surface2);
-    border: 1px solid #2a2a38;
-    border-radius: 7px;
-  }
-  .work-item-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
-  .work-item-text { flex: 1; font-size: 12px; color: var(--text); }
-  .work-item-min { font-size: 11px; color: var(--orange); font-weight: 600; font-family: 'Unbounded', sans-serif; }
-  .work-item-del { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; margin-left: 4px; }
-  .work-item-del:active { color: var(--danger); }
-
-  .clear-btn {
-    background: none;
-    border: 1px solid #2a2a38;
-    color: var(--muted);
-    border-radius: 8px;
-    padding: 7px 12px;
-    font-size: 12px;
-    cursor: pointer;
-    align-self: flex-end;
-    transition: all 0.15s;
-  }
-  .clear-btn:active { background: #2a2a38; color: var(--danger); }
-
-  .divider { height: 1px; background: #2a2a38; }
-
-  input[type=number]::-webkit-inner-spin-button,
-  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
-  input[type=number] { -moz-appearance: textfield; }
-  input.formula-input { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; }
-
-  /* HISTORY PAGE */
-  .hist-header {
-    background: var(--surface);
-    padding: 16px;
-    border-bottom: 1px solid #2a2a38;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .back-btn {
-    background: var(--surface2);
-    border: none;
-    color: var(--text);
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .back-btn:active { background: #2e2e42; }
-  .hist-title { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.05em; }
-
-  .hist-tabs { display: flex; gap: 8px; padding: 12px 16px; }
-  .hist-tab {
-    flex: 1; padding: 9px; border-radius: 8px;
-    border: 1px solid #2a2a38; background: none;
-    color: var(--muted); font-family: 'Inter', sans-serif;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-  }
-  .hist-tab.on { background: var(--surface2); border-color: var(--orange); color: var(--orange); }
-  .hist-tab.on.travel { border-color: var(--accent2); color: var(--accent2); }
-
-  .hist-content { padding: 0 16px 24px; }
-
-  .hist-day { margin-bottom: 14px; }
-  .hist-day-hdr {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 6px 0; border-bottom: 1px solid #2a2a38; margin-bottom: 6px;
-  }
-  .hist-day-date { font-size: 12px; color: var(--accent); font-family: 'Unbounded', sans-serif; font-weight: 600; }
-  .hist-day-total { font-size: 11px; color: var(--muted); }
-  .hist-day-total b { color: var(--orange); }
-  .hist-day-total b.travel { color: var(--accent2); }
-
-  .hist-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 10px; background: var(--surface);
-    border: 1px solid #2a2a38; border-radius: 8px; margin-bottom: 4px;
-  }
-  .hist-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
-  .hist-dot.travel { background: var(--accent2); }
-  .hist-text { flex: 1; font-size: 13px; color: var(--text); }
-  .hist-min { font-size: 12px; color: var(--orange); font-weight: 600; font-family: 'Unbounded', sans-serif; }
-  .hist-min.travel { color: var(--accent2); }
-
-  .export-btn {
-    width: 100%; margin-top: 16px; padding: 12px;
-    border-radius: 10px; border: 1px solid #2a2a38;
-    background: none; color: var(--muted);
-    font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer;
-  }
-  .export-btn:active { border-color: var(--accent); color: var(--accent); }
-  .hist-empty { text-align: center; padding: 32px 0; font-size: 13px; color: var(--muted); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#0f0f12">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content=" ">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>Отчёт о работе</title>
 </head>
 <body>
 
-<!-- MAIN PAGE -->
+<!-- ══ MAIN PAGE ══ -->
 <div class="page active" id="pageMain">
 
-<header>
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div class="header-title" style="margin-bottom:0">Отчёт о работе</div>
-    <div style="display:flex;gap:8px">
-      <button onclick="backupData()" style="background:#1e3a2e;border:none;color:#6ee7b7;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">💾 Бэкап</button>
-      <label style="background:#1e1e3a;border:none;color:#818cf8;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">
-        📂 Загрузить<input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
-      </label>
+  <header>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="header-title" style="margin-bottom:0">Отчёт о работе</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="backupData()" style="background:#1e3a2e;border:none;color:#6ee7b7;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">💾 Бэкап</button>
+        <label style="background:#1e1e3a;border:none;color:#818cf8;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">
+          📂 Загрузить
+          <input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
+        </label>
+      </div>
+    </div>
+    <div class="month-selector">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>
+  </header>
+
+  <div class="totals-bar">
+    <div class="mob-total">
+      <div class="total-label">Мобильная</div>
+      <div class="total-val" id="totalMob">0</div>
+    </div>
+    <button class="mob-total" onclick="openHistory('work')" style="cursor:pointer;border:none;text-align:left">
+      <div class="total-label">Другие работы</div>
+      <div class="total-val" id="totalExtraWork" style="color:var(--orange)">0</div>
+    </button>
+    <div class="total-card">
+      <div class="total-label">Забрал со склада</div>
+      <div class="total-row"><span class="total-name">Забрал</span><span class="total-val" id="totalSush">0</span></div>
+      <div class="total-row"><span class="total-name">МБ забрал</span><span class="total-val" id="totalMbSush">0</span></div>
+      <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px">
+        <span class="total-name">Сумма</span>
+        <span class="total-val" id="totalSushSum" style="color:#f9a8d4">0</span>
+      </div>
+    </div>
+    <div class="total-card">
+      <div class="total-label">Отдал готовых</div>
+      <div class="total-row"><span class="total-name">Отдал</span><span class="total-val" id="totalSklad">0</span></div>
+      <div class="total-row"><span class="total-name">МБ отдал</span><span class="total-val" id="totalMbSklad">0</span></div>
+      <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px">
+        <span class="total-name">Сумма</span>
+        <span class="total-val" id="totalSkladSum" style="color:#f9a8d4">0</span>
+      </div>
     </div>
   </div>
-  <div class="month-selector">
-    <button class="month-btn" onclick="changeMonth(-1)">‹</button>
-    <div class="month-label" id="monthLabel"></div>
-    <button class="month-btn" onclick="changeMonth(1)">›</button>
-  </div>
-</header>
 
-<div class="totals-bar">
-  <div class="mob-total">
-    <div class="total-label">Мобильная</div>
-    <div class="total-val" id="totalMob">0</div>
+  <div class="extra-totals">
+    <button class="extra-total-btn travel" onclick="openHistory('travel')">
+      <div class="extra-total-lbl">Время в пути</div>
+      <div class="extra-total-val" id="totalExtraTravel">0 мин</div>
+    </button>
   </div>
-  <div class="total-card">
-    <div class="total-label">Итого сушилка</div>
-    <div class="total-row"><span class="total-name">Сушилка</span><span class="total-val" id="totalSush">0</span></div>
-    <div class="total-row"><span class="total-name">МБ суш</span><span class="total-val" id="totalMbSush">0</span></div>
-    <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px"><span class="total-name">Сумма</span><span class="total-val" id="totalSushSum" style="color:#f9a8d4">0</span></div>
-  </div>
-  <div class="total-card">
-    <div class="total-label">Итого склад</div>
-    <div class="total-row"><span class="total-name">Склад</span><span class="total-val" id="totalSklad">0</span></div>
-    <div class="total-row"><span class="total-name">МБ склад</span><span class="total-val" id="totalMbSklad">0</span></div>
-    <div class="total-row" style="margin-top:6px;border-top:1px solid #2a2a38;padding-top:6px"><span class="total-name">Сумма</span><span class="total-val" id="totalSkladSum" style="color:#f9a8d4">0</span></div>
-  </div>
-</div>
 
-<div class="extra-totals">
-  <button class="extra-total-btn" onclick="openHistory('work')">
-    <div class="extra-total-lbl">Доп время</div>
-    <div class="extra-total-val" id="totalExtraWork">0 мин</div>
-  </button>
-  <button class="extra-total-btn travel" onclick="openHistory('travel')">
-    <div class="extra-total-lbl">Время в пути</div>
-    <div class="extra-total-val" id="totalExtraTravel">0 мин</div>
-  </button>
-</div>
+  <div class="days-list" id="daysList"></div>
 
-<div class="days-list" id="daysList"></div>
-</div>
+</div><!-- /pageMain -->
 
-<!-- HISTORY PAGE -->
+<!-- ══ HISTORY PAGE ══ -->
 <div class="page" id="pageHistory">
   <div class="hist-header">
     <button class="back-btn" onclick="openMain()">←</button>
     <div class="hist-title" id="histTitle" style="color:var(--orange)">История</div>
   </div>
   <div class="hist-tabs">
-    <button class="hist-tab on" id="tabWork" onclick="switchTab('work')">⚒ Работа</button>
+    <button class="hist-tab on" id="tabWork" onclick="switchTab('work')">📋 Другие работы</button>
     <button class="hist-tab" id="tabTravel" onclick="switchTab('travel')">🚗 В пути</button>
   </div>
   <div class="hist-content" id="histContent"></div>
 </div>
 
-<script>
-const MONTHS   = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-const WEEKDAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-const COLS     = ['mob','sush','sklad','mbSush','mbSklad'];
-
-let now = new Date(), year = now.getFullYear(), month = now.getMonth();
-let data = {}, curHistTab = 'work';
-
-function storageKey()   { return `report_${year}_${month}`; }
-function workLogKey()   { return `worklog_${year}_${month}`; }
-function travelLogKey() { return `travellog_${year}_${month}`; }
-
-function load()  { try { data = JSON.parse(localStorage.getItem(storageKey()) || '{}'); } catch(e) { data = {}; } }
-function save()  { localStorage.setItem(storageKey(), JSON.stringify(data)); }
-
-function loadWorkLog()       { try { return JSON.parse(localStorage.getItem(workLogKey())   || '[]'); } catch(e) { return []; } }
-function saveWorkLog(log)    { localStorage.setItem(workLogKey(),   JSON.stringify(log)); }
-function loadTravelLog()     { try { return JSON.parse(localStorage.getItem(travelLogKey()) || '[]'); } catch(e) { return []; } }
-function saveTravelLog(log)  { localStorage.setItem(travelLogKey(), JSON.stringify(log)); }
-
-function toHM(mins) {
-  if (!mins) return '0 мин';
-  if (mins < 60) return `${mins} мин`;
-  const h = Math.floor(mins/60), m = mins%60;
-  return m > 0 ? `${h} ч ${m} мин` : `${h} ч`;
-}
-
-function getWorkdays(y, m) {
-  const days = [], d = new Date(y, m, 1);
-  while (d.getMonth() === m) {
-    if (d.getDay() !== 0 && d.getDay() !== 6) days.push(new Date(d));
-    d.setDate(d.getDate()+1);
-  }
-  return days;
-}
-
-function formatDate(d) {
-  return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
-}
-
-function hasData(dateStr) {
-  const r = data[dateStr];
-  return r && COLS.some(c => r[c] && r[c] !== '');
-}
-
-function getPreview(dateStr) {
-  const r  = data[dateStr] || {};
-  const wl = loadWorkLog().filter(x => x.date === dateStr);
-  const tl = loadTravelLog().filter(x => x.date === dateStr);
-  let chips = '';
-  if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
-  if (r.sush||r.mbSush) chips += `<span class="preview-chip">С:${(+r.sush||0)+(+r.mbSush||0)}</span>`;
-  if (r.sklad||r.mbSklad) chips += `<span class="preview-chip">Скл:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
-  const wm = wl.reduce((s,x)=>s+x.mins,0);
-  const tm = tl.reduce((s,x)=>s+x.mins,0);
-  if (wm) chips += `<span class="preview-chip extra">+${toHM(wm)}</span>`;
-  if (tm) chips += `<span class="preview-chip travel">🚗${toHM(tm)}</span>`;
-  return chips;
-}
-
-function workItemHtml(x, dateStr) {
-  return `<div class="work-item">
-    <div class="work-item-dot"></div>
-    <div class="work-item-text">${x.desc}</div>
-    <div class="work-item-min">${x.mins} мин</div>
-    <button class="work-item-del" onclick="delWork('${dateStr}',${x.id})">×</button>
-  </div>`;
-}
-
-function render() {
-  load();
-  document.getElementById('monthLabel').textContent = `${MONTHS[month]} ${year}`;
-  const days = getWorkdays(year, month);
-  const list = document.getElementById('daysList');
-  list.innerHTML = '';
-
-  days.forEach(d => {
-    const dateStr = formatDate(d);
-    const wd = WEEKDAYS[d.getDay()];
-    const r  = data[dateStr] || {};
-    const wl = loadWorkLog().filter(x => x.date === dateStr);
-    const tl = loadTravelLog().filter(x => x.date === dateStr);
-    const wm = wl.reduce((s,x)=>s+x.mins,0);
-    const tm = tl.reduce((s,x)=>s+x.mins,0);
-
-    const card = document.createElement('div');
-    card.className = 'day-card' + (hasData(dateStr) ? ' has-data' : '');
-    card.dataset.date = dateStr;
-
-    card.innerHTML = `
-      <div class="day-header" onclick="toggle(this)">
-        <div>
-          <div class="day-date">${dateStr}</div>
-          <div class="day-weekday">${wd}</div>
-        </div>
-        <div class="day-preview">${getPreview(dateStr)}</div>
-        <div class="chevron">▼</div>
-      </div>
-      <div class="day-body">
-        <div>
-          <div class="section-label">Мобильная</div>
-          <div class="fields-grid">
-            <div class="field mob">
-              <label>Мобильная</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.mob||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
-            </div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">Стационарная</div>
-          <div class="fields-grid">
-            <div class="field"><label>Сушилка</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.sush||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','sush')" onfocus="focusField(this,'${dateStr}','sush')"></div>
-            <div class="field"><label>Склад</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.sklad||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')"></div>
-            <div class="field"><label>МБ суш</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.mbSush||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mbSush')" onfocus="focusField(this,'${dateStr}','mbSush')"></div>
-            <div class="field"><label>МБ склад</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.mbSklad||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')"></div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">Доп время · вид работ</div>
-          <div class="work-row">
-            <input class="work-desc" type="text" placeholder="Что сделано…" id="wd_${dateStr}"/>
-            <input class="work-mins" type="number" min="1" placeholder="мин" id="wm_${dateStr}"/>
-            <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
-          </div>
-          <div id="wlist_${dateStr}" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
-            ${wl.map(x => workItemHtml(x, dateStr)).join('')}
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">Время в пути · минуты</div>
-          <div class="travel-row">
-            <input class="travel-mins" type="number" min="1" placeholder="минуты…" id="tm_${dateStr}"/>
-            <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
-          </div>
-        </div>
-        <div class="day-time-totals">
-          <div class="day-time-chip" id="wchip_${dateStr}">Доп время<span>${toHM(wm)}</span></div>
-          <div class="day-time-chip travel" id="tchip_${dateStr}">В пути<span>${toHM(tm)}</span></div>
-        </div>
-        <button class="clear-btn" onclick="clearDay('${dateStr}')">Очистить день</button>
-      </div>`;
-
-    list.appendChild(card);
-  });
-
-  updateTotals();
-}
-
-function toggle(header) { header.parentElement.classList.toggle('open'); }
-
-function addWork(dateStr) {
-  const desc = document.getElementById('wd_'+dateStr).value.trim();
-  const mins = parseInt(document.getElementById('wm_'+dateStr).value);
-  if (!desc || !mins) return;
-  const log = loadWorkLog();
-  log.push({ id: Date.now(), date: dateStr, desc, mins });
-  saveWorkLog(log);
-  document.getElementById('wd_'+dateStr).value = '';
-  document.getElementById('wm_'+dateStr).value = '';
-  refreshDayExtras(dateStr);
-  updateTotals();
-}
-
-function delWork(dateStr, id) {
-  saveWorkLog(loadWorkLog().filter(x => x.id !== id));
-  refreshDayExtras(dateStr);
-  updateTotals();
-}
-
-function addTravel(dateStr) {
-  const mins = parseInt(document.getElementById('tm_'+dateStr).value);
-  if (!mins) return;
-  const log = loadTravelLog();
-  log.push({ id: Date.now(), date: dateStr, mins });
-  saveTravelLog(log);
-  document.getElementById('tm_'+dateStr).value = '';
-  refreshDayExtras(dateStr);
-  updateTotals();
-}
-
-function refreshDayExtras(dateStr) {
-  const wl = loadWorkLog().filter(x => x.date === dateStr);
-  const tl = loadTravelLog().filter(x => x.date === dateStr);
-  const wm = wl.reduce((s,x)=>s+x.mins,0);
-  const tm = tl.reduce((s,x)=>s+x.mins,0);
-  const wlist = document.getElementById('wlist_'+dateStr);
-  if (wlist) wlist.innerHTML = wl.map(x => workItemHtml(x, dateStr)).join('');
-  const wchip = document.getElementById('wchip_'+dateStr);
-  if (wchip) wchip.innerHTML = `Доп время<span>${toHM(wm)}</span>`;
-  const tchip = document.getElementById('tchip_'+dateStr);
-  if (tchip) tchip.innerHTML = `В пути<span>${toHM(tm)}</span>`;
-  const card = document.querySelector(`.day-card[data-date="${dateStr}"]`);
-  if (card) { const p = card.querySelector('.day-preview'); if (p) p.innerHTML = getPreview(dateStr); }
-}
-
-function setVal(dateStr, col, val, formula) {
-  if (!data[dateStr]) data[dateStr] = {};
-  data[dateStr][col] = val;
-  if (formula !== undefined) data[dateStr][col+'_formula'] = formula;
-  save(); updateTotals(); updateCard(dateStr);
-}
-
-function clearDay(dateStr) {
-  delete data[dateStr]; save();
-  saveWorkLog(loadWorkLog().filter(x => x.date !== dateStr));
-  saveTravelLog(loadTravelLog().filter(x => x.date !== dateStr));
-  render();
-}
-
-function updateCard(dateStr) {
-  document.querySelectorAll('.day-card').forEach(card => {
-    if (card.querySelector('.day-date')?.textContent === dateStr) {
-      card.classList.toggle('has-data', hasData(dateStr));
-      const p = card.querySelector('.day-preview');
-      if (p) p.innerHTML = getPreview(dateStr);
-    }
-  });
-}
-
-function updateTotals() {
-  let mob=0,sush=0,sklad=0,mbSush=0,mbSklad=0;
-  Object.values(data).forEach(r => {
-    mob+=+r.mob||0; sush+=+r.sush||0; sklad+=+r.sklad||0; mbSush+=+r.mbSush||0; mbSklad+=+r.mbSklad||0;
-  });
-  document.getElementById('totalMob').textContent     = mob;
-  document.getElementById('totalSush').textContent    = sush;
-  document.getElementById('totalSklad').textContent   = sklad;
-  document.getElementById('totalMbSush').textContent  = mbSush;
-  document.getElementById('totalMbSklad').textContent = mbSklad;
-  document.getElementById('totalSushSum').textContent  = sush+mbSush;
-  document.getElementById('totalSkladSum').textContent = sklad+mbSklad;
-  const wm = loadWorkLog().reduce((s,x)=>s+x.mins,0);
-  const tm = loadTravelLog().reduce((s,x)=>s+x.mins,0);
-  document.getElementById('totalExtraWork').textContent   = toHM(wm);
-  document.getElementById('totalExtraTravel').textContent = toHM(tm);
-}
-
-function changeMonth(dir) {
-  month += dir;
-  if (month>11){month=0;year++;} if(month<0){month=11;year--;}
-  render();
-}
-
-function evalField(input, dateStr, col) {
-  let val = input.value.trim();
-  if (val==='') { setVal(dateStr,col,'',''); return; }
-  let formula=val, result=val;
-  if (/^[\d\s\+\-\*\/\.]+$/.test(val) && /[\+\-\*\/]/.test(val)) {
-    try { const r=Function('"use strict";return('+val+')')(); if(isFinite(r)) result=String(Math.round(r*100)/100); } catch(e){}
-  } else { formula=''; }
-  input.value = result;
-  setVal(dateStr, col, result, formula);
-}
-
-function focusField(input, dateStr, col) {
-  const r = data[dateStr];
-  if (r && r[col+'_formula']) input.value = r[col+'_formula'];
-  input.select();
-}
-
-function openHistory(tab) {
-  curHistTab = tab;
-  document.getElementById('pageMain').classList.remove('active');
-  document.getElementById('pageHistory').classList.add('active');
-  renderHistory();
-}
-
-function openMain() {
-  document.getElementById('pageHistory').classList.remove('active');
-  document.getElementById('pageMain').classList.add('active');
-}
-
-function switchTab(tab) {
-  curHistTab = tab;
-  document.getElementById('tabWork').className   = 'hist-tab'+(tab==='work'?' on':'');
-  document.getElementById('tabTravel').className = 'hist-tab'+(tab==='travel'?' on travel':'');
-  renderHistory();
-}
-
-function renderHistory() {
-  const isTravel = curHistTab==='travel';
-  const log = isTravel ? loadTravelLog() : loadWorkLog();
-  document.getElementById('histTitle').textContent = isTravel ? 'История поездок' : 'История работ';
-  document.getElementById('histTitle').style.color = isTravel ? 'var(--accent2)' : 'var(--orange)';
-  const content = document.getElementById('histContent');
-  if (!log.length) { content.innerHTML='<div class="hist-empty">Записей пока нет</div>'; return; }
-  const byDate={};
-  log.forEach(x=>{ if(!byDate[x.date]) byDate[x.date]=[]; byDate[x.date].push(x); });
-  content.innerHTML = Object.keys(byDate).sort().reverse().map(date => {
-    const items=byDate[date], total=items.reduce((s,x)=>s+x.mins,0);
-    return `<div class="hist-day">
-      <div class="hist-day-hdr">
-        <div class="hist-day-date">${date}</div>
-        <div class="hist-day-total">итого: <b class="${isTravel?'travel':''}">${toHM(total)}</b></div>
-      </div>
-      ${items.map(x=>`<div class="hist-item">
-        <div class="hist-dot ${isTravel?'travel':''}"></div>
-        <div class="hist-text">${isTravel?toHM(x.mins):x.desc}</div>
-        <div class="hist-min ${isTravel?'travel':''}">${x.mins} мин</div>
-      </div>`).join('')}
-    </div>`;
-  }).join('') + `<button class="export-btn" onclick="exportHistory()">📋 Скопировать как текст</button>`;
-}
-
-function exportHistory() {
-  const isTravel = curHistTab==='travel';
-  const log = isTravel ? loadTravelLog() : loadWorkLog();
-  if (!log.length) { alert('Нет данных'); return; }
-  const byDate={};
-  log.forEach(x=>{ if(!byDate[x.date]) byDate[x.date]=[]; byDate[x.date].push(x); });
-  const text = Object.keys(byDate).sort().reverse().map(date => {
-    const items=byDate[date], total=items.reduce((s,x)=>s+x.mins,0);
-    return `=== ${date} (${toHM(total)}) ===\n`+items.map(x=>isTravel?`  • ${x.mins} мин`:`  • ${x.desc} — ${x.mins} мин`).join('\n');
-  }).join('\n\n');
-  navigator.clipboard.writeText((isTravel?'В пути':'Работа')+'\n\n'+text)
-    .then(()=>alert('Скопировано!')).catch(()=>alert(text));
-}
-
-function backupData() {
-  const allData={};
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(key.startsWith('report_')||key.startsWith('worklog_')||key.startsWith('travellog_'))
-      allData[key]=JSON.parse(localStorage.getItem(key));
-  }
-  const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  const d=new Date();
-  a.download=`otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
-  a.click();
-}
-
-function restoreData(event) {
-  const file=event.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try {
-      const allData=JSON.parse(e.target.result);
-      Object.keys(allData).forEach(key=>localStorage.setItem(key,JSON.stringify(allData[key])));
-      render(); alert('Данные восстановлены!');
-    } catch(err){ alert('Ошибка при загрузке файла'); }
-  };
-  reader.readAsText(file);
-}
-
-render();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-</script>
+<script src="app.js"></script>
 </body>
 </html>
