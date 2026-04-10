@@ -9,6 +9,7 @@
   --accent3: #f9a8d4;
   --text: #e2e8f0;
   --muted: #64748b;
+  --muteDate: #e2e8f0;
   --danger: #f87171;
   --orange: #fb923c;
   --radius: 14px;
@@ -89,7 +90,7 @@ header {
 
 .total-label {
   font-size: 10px;
-  color: var(--muted);
+  color: var(--muteDate);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 4px;
