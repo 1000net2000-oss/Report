@@ -263,13 +263,25 @@ function updateTotals() {
     mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
   });
-  document.getElementById('totalMob').textContent      = mob;
-  document.getElementById('totalSush').textContent     = sush;
-  document.getElementById('totalSklad').textContent    = sklad;
-  document.getElementById('totalMbSush').textContent   = mbSush;
-  document.getElementById('totalMbSklad').textContent  = mbSklad;
-  document.getElementById('totalSushSum').textContent  = sush + mbSush;
-  document.getElementById('totalSkladSum').textContent = sklad + mbSklad;
+
+  document.getElementById('totalMob').textContent     = mob;
+  document.getElementById('totalSush').textContent    = sush;
+  document.getElementById('totalSklad').textContent   = sklad;
+  document.getElementById('totalMbSush').textContent  = mbSush;
+  document.getElementById('totalMbSklad').textContent = mbSklad;
+
+  // В сушилке = Было + Забрал − Отдал, минимум 0
+  const wasN = Math.max(0, parseInt(localStorage.getItem('wasNormal')) || 0);
+  const wasM = Math.max(0, parseInt(localStorage.getItem('wasMb'))     || 0);
+
+  const netNormal = Math.max(0, wasN + sush - sklad);
+  const netMb     = Math.max(0, wasM + mbSush - mbSklad);
+
+  const elN = document.getElementById('totalSushNet');
+  if (elN) elN.textContent = netNormal;
+
+  const elM = document.getElementById('totalMbNet');
+  if (elM) elM.textContent = netMb;
 
   const wCount = loadWorkLog().length;
   const tm     = loadTravelLog().reduce((s,x) => s+x.mins, 0);
@@ -406,4 +418,5 @@ function restoreData(event) {
 
 // ── Init ──────────────────────────────────────
 render();
+loadWas();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
