@@ -171,6 +171,7 @@ function render() {
   });
 
   updateTotals();
+  loadWas();
 }
 
 function toggle(header) { header.parentElement.classList.toggle('open'); }
@@ -418,5 +419,5 @@ function restoreData(event) {
 
 // ── Init ──────────────────────────────────────
 render();
-loadWas();
+loadWas(); // load after render so DOM elements exist
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
