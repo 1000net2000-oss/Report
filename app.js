@@ -419,5 +419,6 @@ function restoreData(event) {
 
 // ── Init ──────────────────────────────────────
 render();
-loadWas(); // load after render so DOM elements exist
+loadWas();
+updateTotals();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
