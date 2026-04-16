@@ -171,7 +171,6 @@ function render() {
   });
 
   updateTotals();
-  loadWas();
 }
 
 function toggle(header) { header.parentElement.classList.toggle('open'); }
@@ -271,23 +270,28 @@ function updateTotals() {
   document.getElementById('totalMbSush').textContent  = mbSush;
   document.getElementById('totalMbSklad').textContent = mbSklad;
 
-  // В сушилке = Было + Забрал − Отдал, минимум 0
-  const wasN = Math.max(0, parseInt(localStorage.getItem('wasNormal')) || 0);
-  const wasM = Math.max(0, parseInt(localStorage.getItem('wasMb'))     || 0);
-
-  const netNormal = Math.max(0, wasN + sush - sklad);
-  const netMb     = Math.max(0, wasM + mbSush - mbSklad);
-
-  const elN = document.getElementById('totalSushNet');
-  if (elN) elN.textContent = netNormal;
-
-  const elM = document.getElementById('totalMbNet');
-  if (elM) elM.textContent = netMb;
-
   const wCount = loadWorkLog().length;
   const tm     = loadTravelLog().reduce((s,x) => s+x.mins, 0);
   document.getElementById('totalExtraWork').textContent   = wCount;
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
+
+  // Склад / Трасса — считаем по рабочим дням текущего месяца
+  const workdays = getWorkdays(year, month);
+  let skladDays = 0, trassaDays = 0;
+  workdays.forEach(d => {
+    const dateStr = formatDate(d);
+    const hasReport = hasData(dateStr);
+    const hasWork   = loadWorkLog().some(x => x.date === dateStr);
+    const hasTravel = loadTravelLog().some(x => x.date === dateStr);
+    if (hasReport || hasWork || hasTravel) {
+      if (hasTravel) trassaDays++;
+      else skladDays++;
+    }
+  });
+  const elSkl = document.getElementById('totalSkladDays');
+  const elTrs = document.getElementById('totalTrassaDays');
+  if (elSkl) elSkl.textContent = skladDays;
+  if (elTrs) elTrs.textContent = trassaDays;
 }
 
 function changeMonth(dir) {
@@ -419,6 +423,5 @@ function restoreData(event) {
 
 // ── Init ──────────────────────────────────────
 render();
-loadWas();
 updateTotals();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
