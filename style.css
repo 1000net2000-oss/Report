@@ -146,7 +146,7 @@ header {
 .extra-total-btn:active { border-color: var(--orange); }
 .extra-total-btn.travel:active { border-color: var(--accent2); }
 .extra-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--orange); }
+.extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--red); }
 .extra-total-btn.travel .extra-total-val { color: var(--accent2); }
 
 /* ── DAYS LIST ── */
