@@ -275,6 +275,11 @@ function updateTotals() {
   document.getElementById('totalExtraWork').textContent   = wCount;
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
+  // Всего = Мобильная + Другие работы + Отдал обычные + Отдал МБ
+  const totalAll = mob + wCount + sklad + mbSklad;
+  const elAll = document.getElementById('totalAll');
+  if (elAll) elAll.textContent = totalAll;
+
   // Склад / Трасса — считаем по рабочим дням текущего месяца
   const workdays = getWorkdays(year, month);
   let skladDays = 0, trassaDays = 0;
