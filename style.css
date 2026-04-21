@@ -47,7 +47,7 @@ header {
   color: var(--accent);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .month-selector { display: flex; align-items: center; gap: 10px; }
@@ -72,6 +72,35 @@ header {
   font-size: 15px;
   font-weight: 600;
 }
+
+/* ── LANG SWITCHER ── */
+.lang-switcher {
+  display: flex;
+  gap: 4px;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.flag-btn {
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 30px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  transition: opacity 0.15s, background 0.15s;
+}
+.flag-btn.active {
+  opacity: 1;
+  background: #2e2e42;
+}
+.flag-btn:active { opacity: 0.8; }
 
 /* ── TOTALS ── */
 .totals-bar {
@@ -146,8 +175,33 @@ header {
 .extra-total-btn:active { border-color: var(--orange); }
 .extra-total-btn.travel:active { border-color: var(--accent2); }
 .extra-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-.extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--red); }
+.extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent2); }
 .extra-total-btn.travel .extra-total-val { color: var(--accent2); }
+
+/* ── ACTION BUTTONS ── */
+.action-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid #2a2a38;
+}
+
+.action-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.action-btn:active { opacity: 0.75; }
+.action-btn.summary { background: #2a1e0e; color: var(--orange); border: 1px solid #3a2a1a; }
+.action-btn.chart   { background: #1e1e3a; color: var(--accent2); border: 1px solid #2a2a4a; }
+.action-btn.pdf     { background: #1e3a2e; color: var(--accent);  border: 1px solid #2a4a3a; }
 
 /* ── DAYS LIST ── */
 .days-list {

@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-title" content=" ">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <title>Отчёт о работе</title>
 </head>
 <body>
@@ -19,10 +20,15 @@
 
   <header>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div class="header-title" style="margin-bottom:0">Отчёт о работе</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="backupData()" style="background:#1e3a2e;border:none;color:#6ee7b7;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">💾 Бэкап</button>
-        <label style="background:#1e1e3a;border:none;color:#818cf8;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">
+      <div class="header-title" id="appTitle">Отчёт о работе</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <!-- Language flags -->
+        <div class="lang-switcher">
+          <button class="flag-btn" id="flagRu" onclick="setLang('ru')" title="Русский">🏳️</button>
+          <button class="flag-btn" id="flagPl" onclick="setLang('pl')" title="Polski">🇵🇱</button>
+        </div>
+        <button id="btnBackup" onclick="backupData()" style="background:#1e3a2e;border:none;color:#6ee7b7;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">💾 Бэкап</button>
+        <label id="btnRestore" style="background:#1e1e3a;border:none;color:#818cf8;font-size:11px;padding:6px 10px;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif">
           📂 Загрузить
           <input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
         </label>
@@ -37,50 +43,58 @@
 
   <div class="totals-bar">
     <div class="mob-total">
-      <div class="total-label">Мобильная</div>
+      <div class="total-label" id="labelMob">Мобильная</div>
       <div class="total-val" id="totalMob">0</div>
     </div>
     <button class="mob-total" onclick="openHistory('work')" style="cursor:pointer;border:none;text-align:left">
-      <div class="total-label">Другие работы</div>
+      <div class="total-label" id="labelOtherWork">Другие работы</div>
       <div class="total-val" id="totalExtraWork" style="color:var(--orange)">0</div>
     </button>
     <div class="total-card">
-      <div class="total-label">Обычные</div>
-      <div class="total-row"><span class="total-name">Забрал</span><span class="total-val" id="totalSush">0</span></div>
-      <div class="total-row"><span class="total-name">Отдал</span><span class="total-val" id="totalSklad">0</span></div>
+      <div class="total-label" id="labelRegular">Обычные</div>
+      <div class="total-row"><span class="total-name" id="labelRegTook">Забрал</span><span class="total-val" id="totalSush">0</span></div>
+      <div class="total-row"><span class="total-name" id="labelRegGave">Отдал</span><span class="total-val" id="totalSklad">0</span></div>
     </div>
     <div class="total-card">
-      <div class="total-label">Минибар</div>
-      <div class="total-row"><span class="total-name">Забрал</span><span class="total-val" id="totalMbSush">0</span></div>
-      <div class="total-row"><span class="total-name">Отдал</span><span class="total-val" id="totalMbSklad">0</span></div>
+      <div class="total-label" id="labelMinibar">Минибар</div>
+      <div class="total-row"><span class="total-name" id="labelMbTook">Забрал</span><span class="total-val" id="totalMbSush">0</span></div>
+      <div class="total-row"><span class="total-name" id="labelMbGave">Отдал</span><span class="total-val" id="totalMbSklad">0</span></div>
     </div>
+    <!-- Всего внутри totals-bar -->
     <div style="grid-column:1/-1;background:#22222e;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;border:1px solid #2e2e3e">
-  <div class="total-label" style="margin-bottom:0">Всего</div>
-  <div class="total-val" id="totalAll" style="font-size:20px;color:#f9a8d4">0</div>
+      <div class="total-label" id="labelTotal" style="margin-bottom:0">Всего</div>
+      <div class="total-val" id="totalAll" style="font-size:20px;color:#f9a8d4">0</div>
     </div>
   </div>
 
   <div class="extra-totals">
     <button class="extra-total-btn travel" onclick="openHistory('travel')">
-      <div class="extra-total-lbl">Время в пути</div>
+      <div class="extra-total-lbl" id="labelTravel">Время в пути</div>
       <div class="extra-total-val" id="totalExtraTravel">0 мин</div>
     </button>
   </div>
 
   <div class="extra-totals" style="grid-template-columns:1fr 1fr">
-  <div class="extra-total-btn" style="cursor:default">
-    <div class="extra-total-lbl">Склад</div>
-    <div class="extra-total-val" id="totalSkladDays" style="color:var(--red)">0</div>
-    <div style="font-size:10px;color:var(--muted);margin-top:2px">дней</div>
+    <div class="extra-total-btn" style="cursor:default">
+      <div class="extra-total-lbl" id="labelWarehouse">Склад</div>
+      <div class="extra-total-val" id="totalSkladDays" style="color:var(--danger)">0</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="labelWarehouseDays">дней</div>
+    </div>
+    <div class="extra-total-btn" style="cursor:default">
+      <div class="extra-total-lbl" id="labelHighway">Трасса</div>
+      <div class="extra-total-val" id="totalTrassaDays" style="color:var(--danger)">0</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px" id="labelHighwayDays">дней</div>
+    </div>
   </div>
-  <div class="extra-total-btn" style="cursor:default">
-    <div class="extra-total-lbl">Трасса</div>
-    <div class="extra-total-val" id="totalTrassaDays" style="color:var(--red)">0</div>
-    <div style="font-size:10px;color:var(--muted);margin-top:2px">дней</div>
-  </div>
-</div>
 
-<div class="days-list" id="daysList"></div>
+  <!-- Action buttons row -->
+  <div class="action-btns">
+    <button id="btnSummary" class="action-btn summary" onclick="copySummary()">📋 Сводка</button>
+    <button id="btnChart"   class="action-btn chart"   onclick="openChart()">📊 График</button>
+    <button id="btnPdf"     class="action-btn pdf"     onclick="generatePDF()">📄 PDF</button>
+  </div>
+
+  <div class="days-list" id="daysList"></div>
 
 </div><!-- /pageMain -->
 
@@ -95,6 +109,18 @@
     <button class="hist-tab" id="tabTravel" onclick="switchTab('travel')">🚗 В пути</button>
   </div>
   <div class="hist-content" id="histContent"></div>
+</div>
+
+<!-- ══ CHART PAGE ══ -->
+<div class="page" id="pageChart">
+  <div class="hist-header">
+    <button class="back-btn" onclick="closeChart()">←</button>
+    <div class="hist-title" id="chartPageTitle" style="color:var(--accent2)">График за месяц</div>
+  </div>
+  <div style="padding:12px 16px;font-family:Unbounded,sans-serif;font-size:13px;color:var(--muted)" id="chartMonthLabel"></div>
+  <div style="padding:0 16px 24px;height:320px">
+    <canvas id="chartCanvas"></canvas>
+  </div>
 </div>
 
 <script src="app.js"></script>
