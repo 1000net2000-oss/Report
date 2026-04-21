@@ -101,7 +101,7 @@ function render() {
           <div class="fields-grid">
             <div class="field mob">
               <label>Мобильная</label>
-              <input type="text" inputmode="decimal" class="formula-input" value="${r.mob||''}" placeholder="0"
+              <input type="text" inputmode="text" class="formula-input" value="${r.mob||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
             </div>
           </div>
