@@ -47,9 +47,8 @@ const TRANSLATIONS = {
     summaryCopied: 'Сводка скопирована!',
     chartTitle: 'График за месяц',
     chartMobile: 'Мобильная',
-    chartGave: 'Отдал (обычные+МБ)',
+    chartGave: 'Отдал',
     chartTravel: 'В пути (мин)',
-    noRecords: 'Нет записей',
     months: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
     weekdays: ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
     mobilePDF: 'Мобильная',
@@ -120,9 +119,8 @@ const TRANSLATIONS = {
     summaryCopied: 'Podsumowanie skopiowane!',
     chartTitle: 'Wykres miesiąca',
     chartMobile: 'Mobilna',
-    chartGave: 'Oddano (zwykłe+MB)',
+    chartGave: 'Oddano',
     chartTravel: 'W drodze (min)',
-    noRecords: 'Brak wpisów',
     months: ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
     weekdays: ['Nd','Pn','Wt','Śr','Cz','Pt','Sb'],
     mobilePDF: 'Mobilna',
@@ -231,28 +229,26 @@ function workItemHtml(x, dateStr) {
 function render() {
   load();
   document.getElementById('monthLabel').textContent = `${t('months')[month]} ${year}`;
-  document.getElementById('appTitle').textContent = t('appTitle');
-  document.getElementById('btnBackup').textContent = t('backup');
-  document.getElementById('btnRestore').textContent = t('restore');
-  document.getElementById('btnSummary').textContent = t('summaryBtn');
-  document.getElementById('btnChart').textContent = t('chartBtn');
-  document.getElementById('btnPdf').textContent = t('pdfBtn');
-  document.getElementById('labelMob').textContent = t('mobile');
-  document.getElementById('labelOtherWork').textContent = t('otherWork');
-  document.getElementById('labelRegular').textContent = t('regular');
-  document.getElementById('labelMinibar').textContent = t('minibar');
-  document.getElementById('labelRegTook').textContent = t('took');
-  document.getElementById('labelRegGave').textContent = t('gave');
-  document.getElementById('labelMbTook').textContent = t('took');
-  document.getElementById('labelMbGave').textContent = t('gave');
-  document.getElementById('labelTotal').textContent = t('total');
-  document.getElementById('labelTravel').textContent = t('travel');
-  document.getElementById('labelWarehouse').textContent = t('warehouse');
-  document.getElementById('labelHighway').textContent = t('highway');
+  document.getElementById('appTitle').textContent    = t('appTitle');
+  document.getElementById('btnBackup').textContent   = t('backup');
+  document.getElementById('btnRestore').childNodes[0].textContent = t('restore') + ' ';
+  document.getElementById('btnSummary').textContent  = t('summaryBtn');
+  document.getElementById('btnChart').textContent    = t('chartBtn');
+  document.getElementById('btnPdf').textContent      = t('pdfBtn');
+  document.getElementById('labelMob').textContent        = t('mobile');
+  document.getElementById('labelOtherWork').textContent  = t('otherWork');
+  document.getElementById('labelRegular').textContent    = t('regular');
+  document.getElementById('labelMinibar').textContent    = t('minibar');
+  document.getElementById('labelRegTook').textContent    = t('took');
+  document.getElementById('labelRegGave').textContent    = t('gave');
+  document.getElementById('labelMbTook').textContent     = t('took');
+  document.getElementById('labelMbGave').textContent     = t('gave');
+  document.getElementById('labelTotal').textContent      = t('total');
+  document.getElementById('labelTravel').textContent     = t('travel');
+  document.getElementById('labelWarehouse').textContent  = t('warehouse');
+  document.getElementById('labelHighway').textContent    = t('highway');
   document.getElementById('labelWarehouseDays').textContent = t('days');
-  document.getElementById('labelHighwayDays').textContent = t('days');
-  document.getElementById('tabWork').textContent = t('tabOther');
-  document.getElementById('tabTravel').textContent = t('tabTravel');
+  document.getElementById('labelHighwayDays').textContent   = t('days');
 
   const days = getWorkdays(year, month);
   const list = document.getElementById('daysList');
@@ -280,48 +276,43 @@ function render() {
         <div class="chevron">▼</div>
       </div>
       <div class="day-body">
-
         <div>
           <div class="section-label">${t('sectionMobile')}</div>
           <div class="fields-grid">
             <div class="field mob">
               <label>${t('mobile')}</label>
-              <input type="text" inputmode="text" class="formula-input" value="${r.mob||''}" placeholder="0"
+              <input type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
             </div>
           </div>
         </div>
-
         <div class="divider"></div>
-
         <div>
           <div class="section-label">${t('sectionDist')}</div>
           <div class="fields-grid">
             <div class="field">
               <label>${t('tookFromWarehouse')}</label>
-              <input type="text" inputmode="text" class="formula-input" value="${r.sush||''}" placeholder="0"
+              <input type="text" inputmode="text" value="${r.sush||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','sush')" onfocus="focusField(this,'${dateStr}','sush')">
             </div>
             <div class="field">
               <label>${t('gaveReady')}</label>
-              <input type="text" inputmode="text" class="formula-input" value="${r.sklad||''}" placeholder="0"
+              <input type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
             </div>
             <div class="field">
               <label>${t('mbTook')}</label>
-              <input type="text" inputmode="text" class="formula-input" value="${r.mbSush||''}" placeholder="0"
+              <input type="text" inputmode="text" value="${r.mbSush||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mbSush')" onfocus="focusField(this,'${dateStr}','mbSush')">
             </div>
             <div class="field">
               <label>${t('mbGave')}</label>
-              <input type="text" inputmode="text" class="formula-input" value="${r.mbSklad||''}" placeholder="0"
+              <input type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
             </div>
           </div>
         </div>
-
         <div class="divider"></div>
-
         <div>
           <div class="section-label">${t('sectionOther')}</div>
           <div class="work-row">
@@ -333,9 +324,7 @@ function render() {
             ${wl.map(x => workItemHtml(x, dateStr)).join('')}
           </div>
         </div>
-
         <div class="divider"></div>
-
         <div>
           <div class="section-label">${t('sectionTravel')}</div>
           <div class="travel-row">
@@ -343,12 +332,10 @@ function render() {
             <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
           </div>
         </div>
-
         <div class="day-time-totals">
           <div class="day-time-chip" id="wchip_${dateStr}">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}</span></div>
           <div class="day-time-chip travel" id="tchip_${dateStr}">${t('onRoad')}<span>${toHM(tm)}</span></div>
         </div>
-
         <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>
       </div>`;
 
@@ -458,7 +445,7 @@ function updateTotals() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
   const wCount = wl.length;
-  const tm     = tl.reduce((s,x) => s+x.mins, 0);
+  const tm = tl.reduce((s,x) => s+x.mins, 0);
   document.getElementById('totalExtraWork').textContent   = wCount;
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
@@ -557,7 +544,7 @@ function copySummary() {
     .catch(() => alert(text));
 }
 
-// ── Chart page ────────────────────────────────
+// ── Chart page (vanilla canvas, no CDN) ───────
 function openChart() {
   document.getElementById('pageMain').classList.remove('active');
   document.getElementById('pageHistory').classList.remove('active');
@@ -572,72 +559,92 @@ function closeChart() {
 
 function renderChart() {
   load();
-  document.getElementById('chartPageTitle').textContent = t('chartTitle');
+  document.getElementById('chartPageTitle').textContent  = t('chartTitle');
   document.getElementById('chartMonthLabel').textContent = `${t('months')[month]} ${year}`;
 
   const workdays = getWorkdays(year, month);
-  const wl = loadWorkLog();
   const tl = loadTravelLog();
 
   const labels = [], mobData = [], gaveData = [], travelData = [];
-
   workdays.forEach(d => {
     const dateStr = formatDate(d);
     const r = data[dateStr] || {};
-    const mob = +r.mob || 0;
-    const gave = (+r.sklad||0) + (+r.mbSklad||0);
-    const tm = tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0);
     labels.push(dateStr.slice(0,2));
-    mobData.push(mob);
-    gaveData.push(gave);
-    travelData.push(tm);
+    mobData.push(+r.mob || 0);
+    gaveData.push((+r.sklad||0) + (+r.mbSklad||0));
+    travelData.push(tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0));
   });
 
   const canvas = document.getElementById('chartCanvas');
   const ctx = canvas.getContext('2d');
+  const wrap = canvas.parentElement;
+  canvas.width  = wrap.clientWidth  || 340;
+  canvas.height = wrap.clientHeight || 300;
 
-  // Destroy old chart if exists
-  if (window._chart) { window._chart.destroy(); }
+  const W = canvas.width, H = canvas.height;
+  const PAD = { top: 20, right: 16, bottom: 40, left: 36 };
+  const chartW = W - PAD.left - PAD.right;
+  const chartH = H - PAD.top  - PAD.bottom;
 
-  window._chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: t('chartMobile'),
-          data: mobData,
-          backgroundColor: '#818cf8cc',
-          borderRadius: 4,
-        },
-        {
-          label: t('chartGave'),
-          data: gaveData,
-          backgroundColor: '#6ee7b7cc',
-          borderRadius: 4,
-        },
-        {
-          label: t('chartTravel'),
-          data: travelData,
-          backgroundColor: '#fb923c55',
-          borderRadius: 4,
-          hidden: true,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: '#e2e8f0', font: { size: 11 } }
-        }
-      },
-      scales: {
-        x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#2a2a38' } },
-        y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: '#2a2a38' } }
-      }
-    }
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0f0f12';
+  ctx.fillRect(0, 0, W, H);
+
+  const allVals = [...mobData, ...gaveData];
+  const maxVal  = Math.max(...allVals, 1);
+  const barGroupW = chartW / labels.length;
+  const barW = Math.max(4, Math.floor(barGroupW * 0.3));
+  const gap  = Math.floor(barGroupW * 0.06);
+
+  // Grid lines
+  ctx.strokeStyle = '#2a2a38';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.top + (chartH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    const val = Math.round(maxVal * (1 - i / 4));
+    ctx.fillText(val, PAD.left - 4, y + 3);
+  }
+
+  // Bars
+  labels.forEach((lbl, i) => {
+    const x = PAD.left + i * barGroupW + barGroupW / 2;
+
+    const drawBar = (val, color, offset) => {
+      if (!val) return;
+      const bH = (val / maxVal) * chartH;
+      const bX = x + offset - barW / 2;
+      const bY = PAD.top + chartH - bH;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(bX, bY, barW, bH, [3,3,0,0])
+                    : ctx.rect(bX, bY, barW, bH);
+      ctx.fill();
+    };
+
+    drawBar(mobData[i],   '#818cf8cc', -(barW/2 + gap));
+    drawBar(gaveData[i],  '#6ee7b7cc',  (barW/2 + gap));
+
+    // X label
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(lbl, x, H - PAD.bottom + 14);
+  });
+
+  // Legend
+  const legendY = H - 8;
+  [[t('chartMobile'), '#818cf8'], [t('chartGave'), '#6ee7b7']].forEach(([name, color], i) => {
+    const lx = PAD.left + i * 110;
+    ctx.fillStyle = color;
+    ctx.fillRect(lx, legendY - 8, 10, 8);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(name, lx + 13, legendY - 1);
   });
 }
 
@@ -648,7 +655,7 @@ function generatePDF() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
 
-  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0, wCount=0, totalTm=0;
+  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
     sush   += +r.sush   || 0;
@@ -656,8 +663,8 @@ function generatePDF() {
     mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
   });
-  wCount = wl.length;
-  totalTm = tl.reduce((s,x) => s+x.mins, 0);
+  const wCount   = wl.length;
+  const totalTm  = tl.reduce((s,x) => s+x.mins, 0);
   const totalAll = mob + wCount + sklad + mbSklad;
 
   let skladDays = 0, trassaDays = 0;
@@ -675,13 +682,12 @@ function generatePDF() {
   const rows = workdays.map(d => {
     const dateStr = formatDate(d);
     const wd = t('weekdays')[d.getDay()];
-    const r = data[dateStr] || {};
+    const r  = data[dateStr] || {};
     const dayWl = wl.filter(x => x.date === dateStr);
-    const dayTl = tl.filter(x => x.date === dateStr);
-    const dayTm = dayTl.reduce((s,x) => s+x.mins, 0);
-    return `<tr>
-      <td>${dateStr}</td>
-      <td>${wd}</td>
+    const dayTm = tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0);
+    const hasSomething = hasData(dateStr) || dayWl.length || dayTm;
+    return `<tr${hasSomething ? '' : ' style="color:#aaa"'}>
+      <td>${dateStr}</td><td>${wd}</td>
       <td>${r.mob||''}</td>
       <td>${r.sklad||''}</td>
       <td>${r.mbSklad||''}</td>
@@ -690,23 +696,23 @@ function generatePDF() {
     </tr>`;
   }).join('');
 
-  const now2 = new Date();
-  const dateStr2 = `${now2.getDate()}.${now2.getMonth()+1}.${now2.getFullYear()}`;
+  const d2 = new Date();
+  const dateStr2 = `${d2.getDate()}.${d2.getMonth()+1}.${d2.getFullYear()}`;
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <style>
-    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; padding: 20px; }
-    h1 { font-size: 18px; margin-bottom: 4px; }
-    .sub { color: #666; font-size: 12px; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
-    th { background: #1a1a22; color: #6ee7b7; padding: 7px 8px; text-align: left; font-size: 11px; }
-    td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
-    tr:nth-child(even) td { background: #f9fafb; }
-    .totals { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
-    .tot-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; min-width: 120px; }
-    .tot-label { font-size: 10px; color: #666; text-transform: uppercase; margin-bottom: 4px; }
-    .tot-val { font-size: 20px; font-weight: 700; color: #1a1a22; }
-    .gen { font-size: 10px; color: #aaa; margin-top: 20px; }
+    body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px;max-width:700px;margin:0 auto}
+    h1{font-size:18px;margin-bottom:4px}
+    .sub{color:#666;font-size:11px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;margin-bottom:16px}
+    th{background:#1a1a22;color:#6ee7b7;padding:7px 8px;text-align:left;font-size:11px}
+    td{padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px}
+    tr:nth-child(even) td{background:#f9fafb}
+    .totals{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .tot{border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;min-width:110px}
+    .tot-lbl{font-size:10px;color:#666;text-transform:uppercase;margin-bottom:4px}
+    .tot-val{font-size:20px;font-weight:700;color:#1a1a22}
+    .gen{font-size:10px;color:#aaa;margin-top:20px}
   </style></head><body>
   <h1>${t('reportTitle')} — ${t('months')[month]} ${year}</h1>
   <div class="sub">${t('generatedPDF')} ${dateStr2}</div>
@@ -722,26 +728,24 @@ function generatePDF() {
     <tbody>${rows}</tbody>
     <tfoot><tr style="font-weight:700;background:#f0fdf4">
       <td colspan="2">${t('totalPDF')}</td>
-      <td>${mob}</td>
-      <td>${sklad}</td>
-      <td>${mbSklad}</td>
-      <td>${wCount}</td>
-      <td>${toHM(totalTm)}</td>
+      <td>${mob}</td><td>${sklad}</td><td>${mbSklad}</td>
+      <td>${wCount}</td><td>${toHM(totalTm)}</td>
     </tr></tfoot>
   </table>
   <div class="totals">
-    <div class="tot-card"><div class="tot-label">${t('totalPDF')}</div><div class="tot-val">${totalAll}</div></div>
-    <div class="tot-card"><div class="tot-label">${t('warehousePDF')}</div><div class="tot-val">${skladDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
-    <div class="tot-card"><div class="tot-label">${t('highwayPDF')}</div><div class="tot-val">${trassaDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
-    <div class="tot-card"><div class="tot-label">${t('travelPDF')}</div><div class="tot-val" style="font-size:15px">${toHM(totalTm)}</div></div>
+    <div class="tot"><div class="tot-lbl">${t('totalPDF')}</div><div class="tot-val">${totalAll}</div></div>
+    <div class="tot"><div class="tot-lbl">${t('warehousePDF')}</div><div class="tot-val">${skladDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
+    <div class="tot"><div class="tot-lbl">${t('highwayPDF')}</div><div class="tot-val">${trassaDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
+    <div class="tot"><div class="tot-lbl">${t('travelPDF')}</div><div class="tot-val" style="font-size:15px">${toHM(totalTm)}</div></div>
   </div>
-  <div class="gen">${t('reportTitle')} App</div>
+  <div class="gen">${t('reportTitle')}</div>
   </body></html>`;
 
   const win = window.open('', '_blank');
+  if (!win) { alert('Разрешите всплывающие окна в браузере'); return; }
   win.document.write(html);
   win.document.close();
-  setTimeout(() => win.print(), 300);
+  setTimeout(() => win.print(), 400);
 }
 
 // ── History page ──────────────────────────────
@@ -768,10 +772,10 @@ function switchTab(tab) {
 function renderHistory() {
   const isTravel = curHistTab === 'travel';
   const log = isTravel ? loadTravelLog() : loadWorkLog();
-  document.getElementById('histTitle').textContent = isTravel ? t('histTravel') : t('histOtherWork');
-  document.getElementById('histTitle').style.color = isTravel ? 'var(--accent2)' : 'var(--orange)';
-  document.getElementById('tabWork').textContent = t('tabOther');
-  document.getElementById('tabTravel').textContent = t('tabTravel');
+  document.getElementById('histTitle').textContent   = isTravel ? t('histTravel') : t('histOtherWork');
+  document.getElementById('histTitle').style.color   = isTravel ? 'var(--accent2)' : 'var(--orange)';
+  document.getElementById('tabWork').textContent     = t('tabOther');
+  document.getElementById('tabTravel').textContent   = t('tabTravel');
 
   const content = document.getElementById('histContent');
   if (!log.length) { content.innerHTML = `<div class="hist-empty">${t('histEmpty')}</div>`; return; }
@@ -850,5 +854,4 @@ function restoreData(event) {
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
 render();
-updateTotals();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');

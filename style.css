@@ -12,7 +12,6 @@
   --muteDate: #e2e8f0;
   --danger: #f87171;
   --orange: #fb923c;
-  --red: #4A0404;
   --radius: 14px;
 }
 
@@ -33,11 +32,19 @@ body {
 /* ── HEADER ── */
 header {
   background: var(--surface);
-  padding: 18px 16px 14px;
+  padding: 14px 16px 12px;
   border-bottom: 1px solid #2a2a38;
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
 }
 
 .header-title {
@@ -47,9 +54,55 @@ header {
   color: var(--accent);
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.hdr-btn {
+  border: none;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+.hdr-btn.green  { background: #1e3a2e; color: #6ee7b7; }
+.hdr-btn.purple { background: #1e1e3a; color: #818cf8; }
+
+/* ── LANG SWITCHER ── */
+.lang-switcher {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.flag-btn {
+  background: none;
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  width: 28px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.35;
+  transition: opacity 0.15s, background 0.15s;
+}
+.flag-btn.active { opacity: 1; background: #2e2e42; }
+
+/* ── MONTH SELECTOR ── */
 .month-selector { display: flex; align-items: center; gap: 10px; }
 
 .month-btn {
@@ -73,36 +126,7 @@ header {
   font-weight: 600;
 }
 
-/* ── LANG SWITCHER ── */
-.lang-switcher {
-  display: flex;
-  gap: 4px;
-  background: var(--surface2);
-  border-radius: 8px;
-  padding: 3px;
-}
-
-.flag-btn {
-  background: none;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  width: 30px;
-  height: 26px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.4;
-  transition: opacity 0.15s, background 0.15s;
-}
-.flag-btn.active {
-  opacity: 1;
-  background: #2e2e42;
-}
-.flag-btn:active { opacity: 0.8; }
-
-/* ── TOTALS ── */
+/* ── TOTALS BAR ── */
 .totals-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -144,7 +168,7 @@ header {
 .mob-total {
   background: var(--surface2);
   border-radius: 10px;
-  padding: 14px 14px;
+  padding: 14px;
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
@@ -153,14 +177,28 @@ header {
 .mob-total .total-label { margin-bottom: 0; }
 .mob-total .total-val { color: var(--accent2); }
 
+/* Всего — внутри totals-bar, полная ширина */
+.vsego-row {
+  grid-column: 1 / -1;
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #2e2e3e;
+}
+
+/* ── EXTRA TOTALS ── */
 .extra-totals {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 10px;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid #2a2a38;
 }
+.extra-totals.single { grid-template-columns: 1fr; }
+.extra-totals.double { grid-template-columns: 1fr 1fr; }
 
 .extra-total-btn {
   background: var(--surface2);
@@ -177,6 +215,7 @@ header {
 .extra-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
 .extra-total-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent2); }
 .extra-total-btn.travel .extra-total-val { color: var(--accent2); }
+.extra-days-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
 /* ── ACTION BUTTONS ── */
 .action-btns {
@@ -191,15 +230,15 @@ header {
 .action-btn {
   border: none;
   border-radius: 10px;
-  padding: 10px 8px;
+  padding: 11px 6px;
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.action-btn:active { opacity: 0.75; }
-.action-btn.summary { background: #2a1e0e; color: var(--orange); border: 1px solid #3a2a1a; }
+.action-btn:active { opacity: 0.7; }
+.action-btn.summary { background: #2a1e0e; color: var(--orange);  border: 1px solid #3a2a1a; }
 .action-btn.chart   { background: #1e1e3a; color: var(--accent2); border: 1px solid #2a2a4a; }
 .action-btn.pdf     { background: #1e3a2e; color: var(--accent);  border: 1px solid #2a4a3a; }
 
@@ -270,8 +309,8 @@ header {
   font-size: 16px;
   padding: 8px 10px;
   width: 100%;
-  font-family: 'Unbounded', sans-serif;
-  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
   transition: border-color 0.15s;
   -webkit-appearance: none;
 }
@@ -303,7 +342,6 @@ header {
   font-size: 18px;
   width: 38px;
   min-width: 38px;
-  max-width: 38px;
   flex: 0 0 38px;
   cursor: pointer;
   font-weight: 700;
@@ -387,7 +425,6 @@ header {
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 input[type=number] { -moz-appearance: textfield; }
-input.formula-input { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; }
 
 /* ── HISTORY PAGE ── */
 .hist-header {
@@ -456,35 +493,15 @@ input.formula-input { font-family: 'Inter', sans-serif; font-size: 15px; font-we
 .export-btn:active { border-color: var(--accent); color: var(--accent); }
 .hist-empty { text-align: center; padding: 32px 0; font-size: 13px; color: var(--muted); }
 
-/* ── HEADER CARD INPUTS ── */
-.card-input {
-  background: var(--bg);
-  border: 1px solid #3a3a4e;
-  border-radius: 6px;
-  color: var(--accent2);
+/* ── CHART PAGE ── */
+.chart-month-lbl {
+  padding: 10px 16px 4px;
   font-family: 'Unbounded', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  width: 52px;
-  padding: 3px 6px;
-  text-align: center;
-  outline: none;
-  -webkit-appearance: none;
+  font-size: 12px;
+  color: var(--muted);
 }
-.card-input:focus { border-color: var(--accent2); }
-
-.net-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 1px solid #2a2a38;
-}
-.net-label { font-size: 12px; color: var(--muted); }
-.net-val {
-  font-family: 'Unbounded', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #f9a8d4;
+.chart-wrap {
+  padding: 12px 16px 24px;
+  height: 340px;
+  position: relative;
 }
