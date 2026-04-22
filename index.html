@@ -19,12 +19,11 @@
 
   <header>
     <div class="header-top">
-      <div class="header-title" id="appTitle">Отчёт о работе</div>
+      <div class="lang-switcher">
+        <button class="flag-btn" id="flagRu" onclick="setLang('ru')">🏳️</button>
+        <button class="flag-btn" id="flagPl" onclick="setLang('pl')">🇵🇱</button>
+      </div>
       <div class="header-actions">
-        <div class="lang-switcher">
-          <button class="flag-btn" id="flagRu" onclick="setLang('ru')">🏳️</button>
-          <button class="flag-btn" id="flagPl" onclick="setLang('pl')">🇵🇱</button>
-        </div>
         <button id="btnBackup" class="hdr-btn green" onclick="backupData()">💾 Бэкап</button>
         <label id="btnRestore" class="hdr-btn purple">
           📂 Загрузить
@@ -85,7 +84,8 @@
   </div>
 
   <div class="action-btns">
-    <button id="btnSummary" class="action-btn summary" onclick="copySummary()">📋 Сводка</button>
+    <button id="btnSummary" class="action-btn summary" onclick="copySummary()">📤 Поделиться</button>
+    <button id="btnArchive" class="action-btn archive" onclick="openArchive()">🗂 Архив</button>
     <button id="btnChart"   class="action-btn chart"   onclick="openChart()">📊 График</button>
     <button id="btnPdf"     class="action-btn pdf"     onclick="generatePDF()">📄 PDF</button>
   </div>
@@ -118,6 +118,46 @@
     <canvas id="chartCanvas"></canvas>
   </div>
 </div>
+
+<!-- ══ ARCHIVE PAGE ══ -->
+<div class="page" id="pageArchive">
+  <div class="hist-header">
+    <button class="back-btn" onclick="closeArchive()">←</button>
+    <div class="hist-title" id="archiveTitle" style="color:var(--accent)">Архив</div>
+  </div>
+  <div class="hist-content" id="archiveContent"></div>
+</div>
+
+<!-- ══ QUICK INPUT OVERLAY ══ -->
+<div class="quick-overlay" id="quickOverlay" onclick="closeQuickInput()">
+  <div class="quick-sheet" onclick="event.stopPropagation()">
+    <div class="quick-header">
+      <div class="quick-title">Быстрый ввод</div>
+      <div class="quick-date" id="quickDate"></div>
+    </div>
+    <div class="quick-fields">
+      <div class="quick-field">
+        <label>Мобильная</label>
+        <input id="quickMob" type="text" inputmode="text" placeholder="0">
+      </div>
+      <div class="quick-field">
+        <label>Стационарная отдал</label>
+        <input id="quickSklad" type="text" inputmode="text" placeholder="0">
+      </div>
+      <div class="quick-field">
+        <label>МБ отдал</label>
+        <input id="quickMbSklad" type="text" inputmode="text" placeholder="0">
+      </div>
+    </div>
+    <button class="quick-save" onclick="saveQuickInput()">Сохранить</button>
+  </div>
+</div>
+
+<!-- ══ FAB ══ -->
+<button class="fab" onclick="openQuickInput()">+</button>
+
+<!-- ══ TOAST ══ -->
+<div id="toast"></div>
 
 <script src="app.js"></script>
 </body>

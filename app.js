@@ -47,6 +47,7 @@ const TRANSLATIONS = {
     summaryCopied: 'Сводка скопирована!',
     chartTitle: 'График за месяц',
     chartMobile: 'Мобильная',
+    chartStation: 'Стационарная',
     chartGave: 'Отдал',
     chartTravel: 'В пути (мин)',
     months: ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'],
@@ -119,6 +120,7 @@ const TRANSLATIONS = {
     summaryCopied: 'Podsumowanie skopiowane!',
     chartTitle: 'Wykres miesiąca',
     chartMobile: 'Mobilna',
+    chartStation: 'Stacjonarna',
     chartGave: 'Oddano',
     chartTravel: 'W drodze (min)',
     months: ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'],
@@ -232,7 +234,8 @@ function render() {
   document.getElementById('appTitle').textContent    = t('appTitle');
   document.getElementById('btnBackup').textContent   = t('backup');
   document.getElementById('btnRestore').childNodes[0].textContent = t('restore') + ' ';
-  document.getElementById('btnSummary').textContent  = t('summaryBtn');
+  document.getElementById('btnSummary').textContent  = lang === 'pl' ? '📤 Udostępnij' : '📤 Поделиться';
+  document.getElementById('btnArchive').textContent  = lang === 'pl' ? '🗂 Archiwum' : '🗂 Архив';
   document.getElementById('btnChart').textContent    = t('chartBtn');
   document.getElementById('btnPdf').textContent      = t('pdfBtn');
   document.getElementById('labelMob').textContent        = t('mobile');
@@ -339,10 +342,12 @@ function render() {
         <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>
       </div>`;
 
+    setupLongPress(card, dateStr);
     list.appendChild(card);
   });
 
   updateTotals();
+  updateBestDays();
 }
 
 function toggle(header) { header.parentElement.classList.toggle('open'); }
@@ -501,48 +506,7 @@ function focusField(input, dateStr, col) {
 }
 
 // ── Summary ───────────────────────────────────
-function copySummary() {
-  load();
-  let mob=0, sklad=0, mbSklad=0;
-  Object.values(data).forEach(r => {
-    mob    += +r.mob    || 0;
-    sklad  += +r.sklad  || 0;
-    mbSklad+= +r.mbSklad|| 0;
-  });
-  const wl = loadWorkLog();
-  const tl = loadTravelLog();
-  const wCount = wl.length;
-  const tm = tl.reduce((s,x) => s+x.mins, 0);
-  const totalAll = mob + wCount + sklad + mbSklad;
-
-  const workdays = getWorkdays(year, month);
-  let skladDays = 0, trassaDays = 0;
-  workdays.forEach(d => {
-    const dateStr = formatDate(d);
-    const hasReport = hasData(dateStr);
-    const hasWork   = wl.some(x => x.date === dateStr);
-    const hasTravel = tl.some(x => x.date === dateStr);
-    if (hasReport || hasWork || hasTravel) {
-      if (hasTravel) trassaDays++;
-      else skladDays++;
-    }
-  });
-
-  const text = [
-    `${t('months')[month]} ${year}`,
-    `${t('summaryLabel')} ${mob}`,
-    `${t('summaryOther')} ${wCount}`,
-    `${t('summaryRegGave')} ${sklad}`,
-    `${t('summaryMbGave')} ${mbSklad}`,
-    `${t('summaryTotal')} ${totalAll}`,
-    `${t('summaryTravel')} ${toHM(tm)}`,
-    `${t('summaryWarehouse')} ${skladDays} ${t('summaryDays')} | ${t('summaryHighway')} ${trassaDays} ${t('summaryDays')}`,
-  ].join('\n');
-
-  navigator.clipboard.writeText(text)
-    .then(() => alert(t('summaryCopied')))
-    .catch(() => alert(text));
-}
+function copySummary() { shareSummary(); }
 
 // ── Chart page (vanilla canvas, no CDN) ───────
 function openChart() {
@@ -565,86 +529,103 @@ function renderChart() {
   const workdays = getWorkdays(year, month);
   const tl = loadTravelLog();
 
-  const labels = [], mobData = [], gaveData = [], travelData = [];
+  const rows = [];
   workdays.forEach(d => {
     const dateStr = formatDate(d);
     const r = data[dateStr] || {};
-    labels.push(dateStr.slice(0,2));
-    mobData.push(+r.mob || 0);
-    gaveData.push((+r.sklad||0) + (+r.mbSklad||0));
-    travelData.push(tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0));
+    const mob  = +r.mob || 0;
+    const gave = (+r.sklad||0) + (+r.mbSklad||0);
+    if (mob || gave) rows.push({ label: dateStr.slice(0,2), mob, gave });
   });
 
   const canvas = document.getElementById('chartCanvas');
   const ctx = canvas.getContext('2d');
   const wrap = canvas.parentElement;
   canvas.width  = wrap.clientWidth  || 340;
-  canvas.height = wrap.clientHeight || 300;
+
+  const ROW_H  = 36;
+  const LEG_H  = 24;
+  const PAD    = { top: 8, right: 48, bottom: LEG_H + 8, left: 28 };
+  canvas.height = PAD.top + rows.length * ROW_H + PAD.bottom;
 
   const W = canvas.width, H = canvas.height;
-  const PAD = { top: 20, right: 16, bottom: 40, left: 36 };
-  const chartW = W - PAD.left - PAD.right;
-  const chartH = H - PAD.top  - PAD.bottom;
+  const barAreaW = W - PAD.left - PAD.right;
+  const maxVal = Math.max(...rows.map(r => Math.max(r.mob, r.gave)), 1);
+  const BAR_H  = 10;
+  const GAP    = 3;
 
-  ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = '#0f0f12';
   ctx.fillRect(0, 0, W, H);
 
-  const allVals = [...mobData, ...gaveData];
-  const maxVal  = Math.max(...allVals, 1);
-  const barGroupW = chartW / labels.length;
-  const barW = Math.max(4, Math.floor(barGroupW * 0.3));
-  const gap  = Math.floor(barGroupW * 0.06);
+  rows.forEach((row, i) => {
+    const y = PAD.top + i * ROW_H;
+    const cy = y + ROW_H / 2;
 
-  // Grid lines
-  ctx.strokeStyle = '#2a2a38';
-  ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = PAD.top + (chartH / 4) * i;
-    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(W - PAD.right, y); ctx.stroke();
+    // Day label
     ctx.fillStyle = '#64748b';
-    ctx.font = '9px Inter, sans-serif';
+    ctx.font = 'bold 9px Inter, sans-serif';
     ctx.textAlign = 'right';
-    const val = Math.round(maxVal * (1 - i / 4));
-    ctx.fillText(val, PAD.left - 4, y + 3);
-  }
+    ctx.fillText(row.label, PAD.left - 4, cy + 3);
 
-  // Bars
-  labels.forEach((lbl, i) => {
-    const x = PAD.left + i * barGroupW + barGroupW / 2;
-
-    const drawBar = (val, color, offset) => {
-      if (!val) return;
-      const bH = (val / maxVal) * chartH;
-      const bX = x + offset - barW / 2;
-      const bY = PAD.top + chartH - bH;
-      ctx.fillStyle = color;
+    // Mob bar
+    const mW = (row.mob / maxVal) * barAreaW;
+    if (mW > 0) {
+      const g1 = ctx.createLinearGradient(PAD.left, 0, PAD.left + mW, 0);
+      g1.addColorStop(0, '#a78bfa');
+      g1.addColorStop(1, '#818cf844');
+      ctx.fillStyle = g1;
       ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(bX, bY, barW, bH, [3,3,0,0])
-                    : ctx.rect(bX, bY, barW, bH);
+      ctx.roundRect
+        ? ctx.roundRect(PAD.left, cy - BAR_H - GAP, mW, BAR_H, [0, 3, 3, 0])
+        : ctx.rect(PAD.left, cy - BAR_H - GAP, mW, BAR_H);
       ctx.fill();
-    };
+      // value
+      ctx.fillStyle = '#a78bfa';
+      ctx.font = 'bold 9px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(row.mob, PAD.left + mW + 4, cy - GAP - 1);
+    }
 
-    drawBar(mobData[i],   '#818cf8cc', -(barW/2 + gap));
-    drawBar(gaveData[i],  '#6ee7b7cc',  (barW/2 + gap));
+    // Gave bar (stacionarnaya + mb)
+    const gW = (row.gave / maxVal) * barAreaW;
+    if (gW > 0) {
+      const g2 = ctx.createLinearGradient(PAD.left, 0, PAD.left + gW, 0);
+      g2.addColorStop(0, '#34d399');
+      g2.addColorStop(1, '#6ee7b744');
+      ctx.fillStyle = g2;
+      ctx.beginPath();
+      ctx.roundRect
+        ? ctx.roundRect(PAD.left, cy + GAP, gW, BAR_H, [0, 3, 3, 0])
+        : ctx.rect(PAD.left, cy + GAP, gW, BAR_H);
+      ctx.fill();
+      // value
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 9px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(row.gave, PAD.left + gW + 4, cy + GAP + BAR_H - 1);
+    }
 
-    // X label
-    ctx.fillStyle = '#64748b';
-    ctx.font = '9px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(lbl, x, H - PAD.bottom + 14);
+    // Separator line
+    if (i < rows.length - 1) {
+      ctx.strokeStyle = '#2a2a38';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(PAD.left, y + ROW_H);
+      ctx.lineTo(W - 8, y + ROW_H);
+      ctx.stroke();
+    }
   });
 
   // Legend
-  const legendY = H - 8;
-  [[t('chartMobile'), '#818cf8'], [t('chartGave'), '#6ee7b7']].forEach(([name, color], i) => {
-    const lx = PAD.left + i * 110;
+  const legY = H - LEG_H + 8;
+  [[t('chartMobile'), '#a78bfa'], [t('chartStation'), '#34d399']].forEach(([name, color], i) => {
+    const lx = PAD.left + i * 130;
     ctx.fillStyle = color;
-    ctx.fillRect(lx, legendY - 8, 10, 8);
+    ctx.fillRect(lx, legY - 7, 10, 6);
     ctx.fillStyle = '#94a3b8';
     ctx.font = '9px Inter, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(name, lx + 13, legendY - 1);
+    ctx.fillText(name, lx + 14, legY - 1);
   });
 }
 
@@ -670,23 +651,22 @@ function generatePDF() {
   let skladDays = 0, trassaDays = 0;
   workdays.forEach(d => {
     const dateStr = formatDate(d);
-    const hasReport = hasData(dateStr);
     const hasWork   = wl.some(x => x.date === dateStr);
     const hasTravel = tl.some(x => x.date === dateStr);
-    if (hasReport || hasWork || hasTravel) {
-      if (hasTravel) trassaDays++;
-      else skladDays++;
+    if (hasData(dateStr) || hasWork || hasTravel) {
+      if (hasTravel) trassaDays++; else skladDays++;
     }
   });
 
+  // Only days with data
   const rows = workdays.map(d => {
     const dateStr = formatDate(d);
     const wd = t('weekdays')[d.getDay()];
     const r  = data[dateStr] || {};
     const dayWl = wl.filter(x => x.date === dateStr);
     const dayTm = tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0);
-    const hasSomething = hasData(dateStr) || dayWl.length || dayTm;
-    return `<tr${hasSomething ? '' : ' style="color:#aaa"'}>
+    if (!hasData(dateStr) && !dayWl.length && !dayTm) return '';
+    return `<tr>
       <td>${dateStr}</td><td>${wd}</td>
       <td>${r.mob||''}</td>
       <td>${r.sklad||''}</td>
@@ -701,22 +681,41 @@ function generatePDF() {
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <style>
-    body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px;max-width:700px;margin:0 auto}
-    h1{font-size:18px;margin-bottom:4px}
-    .sub{color:#666;font-size:11px;margin-bottom:16px}
-    table{width:100%;border-collapse:collapse;margin-bottom:16px}
-    th{background:#1a1a22;color:#6ee7b7;padding:7px 8px;text-align:left;font-size:11px}
-    td{padding:6px 8px;border-bottom:1px solid #e5e7eb;font-size:11px}
-    tr:nth-child(even) td{background:#f9fafb}
-    .totals{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-    .tot{border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px;min-width:110px}
-    .tot-lbl{font-size:10px;color:#666;text-transform:uppercase;margin-bottom:4px}
-    .tot-val{font-size:20px;font-weight:700;color:#1a1a22}
-    .gen{font-size:10px;color:#aaa;margin-top:20px}
+    @page { size: A4; margin: 12mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #111; margin: 0; }
+    h1 { font-size: 16px; margin: 0 0 2px; }
+    .sub { color: #666; font-size: 10px; margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed; }
+    col.c-date  { width: 13%; }
+    col.c-day   { width: 7%; }
+    col.c-num   { width: 12%; }
+    col.c-other { width: 16%; }
+    col.c-road  { width: 16%; }
+    th {
+      background: #1a1a22; color: #6ee7b7;
+      padding: 5px 4px; text-align: center;
+      font-size: 10px; line-height: 1.2;
+      word-break: break-word; hyphens: auto;
+    }
+    td { padding: 5px 4px; border-bottom: 1px solid #e5e7eb; font-size: 12px; text-align: center; }
+    td:first-child { text-align: left; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    tfoot td { font-weight: 700; background: #f0fdf4 !important; }
+    .totals { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .tot { border: 1px solid #e5e7eb; border-radius: 6px; padding: 7px 10px; flex: 1; min-width: 80px; }
+    .tot-lbl { font-size: 9px; color: #666; text-transform: uppercase; margin-bottom: 3px; word-break: break-word; }
+    .tot-val { font-size: 18px; font-weight: 700; color: #1a1a22; }
+    .gen { font-size: 9px; color: #aaa; margin-top: 12px; }
   </style></head><body>
   <h1>${t('reportTitle')} — ${t('months')[month]} ${year}</h1>
   <div class="sub">${t('generatedPDF')} ${dateStr2}</div>
   <table>
+    <colgroup>
+      <col class="c-date"><col class="c-day">
+      <col class="c-num"><col class="c-num"><col class="c-num">
+      <col class="c-other"><col class="c-road">
+    </colgroup>
     <thead><tr>
       <th>Дата</th><th>День</th>
       <th>${t('mobilePDF')}</th>
@@ -726,7 +725,7 @@ function generatePDF() {
       <th>${t('travelPDF')}</th>
     </tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr style="font-weight:700;background:#f0fdf4">
+    <tfoot><tr>
       <td colspan="2">${t('totalPDF')}</td>
       <td>${mob}</td><td>${sklad}</td><td>${mbSklad}</td>
       <td>${wCount}</td><td>${toHM(totalTm)}</td>
@@ -734,9 +733,9 @@ function generatePDF() {
   </table>
   <div class="totals">
     <div class="tot"><div class="tot-lbl">${t('totalPDF')}</div><div class="tot-val">${totalAll}</div></div>
-    <div class="tot"><div class="tot-lbl">${t('warehousePDF')}</div><div class="tot-val">${skladDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
-    <div class="tot"><div class="tot-lbl">${t('highwayPDF')}</div><div class="tot-val">${trassaDays} <span style="font-size:13px;font-weight:400">${t('daysPDF')}</span></div></div>
-    <div class="tot"><div class="tot-lbl">${t('travelPDF')}</div><div class="tot-val" style="font-size:15px">${toHM(totalTm)}</div></div>
+    <div class="tot"><div class="tot-lbl">${t('warehousePDF')}</div><div class="tot-val">${skladDays} <span style="font-size:12px;font-weight:400">${t('daysPDF')}</span></div></div>
+    <div class="tot"><div class="tot-lbl">${t('highwayPDF')}</div><div class="tot-val">${trassaDays} <span style="font-size:12px;font-weight:400">${t('daysPDF')}</span></div></div>
+    <div class="tot"><div class="tot-lbl">${t('travelPDF')}</div><div class="tot-val" style="font-size:14px">${toHM(totalTm)}</div></div>
   </div>
   <div class="gen">${t('reportTitle')}</div>
   </body></html>`;
@@ -746,6 +745,206 @@ function generatePDF() {
   win.document.write(html);
   win.document.close();
   setTimeout(() => win.print(), 400);
+}
+
+// ── Long press on day card ────────────────────
+function setupLongPress(card, dateStr) {
+  let timer = null;
+  const start = () => { timer = setTimeout(() => copyDaySummary(dateStr), 600); };
+  const cancel = () => { clearTimeout(timer); };
+  card.addEventListener('touchstart', start, { passive: true });
+  card.addEventListener('touchend', cancel);
+  card.addEventListener('touchmove', cancel);
+  card.addEventListener('mousedown', start);
+  card.addEventListener('mouseup', cancel);
+  card.addEventListener('mouseleave', cancel);
+}
+
+function copyDaySummary(dateStr) {
+  const r  = data[dateStr] || {};
+  const wl = loadWorkLog().filter(x => x.date === dateStr);
+  const tl = loadTravelLog().filter(x => x.date === dateStr);
+  const tm = tl.reduce((s,x) => s+x.mins, 0);
+  const lines = [dateStr];
+  if (r.mob)    lines.push(`${t('mobile')}: ${r.mob}`);
+  if (r.sklad)  lines.push(`${t('regularPDF')}: ${r.sklad}`);
+  if (r.mbSklad) lines.push(`${t('mbPDF')}: ${r.mbSklad}`);
+  if (wl.length) lines.push(`${t('otherWork')}: ${wl.length}`);
+  if (tm)       lines.push(`${t('onRoad')}: ${toHM(tm)}`);
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('📋 ' + dateStr))
+    .catch(() => alert(text));
+}
+
+function showToast(msg) {
+  let el = document.getElementById('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── Best day highlight ────────────────────────
+function getBestDay() {
+  let bestMob = { date: null, val: 0 };
+  let bestStation = { date: null, val: 0 };
+  Object.entries(data).forEach(([date, r]) => {
+    const mob = +r.mob || 0;
+    const station = (+r.sklad||0) + (+r.mbSklad||0);
+    if (mob > bestMob.val) bestMob = { date, val: mob };
+    if (station > bestStation.val) bestStation = { date, val: station };
+  });
+  return { bestMob, bestStation };
+}
+
+function updateBestDays() {
+  const { bestMob, bestStation } = getBestDay();
+  document.querySelectorAll('.day-card').forEach(card => {
+    card.classList.remove('best-mob', 'best-station');
+    const dateEl = card.querySelector('.day-date');
+    if (!dateEl) return;
+    const d = dateEl.textContent;
+    if (bestMob.date === d && bestMob.val > 0) card.classList.add('best-mob');
+    else if (bestStation.date === d && bestStation.val > 0) card.classList.add('best-station');
+  });
+}
+
+// ── Archive page ──────────────────────────────
+function openArchive() {
+  document.getElementById('pageMain').classList.remove('active');
+  document.getElementById('pageArchive').classList.add('active');
+  renderArchive();
+}
+
+function closeArchive() {
+  document.getElementById('pageArchive').classList.remove('active');
+  document.getElementById('pageMain').classList.add('active');
+}
+
+function renderArchive() {
+  document.getElementById('archiveTitle').textContent = lang === 'pl' ? 'Archiwum' : 'Архив';
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('report_')) keys.push(key);
+  }
+  keys.sort().reverse();
+
+  const MONTHS = t('months');
+  const content = document.getElementById('archiveContent');
+  if (!keys.length) {
+    content.innerHTML = `<div class="hist-empty">${t('histEmpty')}</div>`;
+    return;
+  }
+
+  content.innerHTML = keys.map(key => {
+    const [, y, m] = key.split('_');
+    let d = {};
+    try { d = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
+    let mob=0, sklad=0, mbSklad=0;
+    Object.values(d).forEach(r => {
+      mob    += +r.mob    || 0;
+      sklad  += +r.sklad  || 0;
+      mbSklad+= +r.mbSklad|| 0;
+    });
+    const wlKey = `worklog_${y}_${m}`;
+    let wCount = 0;
+    try { wCount = JSON.parse(localStorage.getItem(wlKey) || '[]').length; } catch(e) {}
+    const total = mob + wCount + sklad + mbSklad;
+    const isActive = +y === year && +m === month;
+    return `<div class="archive-card${isActive ? ' active' : ''}" onclick="goToMonth(${y},${m})">
+      <div class="archive-month">${MONTHS[+m]} ${y}</div>
+      <div class="archive-stats">
+        <span class="archive-chip mob">${t('mobile')}: <b>${mob}</b></span>
+        <span class="archive-chip">${t('total')}: <b>${total}</b></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function goToMonth(y, m) {
+  year = +y; month = +m;
+  closeArchive();
+  render();
+}
+
+// ── Quick input ───────────────────────────────
+function openQuickInput() {
+  const today = formatDate(new Date());
+  document.getElementById('quickDate').textContent = today;
+  document.getElementById('quickMob').value = '';
+  document.getElementById('quickSklad').value = '';
+  document.getElementById('quickMbSklad').value = '';
+  document.getElementById('quickOverlay').classList.add('show');
+  document.getElementById('quickMob').focus();
+}
+
+function closeQuickInput() {
+  document.getElementById('quickOverlay').classList.remove('show');
+}
+
+function saveQuickInput() {
+  const today = formatDate(new Date());
+  const mob     = document.getElementById('quickMob').value.trim();
+  const sklad   = document.getElementById('quickSklad').value.trim();
+  const mbSklad = document.getElementById('quickMbSklad').value.trim();
+  load();
+  if (!data[today]) data[today] = {};
+  if (mob)     data[today].mob     = mob;
+  if (sklad)   data[today].sklad   = sklad;
+  if (mbSklad) data[today].mbSklad = mbSklad;
+  save();
+  closeQuickInput();
+  render();
+}
+
+// ── Share ─────────────────────────────────────
+function shareSummary() {
+  load();
+  let mob=0, sklad=0, mbSklad=0;
+  Object.values(data).forEach(r => {
+    mob    += +r.mob    || 0;
+    sklad  += +r.sklad  || 0;
+    mbSklad+= +r.mbSklad|| 0;
+  });
+  const wl = loadWorkLog();
+  const tl = loadTravelLog();
+  const wCount = wl.length;
+  const tm = tl.reduce((s,x) => s+x.mins, 0);
+  const totalAll = mob + wCount + sklad + mbSklad;
+  const workdays = getWorkdays(year, month);
+  let skladDays = 0, trassaDays = 0;
+  workdays.forEach(d => {
+    const dateStr = formatDate(d);
+    const hasWork   = wl.some(x => x.date === dateStr);
+    const hasTravel = tl.some(x => x.date === dateStr);
+    if (hasData(dateStr) || hasWork || hasTravel) {
+      if (hasTravel) trassaDays++; else skladDays++;
+    }
+  });
+  const text = [
+    `${t('months')[month]} ${year}`,
+    `${t('summaryLabel')} ${mob}`,
+    `${t('summaryOther')} ${wCount}`,
+    `${t('summaryRegGave')} ${sklad}`,
+    `${t('summaryMbGave')} ${mbSklad}`,
+    `${t('summaryTotal')} ${totalAll}`,
+    `${t('summaryTravel')} ${toHM(tm)}`,
+    `${t('summaryWarehouse')} ${skladDays} ${t('summaryDays')} | ${t('summaryHighway')} ${trassaDays} ${t('summaryDays')}`,
+  ].join('\n');
+
+  if (navigator.share) {
+    navigator.share({ title: t('reportTitle'), text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text)
+      .then(() => alert(t('summaryCopied')))
+      .catch(() => alert(text));
+  }
 }
 
 // ── History page ──────────────────────────────
