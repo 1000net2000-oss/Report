@@ -42,6 +42,11 @@ const TRANSLATIONS = {
     tabOther: '📋 Другие работы',
     tabTravel: '🚗 В пути',
     summaryBtn: '📋 Сводка',
+    quickTitle: 'Быстрый ввод',
+    quickSave: 'Сохранить',
+    quickMob: 'Мобильная',
+    quickSklad: 'Стационарная отдал',
+    quickMbSklad: 'МБ отдал',
     chartBtn: '📊 График',
     pdfBtn: '📄 PDF',
     summaryCopied: 'Сводка скопирована!',
@@ -115,6 +120,11 @@ const TRANSLATIONS = {
     tabOther: '📋 Inne prace',
     tabTravel: '🚗 W drodze',
     summaryBtn: '📋 Podsumowanie',
+    quickTitle: 'Szybki wpis',
+    quickSave: 'Zapisz',
+    quickMob: 'Mobilna',
+    quickSklad: 'Stacjonarna oddano',
+    quickMbSklad: 'MB oddano',
     chartBtn: '📊 Wykres',
     pdfBtn: '📄 PDF',
     summaryCopied: 'Podsumowanie skopiowane!',
@@ -880,6 +890,11 @@ function openQuickInput() {
   document.getElementById('quickMob').value = '';
   document.getElementById('quickSklad').value = '';
   document.getElementById('quickMbSklad').value = '';
+  document.getElementById('quickLabelMob').textContent    = t('quickMob');
+  document.getElementById('quickLabelSklad').textContent  = t('quickSklad');
+  document.getElementById('quickLabelMbSklad').textContent = t('quickMbSklad');
+  document.getElementById('quickSaveBtn').textContent     = t('quickSave');
+  document.querySelector('.quick-title').textContent      = t('quickTitle');
   document.getElementById('quickOverlay').classList.add('show');
   document.getElementById('quickMob').focus();
 }
