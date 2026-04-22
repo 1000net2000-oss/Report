@@ -231,9 +231,9 @@ function workItemHtml(x, dateStr) {
 function render() {
   load();
   document.getElementById('monthLabel').textContent = `${t('months')[month]} ${year}`;
-  document.getElementById('appTitle').textContent    = t('appTitle');
   document.getElementById('btnBackup').textContent   = t('backup');
-  document.getElementById('btnRestore').childNodes[0].textContent = t('restore') + ' ';
+  const restoreEl = document.getElementById('btnRestore');
+  if (restoreEl) restoreEl.childNodes[0].textContent = t('restore') + ' ';
   document.getElementById('btnSummary').textContent  = lang === 'pl' ? '📤 Udostępnij' : '📤 Поделиться';
   document.getElementById('btnArchive').textContent  = lang === 'pl' ? '🗂 Archiwum' : '🗂 Архив';
   document.getElementById('btnChart').textContent    = t('chartBtn');
@@ -958,6 +958,7 @@ function openHistory(tab) {
 function openMain() {
   document.getElementById('pageHistory').classList.remove('active');
   document.getElementById('pageChart').classList.remove('active');
+  document.getElementById('pageArchive').classList.remove('active');
   document.getElementById('pageMain').classList.add('active');
 }
 
