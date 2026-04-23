@@ -234,10 +234,9 @@ function render() {
   document.getElementById('btnBackup').textContent   = t('backup');
   const restoreEl = document.getElementById('btnRestore');
   if (restoreEl) restoreEl.childNodes[0].textContent = t('restore') + ' ';
-  document.getElementById('btnSummary').textContent  = lang === 'pl' ? '📤 Udostępnij' : '📤 Поделиться';
-  document.getElementById('btnArchive').textContent  = lang === 'pl' ? '🗂 Archiwum' : '🗂 Архив';
-  document.getElementById('btnChart').textContent    = t('chartBtn');
-  document.getElementById('btnPdf').textContent      = t('pdfBtn');
+  document.getElementById('btnSummary-lbl').textContent = lang === 'pl' ? 'Udostępnij' : 'Поделиться';
+  document.getElementById('btnArchive-lbl').textContent  = lang === 'pl' ? 'Archiwum'   : 'Архив';
+  document.getElementById('btnChart-lbl').textContent    = lang === 'pl' ? 'Wykres'     : 'График';
   document.getElementById('labelMob').textContent        = t('mobile');
   document.getElementById('labelOtherWork').textContent  = t('otherWork');
   document.getElementById('labelRegular').textContent    = t('regular');
