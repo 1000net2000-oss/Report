@@ -215,7 +215,6 @@ header {
   background: var(--surface);
   border-bottom: 1px solid #2a2a38;
 }
-
 .action-btn {
   border: none;
   border-radius: 12px;
@@ -235,6 +234,63 @@ header {
 .action-btn.summary { background: #1a2a1a; color: #6ee7b7; border: 1px solid #2a4a2a; }
 .action-btn.archive { background: #1a1f2e; color: #67e8f9; border: 1px solid #1e3048; }
 .action-btn.chart   { background: #1a1a30; color: #a78bfa; border: 1px solid #2a2a4a; }
+
+/* ── SALARY ── */
+.salary-row {
+  grid-column: 1 / -1;
+  background: #18180e;
+  border-radius: 10px;
+  padding: 11px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #3a3a1a;
+  cursor: pointer;
+  user-select: none;
+}
+.salary-row:active { border-color: #d4a017; }
+.salary-label {
+  font-size: 10px;
+  color: #a3a370;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.salary-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #d4a017;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.salary-hidden { filter: blur(6px); transition: filter 0.3s; }
+.eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a3a370;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* ── COMPACT WAREHOUSE/HIGHWAY ── */
+.extra-small-btn {
+  background: var(--surface2);
+  border: 1px solid #2a2a38;
+  border-radius: 8px;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.extra-small-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.extra-small-val { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: var(--danger); }
+.extra-small-days { font-size: 10px; color: var(--muted); }
 
 /* ── DAYS LIST ── */
 .days-list {
@@ -519,8 +575,19 @@ input[type=number] { -moz-appearance: textfield; }
   border-radius: 6px;
   padding: 3px 8px;
 }
-.archive-chip b { color: var(--accent); }
-.archive-chip.mob b { color: var(--accent2); }
+.archive-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.archive-diff {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Unbounded', sans-serif;
+}
+.archive-chip.bestwd { background: #1a1a10; color: #d4a017; }
+.archive-chip.bestwd b { color: #d4a017; }
 
 /* ── FAB ── */
 .fab {

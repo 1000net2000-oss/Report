@@ -234,9 +234,15 @@ function render() {
   document.getElementById('btnBackup').textContent   = t('backup');
   const restoreEl = document.getElementById('btnRestore');
   if (restoreEl) restoreEl.childNodes[0].textContent = t('restore') + ' ';
-  document.getElementById('btnSummary-lbl').textContent = lang === 'pl' ? 'Udostępnij' : 'Поделиться';
-  document.getElementById('btnArchive-lbl').textContent  = lang === 'pl' ? 'Archiwum'   : 'Архив';
-  document.getElementById('btnChart-lbl').textContent    = lang === 'pl' ? 'Wykres'     : 'График';
+  document.getElementById('btnSummary').textContent  = lang === 'pl' ? '📤 Udostępnij' : '📤 Поделиться';
+  document.getElementById('btnArchive').textContent  = lang === 'pl' ? '🗂 Archiwum' : '🗂 Архив';
+  document.getElementById('btnChart').textContent    = t('chartBtn');
+  const salaryLbl = document.getElementById('labelSalary');
+  if (salaryLbl) salaryLbl.textContent = lang === 'pl' ? 'Wynagrodzenie' : 'Зарплата';
+  document.getElementById('labelWarehouse').textContent  = t('warehouse');
+  document.getElementById('labelHighway').textContent    = t('highway');
+  document.getElementById('labelWarehouseDays').textContent = lang === 'pl' ? ' dni' : ' дн.';
+  document.getElementById('labelHighwayDays').textContent   = lang === 'pl' ? ' dni' : ' дн.';
   document.getElementById('labelMob').textContent        = t('mobile');
   document.getElementById('labelOtherWork').textContent  = t('otherWork');
   document.getElementById('labelRegular').textContent    = t('regular');
@@ -247,10 +253,6 @@ function render() {
   document.getElementById('labelMbGave').textContent     = t('gave');
   document.getElementById('labelTotal').textContent      = t('total');
   document.getElementById('labelTravel').textContent     = t('travel');
-  document.getElementById('labelWarehouse').textContent  = t('warehouse');
-  document.getElementById('labelHighway').textContent    = t('highway');
-  document.getElementById('labelWarehouseDays').textContent = t('days');
-  document.getElementById('labelHighwayDays').textContent   = t('days');
 
   const days = getWorkdays(year, month);
   const list = document.getElementById('daysList');
@@ -813,6 +815,19 @@ function updateBestDays() {
   });
 }
 
+// ── Salary toggle ─────────────────────────────
+let salaryVisible = false;
+function toggleSalary() {
+  salaryVisible = !salaryVisible;
+  const num = document.getElementById('salaryNum');
+  const eye = document.getElementById('eyeIcon');
+  if (!num) return;
+  num.classList.toggle('salary-hidden', !salaryVisible);
+  eye.innerHTML = salaryVisible
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+
 // ── Archive page ──────────────────────────────
 function openArchive() {
   document.getElementById('pageMain').classList.remove('active');
@@ -835,13 +850,14 @@ function renderArchive() {
   keys.sort().reverse();
 
   const MONTHS = t('months');
+  const WDAYS  = t('weekdays');
   const content = document.getElementById('archiveContent');
   if (!keys.length) {
     content.innerHTML = `<div class="hist-empty">${t('histEmpty')}</div>`;
     return;
   }
 
-  content.innerHTML = keys.map(key => {
+  const parsed = keys.map(key => {
     const [, y, m] = key.split('_');
     let d = {};
     try { d = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
@@ -855,12 +871,53 @@ function renderArchive() {
     let wCount = 0;
     try { wCount = JSON.parse(localStorage.getItem(wlKey) || '[]').length; } catch(e) {}
     const total = mob + wCount + sklad + mbSklad;
-    const isActive = +y === year && +m === month;
-    return `<div class="archive-card${isActive ? ' active' : ''}" onclick="goToMonth(${y},${m})">
-      <div class="archive-month">${MONTHS[+m]} ${y}</div>
+
+    const wdCount = {};
+    Object.entries(d).forEach(([dateStr, r]) => {
+      const parts = dateStr.split('.');
+      if (parts.length < 2) return;
+      const day = parseInt(parts[0]), mon = parseInt(parts[1]) - 1;
+      const date = new Date(+y, mon, day);
+      const wd = date.getDay();
+      const val = (+r.mob||0) + (+r.sklad||0) + (+r.mbSklad||0);
+      if (!wdCount[wd]) wdCount[wd] = { sum: 0, count: 0 };
+      wdCount[wd].sum += val;
+      wdCount[wd].count++;
+    });
+    let bestWd = null, bestAvg = 0;
+    Object.entries(wdCount).forEach(([wd, v]) => {
+      const avg = v.sum / v.count;
+      if (avg > bestAvg) { bestAvg = avg; bestWd = +wd; }
+    });
+
+    return { key, y: +y, m: +m, mob, sklad, mbSklad, wCount, total, bestWd };
+  });
+
+  content.innerHTML = parsed.map((cur, i) => {
+    const isActive = cur.y === year && cur.m === month;
+    const prev = parsed[i + 1];
+    let compareHtml = '';
+    if (prev) {
+      const diff = cur.total - prev.total;
+      const sign = diff > 0 ? '+' : '';
+      const color = diff > 0 ? '#6ee7b7' : diff < 0 ? '#f87171' : '#64748b';
+      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+      compareHtml = `<span class="archive-diff" style="color:${color}">${arrow} ${sign}${diff}</span>`;
+    }
+    let wdHtml = '';
+    if (cur.bestWd !== null) {
+      const wdName = WDAYS[cur.bestWd];
+      wdHtml = `<span class="archive-chip bestwd">⚡ <b>${wdName}</b></span>`;
+    }
+    return `<div class="archive-card${isActive ? ' active' : ''}" onclick="goToMonth(${cur.y},${cur.m})">
+      <div class="archive-card-top">
+        <div class="archive-month">${MONTHS[cur.m]} ${cur.y}</div>
+        ${compareHtml}
+      </div>
       <div class="archive-stats">
-        <span class="archive-chip mob">${t('mobile')}: <b>${mob}</b></span>
-        <span class="archive-chip">${t('total')}: <b>${total}</b></span>
+        <span class="archive-chip mob">${t('mobile')}: <b>${cur.mob}</b></span>
+        <span class="archive-chip">${lang === 'pl' ? 'Łącznie' : 'Всего'}: <b>${cur.total}</b></span>
+        ${wdHtml}
       </div>
     </div>`;
   }).join('');
@@ -887,22 +944,11 @@ function closeQuickInput() {
   document.getElementById('quickOverlay').classList.remove('show');
 }
 
-function evalQuick(val) {
-  if (!val) return '';
-  if (/^[\d\s\+\-\*\/\.]+$/.test(val) && /[\+\-\*\/]/.test(val)) {
-    try {
-      const r = Function('"use strict"; return (' + val + ')')();
-      if (isFinite(r)) return String(Math.round(r * 100) / 100);
-    } catch(e) {}
-  }
-  return val;
-}
-
 function saveQuickInput() {
-  const today   = formatDate(new Date());
-  const mob     = evalQuick(document.getElementById('quickMob').value.trim());
-  const sklad   = evalQuick(document.getElementById('quickSklad').value.trim());
-  const mbSklad = evalQuick(document.getElementById('quickMbSklad').value.trim());
+  const today = formatDate(new Date());
+  const mob     = document.getElementById('quickMob').value.trim();
+  const sklad   = document.getElementById('quickSklad').value.trim();
+  const mbSklad = document.getElementById('quickMbSklad').value.trim();
   load();
   if (!data[today]) data[today] = {};
   if (mob)     data[today].mob     = mob;
