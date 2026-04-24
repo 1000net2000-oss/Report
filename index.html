@@ -26,7 +26,7 @@
       <div class="header-actions">
         <button id="btnBackup" class="hdr-btn green" onclick="backupData()">💾 Бэкап</button>
         <label id="btnRestore" class="hdr-btn purple">
-          📂 Загрузить
+          <span id="btnRestoreLbl">📂 Загрузить</span>
           <input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
         </label>
       </div>

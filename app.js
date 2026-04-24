@@ -232,8 +232,8 @@ function render() {
   load();
   document.getElementById('monthLabel').textContent = `${t('months')[month]} ${year}`;
   document.getElementById('btnBackup').textContent   = t('backup');
-  const restoreEl = document.getElementById('btnRestore');
-  if (restoreEl) restoreEl.childNodes[0].textContent = t('restore') + ' ';
+  const restoreEl = document.getElementById('btnRestoreLbl');
+  if (restoreEl) restoreEl.textContent = t('restore');
   document.getElementById('btnSummary-lbl').textContent = lang === 'pl' ? 'Udostępnij' : 'Поделиться';
   document.getElementById('btnArchive-lbl').textContent  = lang === 'pl' ? 'Archiwum'   : 'Архив';
   document.getElementById('btnChart-lbl').textContent    = lang === 'pl' ? 'Wykres'     : 'График';
@@ -896,11 +896,22 @@ function closeQuickInput() {
   document.getElementById('quickOverlay').classList.remove('show');
 }
 
+function evalQuick(val) {
+  if (!val) return '';
+  if (/^[\d\s\+\-\*\/\.]+$/.test(val) && /[\+\-\*\/]/.test(val)) {
+    try {
+      const r = Function('"use strict"; return (' + val + ')')();
+      if (isFinite(r)) return String(Math.round(r * 100) / 100);
+    } catch(e) {}
+  }
+  return val;
+}
+
 function saveQuickInput() {
-  const today = formatDate(new Date());
-  const mob     = document.getElementById('quickMob').value.trim();
-  const sklad   = document.getElementById('quickSklad').value.trim();
-  const mbSklad = document.getElementById('quickMbSklad').value.trim();
+  const today   = formatDate(new Date());
+  const mob     = evalQuick(document.getElementById('quickMob').value.trim());
+  const sklad   = evalQuick(document.getElementById('quickSklad').value.trim());
+  const mbSklad = evalQuick(document.getElementById('quickMbSklad').value.trim());
   load();
   if (!data[today]) data[today] = {};
   if (mob)     data[today].mob     = mob;
