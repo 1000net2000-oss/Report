@@ -27,7 +27,7 @@
         <button id="btnBackup" class="hdr-btn green" onclick="backupData()">💾 Бэкап</button>
         <label id="btnRestore" class="hdr-btn purple">
           <span id="btnRestoreLbl">📂 Загрузить</span>
-          <input type="file" accept=".json" onchange="restoreData(event)" style="display:none">
+          <input type="file" accept=".json" onchange="restoreData(event)" class="hidden-input">
         </label>
       </div>
     </div>
@@ -43,9 +43,9 @@
       <div class="total-label" id="labelMob">Мобильная</div>
       <div class="total-val" id="totalMob">0</div>
     </div>
-    <button class="mob-total" onclick="openHistory('work')" style="cursor:pointer;border:none;text-align:left">
+    <button class="mob-total mob-total--btn" onclick="openHistory('work')">
       <div class="total-label" id="labelOtherWork">Другие работы</div>
-      <div class="total-val" id="totalExtraWork" style="color:var(--orange)">0</div>
+      <div class="total-val total-val--orange" id="totalExtraWork">0</div>
     </button>
     <div class="total-card">
       <div class="total-label" id="labelRegular">Обычные</div>
@@ -58,8 +58,8 @@
       <div class="total-row"><span class="total-name" id="labelMbGave">Отдал</span><span class="total-val" id="totalMbSklad">0</span></div>
     </div>
     <div class="vsego-row">
-      <div class="total-label" id="labelTotal" style="margin-bottom:0">Всего</div>
-      <div class="total-val" id="totalAll" style="font-size:20px;color:#f9a8d4">0</div>
+      <div class="total-label total-label--inline" id="labelTotal">Всего</div>
+      <div class="total-val total-val--big total-val--pink" id="totalAll">0</div>
     </div>
     <div class="salary-row" onclick="toggleSalary()">
       <div class="salary-inner">
@@ -109,7 +109,7 @@
 <div class="page" id="pageHistory">
   <div class="hist-header">
     <button class="back-btn" onclick="openMain()">←</button>
-    <div class="hist-title" id="histTitle" style="color:var(--orange)">История</div>
+    <div class="hist-title hist-title--orange" id="histTitle">История</div>
   </div>
   <div class="hist-tabs">
     <button class="hist-tab on" id="tabWork" onclick="switchTab('work')">📋 Другие работы</button>
@@ -122,7 +122,7 @@
 <div class="page" id="pageChart">
   <div class="hist-header">
     <button class="back-btn" onclick="closeChart()">←</button>
-    <div class="hist-title" id="chartPageTitle" style="color:var(--accent2)">График</div>
+    <div class="hist-title hist-title--accent2" id="chartPageTitle">График</div>
   </div>
   <div class="chart-month-lbl" id="chartMonthLabel"></div>
   <div class="chart-wrap">
@@ -134,7 +134,7 @@
 <div class="page" id="pageArchive">
   <div class="hist-header">
     <button class="back-btn" onclick="closeArchive()">←</button>
-    <div class="hist-title" id="archiveTitle" style="color:var(--accent)">Архив</div>
+    <div class="hist-title hist-title--accent" id="archiveTitle">Архив</div>
   </div>
   <div class="hist-content" id="archiveContent"></div>
 </div>
