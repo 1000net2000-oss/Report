@@ -178,22 +178,6 @@ header {
   border: 1px solid #2e2e3e;
 }
 
-/* ── SALARY ── */
-.salary-row {
-  grid-column: 1 / -1;
-  background: #18180e;
-  border-radius: 10px;
-  padding: 12px 14px;
-  border: 1px solid #3a3a1a;
-  cursor: pointer;
-  user-select: none;
-}
-.salary-row:active { border-color: #d4a017; }
-.salary-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.salary-label { font-size: 10px; color: #a3a370; text-transform: uppercase; letter-spacing: .08em; }
-.salary-val { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 700; color: #d4a017; }
-.salary-hidden { filter: blur(6px); transition: filter 0.3s; }
-
 /* ── EXTRA TOTALS ── */
 .extra-totals {
   display: grid;
@@ -225,8 +209,8 @@ header {
 /* ── ACTION BUTTONS ── */
 .action-btns {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid #2a2a38;
@@ -234,18 +218,23 @@ header {
 
 .action-btn {
   border: none;
-  border-radius: 10px;
-  padding: 11px 4px;
+  border-radius: 12px;
+  padding: 12px 6px 10px;
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.1s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
-.action-btn:active { opacity: 0.7; }
-.action-btn.summary { background: var(--surface2); color: #94a3b8; border: 1px solid #2a2a38; }
-.action-btn.archive { background: var(--surface2); color: #94a3b8; border: 1px solid #2a2a38; }
-.action-btn.chart   { background: var(--surface2); color: #94a3b8; border: 1px solid #2a2a38; }
+.action-btn:active { opacity: 0.7; transform: scale(0.96); }
+.action-btn svg { flex-shrink: 0; }
+.action-btn.summary { background: #1e2a1e; color: var(--accent);  border: 1px solid #2a4a2a; }
+.action-btn.archive { background: #1e2a3a; color: #67e8f9;        border: 1px solid #2a3a4a; }
+.action-btn.chart   { background: #1e1e3a; color: var(--accent2); border: 1px solid #2a2a4a; }
 .action-btn.pdf     { background: #2a1e0e; color: var(--orange);  border: 1px solid #3a2a1a; }
 
 /* ── DAYS LIST ── */
@@ -278,17 +267,16 @@ header {
 .day-preview { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .preview-chip {
-  background: #22222e;
-  color: #94a3b8;
+  background: #1e3a2e;
+  color: var(--accent);
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 20px;
   font-weight: 600;
-  border: 1px solid #2a2a38;
 }
-.preview-chip.mob    { background: #22222e; color: #94a3b8; border-color: #2a2a38; }
-.preview-chip.extra  { background: #22222e; color: #94a3b8; border-color: #2a2a38; }
-.preview-chip.travel { background: #22222e; color: #cbd5e1; border-color: #2a2a38; }
+.preview-chip.mob    { background: #1e1e3a; color: var(--accent2); }
+.preview-chip.extra  { background: #2a1e0e; color: var(--orange); }
+.preview-chip.travel { background: #1a1e2e; color: var(--accent2); }
 
 .chevron { color: var(--muted); font-size: 12px; transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; }
 .day-card.open .chevron { transform: rotate(180deg); }
@@ -588,20 +576,23 @@ input[type=number] { -moz-appearance: textfield; }
   color: var(--accent2);
 }
 .quick-date { font-size: 12px; color: var(--muted); }
-.quick-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.quick-field { display: flex; flex-direction: column; gap: 4px; }
-.quick-field label { font-size: 10px; color: var(--muted); }
+.quick-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+.quick-field { display: flex; align-items: center; gap: 12px; }
+.quick-field label { flex: 1; font-size: 12px; color: var(--muted); }
 .quick-field input {
+  width: 110px;
+  flex-shrink: 0;
   background: var(--surface2);
   border: 1px solid #2a2a38;
   border-radius: 8px;
   color: var(--text);
-  font-size: 18px;
+  font-size: 20px;
   font-family: 'Unbounded', sans-serif;
   font-weight: 600;
-  padding: 10px 8px;
-  text-align: center;
+  padding: 10px 12px;
+  text-align: right;
   outline: none;
+  -webkit-appearance: none;
 }
 .quick-field input:focus { border-color: var(--accent2); }
 .quick-save {

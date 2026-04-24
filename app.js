@@ -1050,7 +1050,10 @@ function backupData() {
   a.href = URL.createObjectURL(blob);
   const d = new Date();
   a.download = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function restoreData(event) {
