@@ -63,7 +63,6 @@
     </div>
     <div class="salary-row" onclick="toggleSalary()">
       <div class="salary-inner">
-        <div class="salary-label" id="labelSalary">Секретное поле</div>
         <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
       </div>
     </div>
@@ -77,15 +76,13 @@
   </div>
 
   <div class="extra-totals double">
-    <div class="extra-total-btn" style="cursor:default">
-      <div class="extra-total-lbl" id="labelWarehouse">Склад</div>
-      <div class="extra-total-val" id="totalSkladDays" style="color:var(--danger)">0</div>
-      <div class="extra-days-lbl" id="labelWarehouseDays">дней</div>
+    <div class="extra-small-btn">
+      <div class="extra-small-lbl" id="labelWarehouse">Склад</div>
+      <div><span class="extra-small-val" id="totalSkladDays">0</span><span class="extra-small-days" id="labelWarehouseDays"> дн.</span></div>
     </div>
-    <div class="extra-total-btn" style="cursor:default">
-      <div class="extra-total-lbl" id="labelHighway">Трасса</div>
-      <div class="extra-total-val" id="totalTrassaDays" style="color:var(--danger)">0</div>
-      <div class="extra-days-lbl" id="labelHighwayDays">дней</div>
+    <div class="extra-small-btn">
+      <div class="extra-small-lbl" id="labelHighway">Трасса</div>
+      <div><span class="extra-small-val" id="totalTrassaDays">0</span><span class="extra-small-days" id="labelHighwayDays"> дн.</span></div>
     </div>
   </div>
 
