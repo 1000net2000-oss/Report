@@ -643,3 +643,31 @@ input[type=number] { -moz-appearance: textfield; }
   padding: 12px 16px 24px;
   min-height: 200px;
 }
+
+/* ── SALARY ── */
+.salary-row {
+  grid-column: 1 / -1;
+  background: #18180e;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid #3a3a1a;
+  cursor: pointer;
+  user-select: none;
+}
+.salary-row:active { border-color: #d4a017; }
+.salary-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.salary-label { font-size: 10px; color: #a3a370; text-transform: uppercase; letter-spacing: .08em; }
+.salary-val { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 700; color: #d4a017; }
+.salary-hidden { filter: blur(6px); transition: filter 0.3s; }
+
+/* ── ARCHIVE ── */
+.archive-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.archive-diff { font-size: 11px; font-weight: 600; font-family: 'Unbounded', sans-serif; }
+.archive-chip.bestwd { background: #1a1a10; color: #d4a017; }
+.archive-chip.bestwd b { color: #d4a017; }
+
+/* ── COMPACT WAREHOUSE ── */
+.extra-small-btn { background: var(--surface2); border: 1px solid #2a2a38; border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; }
+.extra-small-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.extra-small-val { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: var(--danger); }
+.extra-small-days { font-size: 10px; color: var(--muted); }

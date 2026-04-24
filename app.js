@@ -1045,15 +1045,29 @@ function backupData() {
     if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang')
       allData[key] = JSON.parse(localStorage.getItem(key));
   }
-  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const json = JSON.stringify(allData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
   const d = new Date();
-  a.download = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  const filename = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
+  // Try standard download
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch(e) {
+    // Fallback: open in new tab so user can save manually
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write('<pre>' + json.replace(/</g,'&lt;') + '</pre>');
+      win.document.title = filename;
+    } else {
+      alert(json);
+    }
+  }
 }
 
 function restoreData(event) {
