@@ -156,6 +156,10 @@ function setLang(l) {
   localStorage.setItem('lang', l);
   document.getElementById('flagRu').classList.toggle('active', l === 'ru');
   document.getElementById('flagPl').classList.toggle('active', l === 'pl');
+  const ru2 = document.getElementById('flagRu2');
+  const pl2 = document.getElementById('flagPl2');
+  if (ru2) ru2.classList.toggle('active', l === 'ru');
+  if (pl2) pl2.classList.toggle('active', l === 'pl');
   render();
   if (document.getElementById('pageHistory').classList.contains('active')) renderHistory();
   if (document.getElementById('pageChart').classList.contains('active')) renderChart();
@@ -220,9 +224,11 @@ function getPreview(dateStr) {
 }
 
 function workItemHtml(x, dateStr) {
+  const minsHtml = x.mins ? `<span class="work-item-mins">${x.mins} мин</span>` : '';
   return `<div class="work-item">
     <div class="work-item-dot"></div>
     <div class="work-item-text">${x.desc}</div>
+    ${minsHtml}
     <button class="work-item-del" onclick="delWork('${dateStr}',${x.id})">×</button>
   </div>`;
 }
@@ -320,6 +326,7 @@ function render() {
           <div class="work-row">
             <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
               onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
+            <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
             <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
           </div>
           <div id="wlist_${dateStr}" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
@@ -355,10 +362,13 @@ function toggle(header) { header.parentElement.classList.toggle('open'); }
 function addWork(dateStr) {
   const desc = document.getElementById('wd_' + dateStr).value.trim();
   if (!desc) return;
+  const minsEl = document.getElementById('wm_' + dateStr);
+  const mins = minsEl ? parseInt(minsEl.value) || 0 : 0;
   const log = loadWorkLog();
-  log.push({ id: Date.now(), date: dateStr, desc });
+  log.push({ id: Date.now(), date: dateStr, desc, mins: mins || undefined });
   saveWorkLog(log);
   document.getElementById('wd_' + dateStr).value = '';
+  if (minsEl) minsEl.value = '';
   refreshDayExtras(dateStr);
   updateTotals();
 }
@@ -914,9 +924,9 @@ function saveQuickInput() {
   const mbSklad = evalQuick(document.getElementById('quickMbSklad').value.trim());
   load();
   if (!data[today]) data[today] = {};
-  if (mob)     data[today].mob     = mob;
-  if (sklad)   data[today].sklad   = sklad;
-  if (mbSklad) data[today].mbSklad = mbSklad;
+  if (mob)     data[today].mob     = String((+data[today].mob     || 0) + (+mob     || 0));
+  if (sklad)   data[today].sklad   = String((+data[today].sklad   || 0) + (+sklad   || 0));
+  if (mbSklad) data[today].mbSklad = String((+data[today].mbSklad || 0) + (+mbSklad || 0));
   save();
   closeQuickInput();
   render();
@@ -1014,7 +1024,7 @@ function renderHistory() {
         <div class="hist-item">
           <div class="hist-dot ${isTravel ? 'travel' : ''}"></div>
           <div class="hist-text">${isTravel ? toHM(x.mins) : x.desc}</div>
-          ${isTravel ? `<div class="hist-min travel">${x.mins} мин</div>` : ''}
+          ${isTravel ? `<div class="hist-min travel">${x.mins} мин</div>` : (x.mins ? `<div class="hist-min">${x.mins} мин</div>` : '')}
         </div>`).join('')}
     </div>`;
   }).join('') + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
@@ -1045,29 +1055,15 @@ function backupData() {
     if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang')
       allData[key] = JSON.parse(localStorage.getItem(key));
   }
-  const json = JSON.stringify(allData, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
   const d = new Date();
-  const filename = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
-  // Try standard download
-  try {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  } catch(e) {
-    // Fallback: open in new tab so user can save manually
-    const win = window.open('', '_blank');
-    if (win) {
-      win.document.write('<pre>' + json.replace(/</g,'&lt;') + '</pre>');
-      win.document.title = filename;
-    } else {
-      alert(json);
-    }
-  }
+  a.download = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function restoreData(event) {
@@ -1089,5 +1085,9 @@ function restoreData(event) {
 // ── Init ──────────────────────────────────────
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
+const _ru2 = document.getElementById('flagRu2');
+const _pl2 = document.getElementById('flagPl2');
+if (_ru2) _ru2.classList.toggle('active', lang === 'ru');
+if (_pl2) _pl2.classList.toggle('active', lang === 'pl');
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
