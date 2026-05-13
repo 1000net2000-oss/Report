@@ -1010,22 +1010,27 @@ function renderHistory() {
   const byDate = {};
   log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
 
+  const totalAllMins = !isTravel ? log.reduce((s,x) => s + (x.mins||0), 0) : 0;
+
   content.innerHTML = Object.keys(byDate).sort().reverse().map(date => {
     const items = byDate[date];
     const total = items.reduce((s,x) => s + (x.mins||0), 0);
+    const dayTimeStr = !isTravel && total > 0 ? ` · ${toHM(total)}` : '';
     return `<div class="hist-day">
       <div class="hist-day-hdr">
         <div class="hist-day-date">${date}</div>
-        <div class="hist-day-total">${isTravel ? `${t('histTotal')} <b class="travel">${toHM(total)}</b>` : `${items.length} ${t('histRecords')}`}</div>
+        <div class="hist-day-total">${isTravel ? `${t('histTotal')} <b class="travel">${toHM(total)}</b>` : `${items.length} ${t('histRecords')}${dayTimeStr}`}</div>
       </div>
       ${items.map(x => `
         <div class="hist-item">
           <div class="hist-dot ${isTravel ? 'travel' : ''}"></div>
           <div class="hist-text">${isTravel ? toHM(x.mins) : x.desc}</div>
-          ${isTravel ? `<div class="hist-min travel">${x.mins} мин</div>` : ''}
+          ${isTravel ? `<div class="hist-min travel">${x.mins} мин</div>` : (x.mins ? `<div class="hist-min">${x.mins} мин</div>` : '')}
         </div>`).join('')}
     </div>`;
-  }).join('') + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
+  }).join('')
+  + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
+  + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
 }
 
 function exportHistory() {
