@@ -213,7 +213,11 @@ function getPreview(dateStr) {
   if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
   if (r.sush || r.mbSush) chips += `<span class="preview-chip">З:${(+r.sush||0)+(+r.mbSush||0)}</span>`;
   if (r.sklad || r.mbSklad) chips += `<span class="preview-chip">О:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
-  if (wl.length) chips += `<span class="preview-chip extra">Р:${wl.length}</span>`;
+  if (wl.length) {
+    const workMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
+    const minsStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
+    chips += `<span class="preview-chip extra">Р:${wl.length}${minsStr}</span>`;
+  }
   const tm = tl.reduce((s,x) => s+x.mins, 0);
   if (tm) chips += `<span class="preview-chip travel">🚗${toHM(tm)}</span>`;
   return chips;
@@ -450,12 +454,7 @@ function updateTotals() {
   const tl = loadTravelLog();
   const wCount = wl.length;
   const tm = tl.reduce((s,x) => s+x.mins, 0);
-  const workTotalMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
-  const workTimeStr = workTotalMins > 0 ? ` · ${toHM(workTotalMins)}` : '';
-  const elWork = document.getElementById('totalExtraWork');
-  if (elWork) {
-    elWork.innerHTML = `<span class="work-count-num">${wCount}</span>${workTotalMins > 0 ? `<span class="work-sep">·</span><span class="work-time-lbl">${toHM(workTotalMins)}</span>` : ''}`;
-  }
+  document.getElementById('totalExtraWork').textContent   = wCount;
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
   const totalAll = mob + wCount + sklad + mbSklad;
