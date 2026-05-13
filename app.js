@@ -324,6 +324,7 @@ function render() {
           <div class="work-row">
             <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
               onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
+            <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
             <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
           </div>
           <div id="wlist_${dateStr}" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
@@ -359,10 +360,13 @@ function toggle(header) { header.parentElement.classList.toggle('open'); }
 function addWork(dateStr) {
   const desc = document.getElementById('wd_' + dateStr).value.trim();
   if (!desc) return;
+  const minsEl = document.getElementById('wm_' + dateStr);
+  const mins = minsEl ? parseInt(minsEl.value) || 0 : 0;
   const log = loadWorkLog();
-  log.push({ id: Date.now(), date: dateStr, desc });
+  log.push({ id: Date.now(), date: dateStr, desc, mins: mins || undefined });
   saveWorkLog(log);
   document.getElementById('wd_' + dateStr).value = '';
+  if (minsEl) minsEl.value = '';
   refreshDayExtras(dateStr);
   updateTotals();
 }
