@@ -43,10 +43,14 @@
       <div class="total-label" id="labelMob">Мобильная</div>
       <div class="total-val" id="totalMob">0</div>
     </div>
-    <button class="mob-total" onclick="openHistory('work')" style="cursor:pointer;border:none;text-align:left">
+    <button class="mob-total mob-total--btn" onclick="openHistory('work')">
       <div class="total-label" id="labelOtherWork">Другие работы</div>
-      <div class="total-val" id="totalExtraWork" style="color:var(--orange)">0</div>
+      <div class="total-val total-val--orange" id="totalExtraWork">0</div>
     </button>
+    <div class="mob-total prok-total">
+      <div class="total-label" id="labelProk">Проклеенные</div>
+      <div class="total-val total-val--prok" id="totalProk">0</div>
+    </div>
     <div class="total-card">
       <div class="total-label" id="labelRegular">Обычные</div>
       <div class="total-row"><span class="total-name" id="labelRegTook">Забрал</span><span class="total-val" id="totalSush">0</span></div>
@@ -113,10 +117,6 @@
   <div class="hist-header">
     <button class="back-btn" onclick="openMain()">←</button>
     <div class="hist-title" id="histTitle" style="color:var(--orange)">История</div>
-    <div class="lang-switcher">
-      <button class="flag-btn" id="flagRu2" onclick="setLang('ru')">🏳️</button>
-      <button class="flag-btn" id="flagPl2" onclick="setLang('pl')">🇵🇱</button>
-    </div>
   </div>
   <div class="hist-tabs">
     <button class="hist-tab on" id="tabWork" onclick="switchTab('work')">📋 Другие работы</button>
