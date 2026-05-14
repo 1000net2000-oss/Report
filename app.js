@@ -227,11 +227,34 @@ function getPreview(dateStr) {
 }
 
 function workItemHtml(x, dateStr) {
+  const minsHtml = x.mins ? `<span class="work-item-mins">${x.mins} мин</span>` : '';
   return `<div class="work-item">
     <div class="work-item-dot"></div>
     <div class="work-item-text">${x.desc}</div>
+    ${minsHtml}
     <button class="work-item-del" onclick="delWork('${dateStr}',${x.id})">×</button>
   </div>`;
+}
+
+function getDayRows(dateStr, r, wl, tl) {
+  r = r || data[dateStr] || {};
+  wl = wl || loadWorkLog().filter(x => x.date === dateStr);
+  tl = tl || loadTravelLog().filter(x => x.date === dateStr);
+  const tm = tl.reduce((s,x) => s+x.mins, 0);
+  const workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
+  const rows = [];
+  if (r.mob)    rows.push(`<div class="day-row"><span class="day-row-key">${t('mobile')}</span><span class="day-row-val day-row-mob">${r.mob}</span></div>`);
+  if (r.prok)   rows.push(`<div class="day-row"><span class="day-row-key">${t('prok')}</span><span class="day-row-val day-row-prok">${r.prok}</span></div>`);
+  const sush = (+r.sush||0)+(+r.mbSush||0);
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  if (sush)  rows.push(`<div class="day-row"><span class="day-row-key">${t('took')}</span><span class="day-row-val">${sush}</span></div>`);
+  if (sklad) rows.push(`<div class="day-row"><span class="day-row-key">${t('gave')}</span><span class="day-row-val">${sklad}</span></div>`);
+  if (wl.length) {
+    const mStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
+    rows.push(`<div class="day-row"><span class="day-row-key">${t('otherWork')}</span><span class="day-row-val day-row-work">${wl.length}${mStr}</span></div>`);
+  }
+  if (tm) rows.push(`<div class="day-row"><span class="day-row-key">${t('onRoad')}</span><span class="day-row-val day-row-travel">${toHM(tm)}</span></div>`);
+  return rows.join('');
 }
 
 // ── Render ────────────────────────────────────
@@ -279,11 +302,11 @@ function render() {
 
     card.innerHTML = `
       <div class="day-header" onclick="toggle(this)">
-        <div>
-          <div class="day-date">${dateStr}</div>
+        <div class="day-left">
+          <div class="day-date">${dateStr.slice(0,5)}</div>
           <div class="day-weekday">${wd}</div>
         </div>
-        <div class="day-preview">${getPreview(dateStr)}</div>
+        <div class="day-rows">${getDayRows(dateStr, r, wl, tl)}</div>
         <div class="chevron">▼</div>
       </div>
       <div class="day-body">
@@ -421,8 +444,8 @@ function refreshDayExtras(dateStr) {
 
   const card = document.querySelector(`.day-card[data-date="${dateStr}"]`);
   if (card) {
-    const p = card.querySelector('.day-preview');
-    if (p) p.innerHTML = getPreview(dateStr);
+    const rows = card.querySelector('.day-rows');
+    if (rows) rows.innerHTML = getDayRows(dateStr, null, wl, tl);
   }
 }
 
@@ -446,10 +469,10 @@ function clearDay(dateStr) {
 
 function updateCard(dateStr) {
   document.querySelectorAll('.day-card').forEach(card => {
-    if (card.querySelector('.day-date')?.textContent === dateStr) {
+    if (card.querySelector('.day-date')?.textContent === dateStr.slice(0,5)) {
       card.classList.toggle('has-data', hasData(dateStr));
-      const p = card.querySelector('.day-preview');
-      if (p) p.innerHTML = getPreview(dateStr);
+      const rows = card.querySelector('.day-rows');
+      if (rows) rows.innerHTML = getDayRows(dateStr);
     }
   });
 }
@@ -840,8 +863,9 @@ function updateBestDays() {
     const dateEl = card.querySelector('.day-date');
     if (!dateEl) return;
     const d = dateEl.textContent;
-    if (bestMob.date === d && bestMob.val > 0) card.classList.add('best-mob');
-    else if (bestStation.date === d && bestStation.val > 0) card.classList.add('best-station');
+    const fullDate = d.length === 5 ? d + String(new Date().getMonth()+1).padStart(2,'0') + '.' : d;
+    if (bestMob.date && bestMob.date.startsWith(d) && bestMob.val > 0) card.classList.add('best-mob');
+    else if (bestStation.date && bestStation.date.startsWith(d) && bestStation.val > 0) card.classList.add('best-station');
   });
 }
 
