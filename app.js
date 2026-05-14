@@ -21,7 +21,6 @@ const TRANSLATIONS = {
     sectionMobile: 'Мобильная',
     sectionDist: 'Дистрибуторы воды',
     sectionOther: 'Другие работы',
-    sectionProk: 'Проклеенные',
     sectionTravel: 'Время в пути · минуты',
     tookFromWarehouse: 'Забрал со склада',
     gaveReady: 'Отдал готовых',
@@ -64,7 +63,6 @@ const TRANSLATIONS = {
     daysPDF: 'дн.',
     reportTitle: 'Отчёт о работе',
     generatedPDF: 'Сформировано:',
-    prok: 'Проклеенные',
     summaryLabel: 'Мобильная:',
     summaryOther: 'Другие работы:',
     summaryRegGave: 'Обычные отдал:',
@@ -96,7 +94,6 @@ const TRANSLATIONS = {
     sectionMobile: 'Mobilna',
     sectionDist: 'Dystrybutorzy wody',
     sectionOther: 'Inne prace',
-    sectionProk: 'Sklejone',
     sectionTravel: 'Czas w drodze · minuty',
     tookFromWarehouse: 'Pobrano z magazynu',
     gaveReady: 'Oddano gotowych',
@@ -139,7 +136,6 @@ const TRANSLATIONS = {
     daysPDF: 'dni',
     reportTitle: 'Raport pracy',
     generatedPDF: 'Wygenerowano:',
-    prok: 'Sklejone',
     summaryLabel: 'Mobilna:',
     summaryOther: 'Inne prace:',
     summaryRegGave: 'Zwykłe oddano:',
@@ -166,7 +162,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sush','sklad','mbSush','mbSklad','prok'];
+const COLS = ['mob','sush','sklad','mbSush','mbSklad'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -217,6 +213,7 @@ function getPreview(dateStr) {
   if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
   if (r.sush || r.mbSush) chips += `<span class="preview-chip">З:${(+r.sush||0)+(+r.mbSush||0)}</span>`;
   if (r.sklad || r.mbSklad) chips += `<span class="preview-chip">О:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
+  if (r.prok) chips += `<span class="preview-chip prok">П:${r.prok}</span>`;
   if (wl.length) {
     const workMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
     const minsStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
@@ -228,11 +225,9 @@ function getPreview(dateStr) {
 }
 
 function workItemHtml(x, dateStr) {
-  const minsHtml = x.mins ? `<span class="work-item-mins">${x.mins} мин</span>` : '';
   return `<div class="work-item">
     <div class="work-item-dot"></div>
     <div class="work-item-text">${x.desc}</div>
-    ${minsHtml}
     <button class="work-item-del" onclick="delWork('${dateStr}',${x.id})">×</button>
   </div>`;
 }
@@ -256,8 +251,6 @@ function render() {
   document.getElementById('labelMbTook').textContent     = t('took');
   document.getElementById('labelMbGave').textContent     = t('gave');
   document.getElementById('labelTotal').textContent      = t('total');
-  const elLabelProk = document.getElementById('labelProk');
-  if (elLabelProk) elLabelProk.textContent = t('prok');
   document.getElementById('labelTravel').textContent     = t('travel');
   document.getElementById('labelWarehouse').textContent  = t('warehouse');
   document.getElementById('labelHighway').textContent    = t('highway');
@@ -297,17 +290,6 @@ function render() {
               <label>${t('mobile')}</label>
               <input type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
-            </div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">${t('sectionProk')}</div>
-          <div class="fields-grid">
-            <div class="field prok">
-              <label>${t('prok')}</label>
-              <input type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','prok')" onfocus="focusField(this,'${dateStr}','prok')">
             </div>
           </div>
         </div>
@@ -458,14 +440,13 @@ function updateCard(dateStr) {
 }
 
 function updateTotals() {
-  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0, prok=0;
+  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
     sush   += +r.sush   || 0;
     sklad  += +r.sklad  || 0;
     mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
-    prok   += +r.prok   || 0;
   });
 
   document.getElementById('totalMob').textContent     = mob;
@@ -473,17 +454,19 @@ function updateTotals() {
   document.getElementById('totalSklad').textContent   = sklad;
   document.getElementById('totalMbSush').textContent  = mbSush;
   document.getElementById('totalMbSklad').textContent = mbSklad;
-  const elProk = document.getElementById('totalProk');
-  if (elProk) elProk.textContent = prok;
 
   const wl = loadWorkLog();
   const tl = loadTravelLog();
   const wCount = wl.length;
   const tm = tl.reduce((s,x) => s+x.mins, 0);
-  document.getElementById('totalExtraWork').textContent   = wCount;
+  const workTotalMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
+  const elWork = document.getElementById('totalExtraWork');
+  if (elWork) {
+    elWork.innerHTML = wCount + (workTotalMins > 0 ? `<span class="work-sep"> · </span><span class="work-time-lbl">${toHM(workTotalMins)}</span>` : '');
+  }
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + wCount + sklad + mbSklad;
   const elAll = document.getElementById('totalAll');
   if (elAll) elAll.textContent = totalAll;
 
@@ -665,18 +648,17 @@ function generatePDF() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
 
-  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0, prok=0;
+  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
     sush   += +r.sush   || 0;
     sklad  += +r.sklad  || 0;
     mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
-    prok   += +r.prok   || 0;
   });
   const wCount   = wl.length;
   const totalTm  = tl.reduce((s,x) => s+x.mins, 0);
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + wCount + sklad + mbSklad;
 
   let skladDays = 0, trassaDays = 0;
   workdays.forEach(d => {
@@ -966,7 +948,7 @@ function shareSummary() {
   const tl = loadTravelLog();
   const wCount = wl.length;
   const tm = tl.reduce((s,x) => s+x.mins, 0);
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + wCount + sklad + mbSklad;
   const workdays = getWorkdays(year, month);
   let skladDays = 0, trassaDays = 0;
   workdays.forEach(d => {

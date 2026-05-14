@@ -42,7 +42,7 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 
 .mob-total { background: var(--surface2); border-radius: 10px; padding: 14px; grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; }
 .mob-total .total-label { margin-bottom: 0; }
-.mob-total .total-val { color: var(--accent2); display: flex; align-items: center; gap: 7px; }
+.mob-total .total-val { color: #f472b6; display: flex; align-items: center; gap: 7px; }
 .mob-total--btn { cursor: pointer; border: none; text-align: left; }
 
 .vsego-row { grid-column: 1 / -1; background: var(--surface2); border-radius: 10px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2e2e3e; }
@@ -224,6 +224,8 @@ input[type=number] { -moz-appearance: textfield; }
 .hist-total-val { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: var(--orange); }
 
 /* ── PROKLЕENNYE ── */
-.prok-total { border-left: 2px solid #94a3b8; }
-.total-val--prok { color: #94a3b8; }
+.prok-total { border-left: 2px solid #fbbf2466; }
+.total-val--prok { color: #fbbf24; }
 .field.prok input:focus { border-color: #94a3b8; }
+
+.preview-chip.prok { background: #22222e; color: #fbbf24; border-color: #2a2a38; }
