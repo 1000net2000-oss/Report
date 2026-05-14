@@ -41,7 +41,7 @@
   <div class="totals-bar">
     <div class="mob-total">
       <div class="total-label" id="labelMob">Мобильная</div>
-      <div class="total-val" id="totalMob">0</div>
+      <div class="total-val total-val--mob" id="totalMob">0</div>
     </div>
     <button class="mob-total mob-total--btn" onclick="openHistory('work')">
       <div class="total-label" id="labelOtherWork">Другие работы</div>
@@ -51,23 +51,20 @@
       <div class="total-label" id="labelProk">Проклеенные</div>
       <div class="total-val total-val--prok" id="totalProk">0</div>
     </div>
-    <div class="total-card">
-      <div class="total-label" id="labelRegular">Обычные</div>
-      <div class="total-row"><span class="total-name" id="labelRegTook">Забрал</span><span class="total-val" id="totalSush">0</span></div>
-      <div class="total-row"><span class="total-name" id="labelRegGave">Отдал</span><span class="total-val" id="totalSklad">0</span></div>
+    <div class="mob-total distr-total">
+      <div class="total-label" id="labelSklad">Отдал дистр.</div>
+      <div class="total-val total-val--distr" id="totalSklad">0</div>
     </div>
-    <div class="total-card">
-      <div class="total-label" id="labelMinibar">Минибар</div>
-      <div class="total-row"><span class="total-name" id="labelMbTook">Забрал</span><span class="total-val" id="totalMbSush">0</span></div>
-      <div class="total-row"><span class="total-name" id="labelMbGave">Отдал</span><span class="total-val" id="totalMbSklad">0</span></div>
+    <div class="mob-total mb-total">
+      <div class="total-label" id="labelMbSklad">Отдал МБ</div>
+      <div class="total-val total-val--mb" id="totalMbSklad">0</div>
     </div>
     <div class="vsego-row">
-      <div class="total-label" id="labelTotal" style="margin-bottom:0">Всего</div>
-      <div class="total-val" id="totalAll" style="font-size:20px;color:#f9a8d4">0</div>
+      <div class="total-label vsego-label" id="labelTotal">Всего</div>
+      <div class="total-val total-val--big total-val--pink" id="totalAll">0</div>
     </div>
     <div class="salary-row" onclick="toggleSalary()">
       <div class="salary-inner">
-        <div class="salary-label" id="labelSalary">Секретное поле</div>
         <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
       </div>
     </div>

@@ -245,10 +245,8 @@ function getDayRows(dateStr, r, wl, tl) {
   const rows = [];
   if (r.mob)    rows.push(`<div class="day-row"><span class="day-row-key">${t('mobile')}</span><span class="day-row-val day-row-mob">${r.mob}</span></div>`);
   if (r.prok)   rows.push(`<div class="day-row"><span class="day-row-key">${t('prok')}</span><span class="day-row-val day-row-prok">${r.prok}</span></div>`);
-  const sush = (+r.sush||0)+(+r.mbSush||0);
   const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-  if (sush)  rows.push(`<div class="day-row"><span class="day-row-key">${t('took')}</span><span class="day-row-val">${sush}</span></div>`);
-  if (sklad) rows.push(`<div class="day-row"><span class="day-row-key">${t('gave')}</span><span class="day-row-val">${sklad}</span></div>`);
+  if (sklad) rows.push(`<div class="day-row"><span class="day-row-key">${t('gave')}</span><span class="day-row-val day-row-distr">${sklad}</span></div>`);
   if (wl.length) {
     const mStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
     rows.push(`<div class="day-row day-row-secondary"><span class="day-row-key">${t('otherWork')}</span><span class="day-row-val day-row-sm">${wl.length}<span class="day-row-time">${mStr}</span></span></div>`);
@@ -269,16 +267,16 @@ function render() {
   document.getElementById('btnChart-lbl').textContent    = lang === 'pl' ? 'Wykres'     : 'График';
   document.getElementById('labelMob').textContent        = t('mobile');
   document.getElementById('labelOtherWork').textContent  = t('otherWork');
-  document.getElementById('labelRegular').textContent    = t('regular');
-  document.getElementById('labelMinibar').textContent    = t('minibar');
-  document.getElementById('labelRegTook').textContent    = t('took');
-  document.getElementById('labelRegGave').textContent    = t('gave');
-  document.getElementById('labelMbTook').textContent     = t('took');
-  document.getElementById('labelMbGave').textContent     = t('gave');
-  document.getElementById('labelTotal').textContent      = t('total');
+              document.getElementById('labelTotal').textContent      = t('total');
   const elLabelProk = document.getElementById('labelProk');
   if (elLabelProk) elLabelProk.textContent = t('prok');
   document.getElementById('labelTravel').textContent     = t('travel');
+  const elLabelSklad = document.getElementById('labelSklad');
+  if (elLabelSklad) elLabelSklad.textContent = lang === 'pl' ? 'Oddano dystr.' : 'Отдал дистр.';
+  const elLabelMbSklad = document.getElementById('labelMbSklad');
+  if (elLabelMbSklad) elLabelMbSklad.textContent = lang === 'pl' ? 'Oddano MB' : 'Отдал МБ';
+  const elLabelProk = document.getElementById('labelProk');
+  if (elLabelProk) elLabelProk.textContent = t('prok');
   document.getElementById('labelWarehouse').textContent  = t('warehouse');
   document.getElementById('labelHighway').textContent    = t('highway');
   document.getElementById('labelWarehouseDays').textContent = t('days');
@@ -489,10 +487,10 @@ function updateTotals() {
   });
 
   document.getElementById('totalMob').textContent     = mob;
-  document.getElementById('totalSush').textContent    = sush;
-  document.getElementById('totalSklad').textContent   = sklad;
-  document.getElementById('totalMbSush').textContent  = mbSush;
-  document.getElementById('totalMbSklad').textContent = mbSklad;
+  const elSklad = document.getElementById('totalSklad');
+  if (elSklad) elSklad.textContent = sklad;
+  const elMbSklad = document.getElementById('totalMbSklad');
+  if (elMbSklad) elMbSklad.textContent = mbSklad;
   const elProk = document.getElementById('totalProk');
   if (elProk) elProk.textContent = prok;
 
