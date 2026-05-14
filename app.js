@@ -251,9 +251,9 @@ function getDayRows(dateStr, r, wl, tl) {
   if (sklad) rows.push(`<div class="day-row"><span class="day-row-key">${t('gave')}</span><span class="day-row-val">${sklad}</span></div>`);
   if (wl.length) {
     const mStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
-    rows.push(`<div class="day-row"><span class="day-row-key">${t('otherWork')}</span><span class="day-row-val day-row-work">${wl.length}${mStr}</span></div>`);
+    rows.push(`<div class="day-row day-row-secondary"><span class="day-row-key">${t('otherWork')}</span><span class="day-row-val day-row-sm">${wl.length}<span class="day-row-time">${mStr}</span></span></div>`);
   }
-  if (tm) rows.push(`<div class="day-row"><span class="day-row-key">${t('onRoad')}</span><span class="day-row-val day-row-travel">${toHM(tm)}</span></div>`);
+  if (tm) rows.push(`<div class="day-row day-row-secondary"><span class="day-row-key">${t('onRoad')}</span><span class="day-row-val day-row-sm day-row-travel">${toHM(tm)}</span></div>`);
   return rows.join('');
 }
 
@@ -507,7 +507,7 @@ function updateTotals() {
   }
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + sklad + mbSklad;
   const elAll = document.getElementById('totalAll');
   if (elAll) elAll.textContent = totalAll;
 
@@ -700,7 +700,7 @@ function generatePDF() {
   });
   const wCount   = wl.length;
   const totalTm  = tl.reduce((s,x) => s+x.mins, 0);
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + sklad + mbSklad;
 
   let skladDays = 0, trassaDays = 0;
   workdays.forEach(d => {
@@ -991,7 +991,7 @@ function shareSummary() {
   const tl = loadTravelLog();
   const wCount = wl.length;
   const tm = tl.reduce((s,x) => s+x.mins, 0);
-  const totalAll = mob + wCount + sklad + mbSklad + prok;
+  const totalAll = mob + sklad + mbSklad;
   const workdays = getWorkdays(year, month);
   let skladDays = 0, trassaDays = 0;
   workdays.forEach(d => {

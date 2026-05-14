@@ -230,20 +230,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 .preview-chip.prok { background: #22222e; color: #fbbf24; border-color: #2a2a38; }
 
-/* ── NEW DAY CARD VERTICAL LIST ── */
-.day-header { padding: 10px 14px; gap: 12px; }
-.day-left { min-width: 44px; border-right: 1px solid #2a2a38; padding-right: 12px; flex-shrink: 0; }
-.day-rows { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-.day-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
-.day-row-key { color: var(--muted); }
-.day-row-val { font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 600; color: #94a3b8; }
-.day-row-mob   { color: #f472b6; }
-.day-row-prok  { color: #fbbf24; }
-.day-row-work  { color: #fb923c; }
-.day-row-travel { color: #818cf8; }
-
-/* ── PROK ── */
-.prok-total { border-left: 2px solid #fbbf2466; }
-.total-val--prok { color: #fbbf24; }
-.preview-chip.prok { background: #22222e; color: #fbbf24; border-color: #2a2a38; }
-.field.prok input:focus { border-color: #fbbf24; }
+/* ── SECONDARY DAY ROWS ── */
+.day-row-secondary .day-row-key { font-size: 11px; color: #3a3a52; }
+.day-row-sm { font-size: 10px !important; color: var(--muted) !important; font-family: 'Inter', sans-serif !important; font-weight: 500 !important; }
+.day-row-time { color: var(--muted); font-size: 10px; font-family: 'Inter', sans-serif; font-weight: 400; }
