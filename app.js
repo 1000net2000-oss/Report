@@ -362,7 +362,7 @@ function render() {
             <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
             <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
           </div>
-          <div id="wlist_${dateStr}" style="margin-top:6px;display:flex;flex-direction:column;gap:4px">
+          <div id="wlist_${dateStr}" class="wlist-items">
             ${wl.map(x => workItemHtml(x, dateStr)).join('')}
           </div>
         </div>
@@ -1043,8 +1043,10 @@ function switchTab(tab) {
 function renderHistory() {
   const isTravel = curHistTab === 'travel';
   const log = isTravel ? loadTravelLog() : loadWorkLog();
-  document.getElementById('histTitle').textContent   = isTravel ? t('histTravel') : t('histOtherWork');
-  document.getElementById('histTitle').style.color   = isTravel ? 'var(--accent2)' : 'var(--orange)';
+  const histTitleEl = document.getElementById('histTitle');
+  histTitleEl.textContent = isTravel ? t('histTravel') : t('histOtherWork');
+  histTitleEl.classList.toggle('hist-title--accent2', isTravel);
+  histTitleEl.classList.toggle('hist-title--orange', !isTravel);
   document.getElementById('tabWork').textContent     = t('tabOther');
   document.getElementById('tabTravel').textContent   = t('tabTravel');
 

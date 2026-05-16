@@ -223,6 +223,7 @@ input[type=number] { -moz-appearance: textfield; }
 .hist-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .hist-total-val { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: var(--orange); }
 
+/* ── PROKLЕENNYE ── */
 .prok-total { border-left: 2px solid #fbbf2466; }
 .total-val--prok { color: #fbbf24; }
 .field.prok input:focus { border-color: #94a3b8; }
@@ -247,3 +248,14 @@ input[type=number] { -moz-appearance: textfield; }
 .day-row { gap: 8px; }
 .day-row-key { min-width: 80px; }
 .day-row-distr { color: #34d399; }
+
+/* ── UTILITY ── */
+.sr-only { display: none; }
+.no-cursor { cursor: default; }
+.extra-total-val--danger { color: var(--danger); }
+.wlist-items { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+
+/* ── HIST TITLE COLORS ── */
+.hist-title--orange  { color: var(--orange); }
+.hist-title--accent2 { color: var(--accent2); }
+.hist-title--accent  { color: var(--accent); }
