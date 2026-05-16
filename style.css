@@ -223,7 +223,6 @@ input[type=number] { -moz-appearance: textfield; }
 .hist-total-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .hist-total-val { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: var(--orange); }
 
-/* ── PROKLЕENNYE ── */
 .prok-total { border-left: 2px solid #fbbf2466; }
 .total-val--prok { color: #fbbf24; }
 .field.prok input:focus { border-color: #94a3b8; }
