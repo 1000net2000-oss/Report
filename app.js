@@ -276,7 +276,6 @@ function render() {
   const elLabelMbSklad = document.getElementById('labelMbSklad');
   if (elLabelMbSklad) elLabelMbSklad.textContent = lang === 'pl' ? 'Oddano MB' : 'Отдал МБ';
   const elLabelProk = document.getElementById('labelProk');
-  if (elLabelProk) elLabelProk.textContent = t('prok');
   document.getElementById('labelWarehouse').textContent  = t('warehouse');
   document.getElementById('labelHighway').textContent    = t('highway');
   document.getElementById('labelWarehouseDays').textContent = t('days');
