@@ -22,6 +22,7 @@ const TRANSLATIONS = {
     sectionDist: 'Дистрибуторы воды',
     sectionOther: 'Другие работы',
     sectionProk: 'Проклеенные',
+    prok: 'Прок',
     sectionTravel: 'Время в пути · минуты',
     tookFromWarehouse: 'Забрал со склада',
     gaveReady: 'Отдал готовых',
@@ -96,6 +97,7 @@ const TRANSLATIONS = {
     sectionDist: 'Dystrybutorzy wody',
     sectionOther: 'Inne prace',
     sectionProk: 'Sklejone',
+    prok: 'Sklej',
     sectionTravel: 'Czas w drodze · minuty',
     tookFromWarehouse: 'Pobrano z magazynu',
     gaveReady: 'Oddano gotowych',
@@ -236,6 +238,11 @@ function workItemHtml(x, dateStr) {
   </div>`;
 }
 
+function pill(mod, icon, label, value) {
+  const valHtml = value != null ? `<span class="pill-val pill-val--${mod}">${value}</span>` : '';
+  return `<div class="day-pill day-pill--${mod}"><span class="pill-icon">${icon}</span><span class="pill-label">${label}</span>${valHtml}</div>`;
+}
+
 function getDayRows(dateStr, r, wl, tl) {
   r = r || data[dateStr] || {};
   wl = wl || loadWorkLog().filter(x => x.date === dateStr);
@@ -243,15 +250,15 @@ function getDayRows(dateStr, r, wl, tl) {
   const tm = tl.reduce((s,x) => s+x.mins, 0);
   const workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
   const rows = [];
-  if (r.mob)    rows.push(`<div class="day-row"><span class="day-row-key">${t('mobile')}</span><span class="day-row-val day-row-mob">${r.mob}</span></div>`);
-  if (r.prok)   rows.push(`<div class="day-row"><span class="day-row-key">${t('prok')}</span><span class="day-row-val day-row-prok">${r.prok}</span></div>`);
+  if (r.mob)    rows.push(pill('mob',   'М', t('mobile'),   r.mob));
+  if (r.prok)   rows.push(pill('prok',  'П', t('prok'),     r.prok));
   const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-  if (sklad) rows.push(`<div class="day-row"><span class="day-row-key">${t('gave')}</span><span class="day-row-val day-row-distr">${sklad}</span></div>`);
+  if (sklad)    rows.push(pill('distr', 'О', t('gave'),     sklad));
   if (wl.length) {
     const mStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
-    rows.push(`<div class="day-row day-row-secondary"><span class="day-row-key">${t('otherWork')}</span><span class="day-row-val day-row-sm">${wl.length}<span class="day-row-time">${mStr}</span></span></div>`);
+    rows.push(pill('work', 'Р', t('otherWork'), `${wl.length}${mStr}`));
   }
-  if (tm) rows.push(`<div class="day-row day-row-secondary"><span class="day-row-key">${t('onRoad')}</span><span class="day-row-val day-row-sm day-row-travel">${toHM(tm)}</span></div>`);
+  if (tm)       rows.push(pill('travel', '🚗', t('onRoad'), toHM(tm)));
   return rows.join('');
 }
 
