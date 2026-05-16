@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sush','sklad','mbSush','mbSklad','prok'];
+const COLS = ['mob','sklad','mbSklad','prok'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -215,7 +215,6 @@ function getPreview(dateStr) {
   const tl = loadTravelLog().filter(x => x.date === dateStr);
   let chips = '';
   if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
-  if (r.sush || r.mbSush) chips += `<span class="preview-chip">З:${(+r.sush||0)+(+r.mbSush||0)}</span>`;
   if (r.sklad || r.mbSklad) chips += `<span class="preview-chip">О:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
   if (r.prok) chips += `<span class="preview-chip prok">П:${r.prok}</span>`;
   if (wl.length) {
@@ -339,19 +338,9 @@ function render() {
           <div class="section-label">${t('sectionDist')}</div>
           <div class="fields-grid">
             <div class="field">
-              <label>${t('tookFromWarehouse')}</label>
-              <input type="text" inputmode="text" value="${r.sush||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','sush')" onfocus="focusField(this,'${dateStr}','sush')">
-            </div>
-            <div class="field">
               <label>${t('gaveReady')}</label>
               <input type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
                 onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
-            </div>
-            <div class="field">
-              <label>${t('mbTook')}</label>
-              <input type="text" inputmode="text" value="${r.mbSush||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mbSush')" onfocus="focusField(this,'${dateStr}','mbSush')">
             </div>
             <div class="field">
               <label>${t('mbGave')}</label>
@@ -481,12 +470,10 @@ function updateCard(dateStr) {
 }
 
 function updateTotals() {
-  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0, prok=0;
+  let mob=0, sklad=0, mbSklad=0, prok=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
-    sush   += +r.sush   || 0;
     sklad  += +r.sklad  || 0;
-    mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
     prok   += +r.prok   || 0;
   });
@@ -692,12 +679,10 @@ function generatePDF() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
 
-  let mob=0, sush=0, sklad=0, mbSush=0, mbSklad=0, prok=0;
+  let mob=0, sklad=0, mbSklad=0, prok=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
-    sush   += +r.sush   || 0;
     sklad  += +r.sklad  || 0;
-    mbSush += +r.mbSush || 0;
     mbSklad+= +r.mbSklad|| 0;
     prok   += +r.prok   || 0;
   });
@@ -941,45 +926,6 @@ function goToMonth(y, m) {
 }
 
 // ── Quick input ───────────────────────────────
-function openQuickInput() {
-  const today = formatDate(new Date());
-  document.getElementById('quickDate').textContent = today;
-  document.getElementById('quickMob').value = '';
-  document.getElementById('quickSklad').value = '';
-  document.getElementById('quickMbSklad').value = '';
-  document.getElementById('quickOverlay').classList.add('show');
-  document.getElementById('quickMob').focus();
-}
-
-function closeQuickInput() {
-  document.getElementById('quickOverlay').classList.remove('show');
-}
-
-function evalQuick(val) {
-  if (!val) return '';
-  if (/^[\d\s\+\-\*\/\.]+$/.test(val) && /[\+\-\*\/]/.test(val)) {
-    try {
-      const r = Function('"use strict"; return (' + val + ')')();
-      if (isFinite(r)) return String(Math.round(r * 100) / 100);
-    } catch(e) {}
-  }
-  return val;
-}
-
-function saveQuickInput() {
-  const today   = formatDate(new Date());
-  const mob     = evalQuick(document.getElementById('quickMob').value.trim());
-  const sklad   = evalQuick(document.getElementById('quickSklad').value.trim());
-  const mbSklad = evalQuick(document.getElementById('quickMbSklad').value.trim());
-  load();
-  if (!data[today]) data[today] = {};
-  if (mob)     data[today].mob     = mob;
-  if (sklad)   data[today].sklad   = sklad;
-  if (mbSklad) data[today].mbSklad = mbSklad;
-  save();
-  closeQuickInput();
-  render();
-}
 
 // ── Share ─────────────────────────────────────
 function shareSummary() {
