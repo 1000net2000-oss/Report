@@ -38,55 +38,50 @@
     </div>
   </header>
 
-  <div class="totals-bar">
-    <div class="mob-total">
-      <div class="total-label" id="labelMob">Мобильная</div>
-      <div class="total-val total-val--mob" id="totalMob">0</div>
+  <div class="stats-grid">
+    <div class="stat-tile stat-tile--mob">
+      <div class="stat-tile-label" id="labelMob">Мобильная</div>
+      <div class="stat-tile-val" id="totalMob">0</div>
     </div>
-    <button class="mob-total mob-total--btn" onclick="openHistory('work')">
-      <div class="total-label" id="labelOtherWork">Другие работы</div>
-      <div class="total-val total-val--orange" id="totalExtraWork">0</div>
+    <button class="stat-tile stat-tile--work" onclick="openHistory('work')">
+      <div class="stat-tile-label" id="labelOtherWork">Другие работы</div>
+      <div class="stat-tile-val" id="totalExtraWork">0</div>
     </button>
-    <div class="mob-total prok-total">
-      <div class="total-label" id="labelProk">Проклеенные</div>
-      <div class="total-val total-val--prok" id="totalProk">0</div>
+    <div class="stat-tile stat-tile--prok">
+      <div class="stat-tile-label" id="labelProk">Проклеенные</div>
+      <div class="stat-tile-val" id="totalProk">0</div>
     </div>
-    <div class="mob-total distr-total">
-      <div class="total-label" id="labelSklad">Отдал дистр.</div>
-      <div class="total-val total-val--distr" id="totalSklad">0</div>
+    <div class="stat-tile stat-tile--distr">
+      <div class="stat-tile-label" id="labelSklad">Отдал дистр.</div>
+      <div class="stat-tile-val" id="totalSklad">0</div>
     </div>
-    <div class="mob-total mb-total">
-      <div class="total-label" id="labelMbSklad">Отдал МБ</div>
-      <div class="total-val total-val--mb" id="totalMbSklad">0</div>
+    <div class="stat-tile stat-tile--mb">
+      <div class="stat-tile-label" id="labelMbSklad">Отдал МБ</div>
+      <div class="stat-tile-val" id="totalMbSklad">0</div>
     </div>
-    <div class="vsego-row">
-      <div class="total-label vsego-label" id="labelTotal">Всего</div>
-      <div class="total-val total-val--big total-val--pink" id="totalAll">0</div>
+    <div class="stat-tile stat-tile--total">
+      <div class="stat-tile-label" id="labelTotal">Всего</div>
+      <div class="stat-tile-val stat-tile-val--big" id="totalAll">0</div>
     </div>
-    <div class="salary-row" onclick="toggleSalary()">
-      <div class="salary-inner">
-        <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
-      </div>
+    <div class="stat-tile stat-tile--salary stat-tile--full" onclick="toggleSalary()">
+      <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
     </div>
   </div>
 
-  <div class="extra-totals single">
-    <button class="extra-total-btn travel" onclick="openHistory('travel')">
-      <div class="extra-total-lbl" id="labelTravel">Время в пути</div>
-      <div class="extra-total-val" id="totalExtraTravel">0 мин</div>
+  <div class="stats-grid stats-grid--bottom">
+    <button class="stat-tile stat-tile--travel stat-tile--travel-btn" onclick="openHistory('travel')">
+      <div class="stat-tile-label" id="labelTravel">В пути</div>
+      <div class="stat-tile-val stat-tile-val--travel" id="totalExtraTravel">0 мин</div>
     </button>
-  </div>
-
-  <div class="extra-totals double">
-    <div class="extra-total-btn no-cursor">
-      <div class="extra-total-lbl" id="labelWarehouse">Склад</div>
-      <div class="extra-total-val extra-total-val--danger" id="totalSkladDays">0</div>
-      <div class="extra-days-lbl" id="labelWarehouseDays">дней</div>
+    <div class="stat-tile stat-tile--warehouse">
+      <div class="stat-tile-label" id="labelWarehouse">Склад</div>
+      <div class="stat-tile-val stat-tile-val--danger" id="totalSkladDays">0</div>
+      <div class="stat-tile-days" id="labelWarehouseDays">дней</div>
     </div>
-    <div class="extra-total-btn no-cursor">
-      <div class="extra-total-lbl" id="labelHighway">Трасса</div>
-      <div class="extra-total-val extra-total-val--danger" id="totalTrassaDays">0</div>
-      <div class="extra-days-lbl" id="labelHighwayDays">дней</div>
+    <div class="stat-tile stat-tile--highway">
+      <div class="stat-tile-label" id="labelHighway">Трасса</div>
+      <div class="stat-tile-val stat-tile-val--danger" id="totalTrassaDays">0</div>
+      <div class="stat-tile-days" id="labelHighwayDays">дней</div>
     </div>
   </div>
 
@@ -142,34 +137,6 @@
   </div>
   <div class="hist-content" id="archiveContent"></div>
 </div>
-
-<!-- ══ QUICK INPUT OVERLAY ══ -->
-<div class="quick-overlay" id="quickOverlay" onclick="closeQuickInput()">
-  <div class="quick-sheet" onclick="event.stopPropagation()">
-    <div class="quick-header">
-      <div class="quick-title">Быстрый ввод</div>
-      <div class="quick-date" id="quickDate"></div>
-    </div>
-    <div class="quick-fields">
-      <div class="quick-field">
-        <label>Мобильная</label>
-        <input id="quickMob" type="text" inputmode="text" placeholder="0">
-      </div>
-      <div class="quick-field">
-        <label>Стационарная отдал</label>
-        <input id="quickSklad" type="text" inputmode="text" placeholder="0">
-      </div>
-      <div class="quick-field">
-        <label>МБ отдал</label>
-        <input id="quickMbSklad" type="text" inputmode="text" placeholder="0">
-      </div>
-    </div>
-    <button class="quick-save" onclick="saveQuickInput()">Сохранить</button>
-  </div>
-</div>
-
-<!-- ══ FAB ══ -->
-<button class="fab" onclick="openQuickInput()">+</button>
 
 <!-- ══ TOAST ══ -->
 <div id="toast"></div>
