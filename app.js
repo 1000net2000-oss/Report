@@ -492,9 +492,11 @@ function updateTotals() {
   const tm = tl.reduce((s,x) => s+x.mins, 0);
   const workTotalMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
   const elWork = document.getElementById('totalExtraWork');
-  if (elWork) {
-    elWork.innerHTML = wCount + (workTotalMins > 0 ? `<span class="work-sep"> · </span><span class="work-time-lbl">${toHM(workTotalMins)}</span>` : '');
-  }
+  const elWorkTime = document.getElementById('totalExtraWorkTime');
+  const elWorkDot = document.querySelector('.stat-tile-dot');
+  if (elWork) elWork.textContent = wCount;
+  if (elWorkTime) elWorkTime.textContent = workTotalMins > 0 ? toHM(workTotalMins) : '';
+  if (elWorkDot) elWorkDot.classList.toggle('sr-only', workTotalMins === 0);
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
   const totalAll = mob + sklad + mbSklad;

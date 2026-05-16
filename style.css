@@ -37,11 +37,14 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 .stat-tile--full { grid-column: 1 / -1; }
 
 .stat-tile-label { font-size: 9px; color: var(--muteDate); text-transform: uppercase; letter-spacing: 0.08em; }
-.stat-tile-val { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; }
-.stat-tile-val--big { font-size: 22px; }
+.stat-tile-val { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; }
+.stat-tile-val--big { font-size: 18px; }
 .stat-tile-val--travel { font-size: 11px; font-weight: 600; }
-.stat-tile-val--danger { color: var(--danger); font-size: 16px; }
+.stat-tile-val--danger { color: var(--danger); font-size: 13px; }
 .stat-tile-days { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.stat-tile-sub { font-size: 9px; color: #64748b; white-space: nowrap; }
+.stat-tile-dot { color: #3a3a52; }
+.stat-tile-work-val { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
 .stat-tile--mob   { border-left: 3px solid #f472b6; } .stat-tile--mob   .stat-tile-val { color: #f472b6; }
 .stat-tile--work  { border-left: 3px solid #fb923c; cursor: pointer; } .stat-tile--work  .stat-tile-val { color: #fb923c; }
