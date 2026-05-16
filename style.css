@@ -284,3 +284,14 @@ input[type=number] { -moz-appearance: textfield; }
 .day-pill--travel { background: #0e0e1e; border-color: #818cf820; }
 .day-pill--travel .pill-icon { color: #818cf8; }
 .pill-val--travel { color: #818cf8; }
+
+/* ── ARCHIVE CLEANUP ── */
+.archive-card--old { opacity: 0.55; }
+.archive-clean-btn {
+  display: block; width: 100%; margin-top: 16px;
+  background: #1a0a0a; border: 1px solid #f8717140;
+  border-radius: 12px; padding: 12px; color: #f87171;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: 'Inter', sans-serif; text-align: center;
+}
+.archive-clean-btn:active { background: #2a0a0a; }

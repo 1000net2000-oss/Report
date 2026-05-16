@@ -176,12 +176,15 @@ function storageKey()        { return `report_${year}_${month}`; }
 function workLogKey()        { return `worklog_${year}_${month}`; }
 function travelLogKey()      { return `travellog_${year}_${month}`; }
 
+let _wlCache = null, _tlCache = null;
+function invalidateLogCache() { _wlCache = null; _tlCache = null; }
+
 function load()              { try { data = JSON.parse(localStorage.getItem(storageKey()) || '{}'); } catch(e) { data = {}; } }
 function save()              { localStorage.setItem(storageKey(), JSON.stringify(data)); }
-function loadWorkLog()       { try { return JSON.parse(localStorage.getItem(workLogKey())   || '[]'); } catch(e) { return []; } }
-function saveWorkLog(log)    { localStorage.setItem(workLogKey(),   JSON.stringify(log)); }
-function loadTravelLog()     { try { return JSON.parse(localStorage.getItem(travelLogKey()) || '[]'); } catch(e) { return []; } }
-function saveTravelLog(log)  { localStorage.setItem(travelLogKey(), JSON.stringify(log)); }
+function loadWorkLog()       { if (_wlCache) return _wlCache; try { _wlCache = JSON.parse(localStorage.getItem(workLogKey())   || '[]'); } catch(e) { _wlCache = []; } return _wlCache; }
+function saveWorkLog(log)    { _wlCache = log; localStorage.setItem(workLogKey(),   JSON.stringify(log)); }
+function loadTravelLog()     { if (_tlCache) return _tlCache; try { _tlCache = JSON.parse(localStorage.getItem(travelLogKey()) || '[]'); } catch(e) { _tlCache = []; } return _tlCache; }
+function saveTravelLog(log)  { _tlCache = log; localStorage.setItem(travelLogKey(), JSON.stringify(log)); }
 
 // ── Helpers ───────────────────────────────────
 function toHM(mins) {
@@ -290,12 +293,15 @@ function render() {
   const list = document.getElementById('daysList');
   list.innerHTML = '';
 
+  const _wl = loadWorkLog();
+  const _tl = loadTravelLog();
+
   days.forEach(d => {
     const dateStr = formatDate(d);
     const wd  = t('weekdays')[d.getDay()];
     const r   = data[dateStr] || {};
-    const wl  = loadWorkLog().filter(x => x.date === dateStr);
-    const tl  = loadTravelLog().filter(x => x.date === dateStr);
+    const wl  = _wl.filter(x => x.date === dateStr);
+    const tl  = _tl.filter(x => x.date === dateStr);
     const tm  = tl.reduce((s,x) => s+x.mins, 0);
 
     const card = document.createElement('div');
@@ -525,6 +531,7 @@ function changeMonth(dir) {
   month += dir;
   if (month > 11) { month = 0;  year++; }
   if (month < 0)  { month = 11; year--; }
+  invalidateLogCache();
   render();
 }
 
@@ -880,6 +887,20 @@ function closeArchive() {
   document.getElementById('pageMain').classList.add('active');
 }
 
+function cleanOldData(keys) {
+  const confirmMsg = lang === 'pl'
+    ? `Usunąć dane za ${keys.length} mies.? Tej operacji nie można cofnąć.`
+    : `Удалить данные за ${keys.length} мес.? Это действие нельзя отменить.`;
+  if (!confirm(confirmMsg)) return;
+  keys.forEach(key => {
+    const [, y, m] = key.split('_');
+    localStorage.removeItem(key);
+    localStorage.removeItem(`worklog_${y}_${m}`);
+    localStorage.removeItem(`travellog_${y}_${m}`);
+  });
+  renderArchive();
+}
+
 function renderArchive() {
   document.getElementById('archiveTitle').textContent = lang === 'pl' ? 'Archiwum' : 'Архив';
   const keys = [];
@@ -896,7 +917,14 @@ function renderArchive() {
     return;
   }
 
-  content.innerHTML = keys.map(key => {
+  // Split: current+future vs old (>2 months ago)
+  const now = new Date(); const curY = now.getFullYear(); const curM = now.getMonth();
+  const oldKeys = keys.filter(key => {
+    const [, y, m] = key.split('_');
+    return (+y < curY) || (+y === curY && +m < curM - 1);
+  });
+
+  const cards = keys.map(key => {
     const [, y, m] = key.split('_');
     let d = {};
     try { d = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
@@ -911,7 +939,8 @@ function renderArchive() {
     try { wCount = JSON.parse(localStorage.getItem(wlKey) || '[]').length; } catch(e) {}
     const total = mob + wCount + sklad + mbSklad;
     const isActive = +y === year && +m === month;
-    return `<div class="archive-card${isActive ? ' active' : ''}" onclick="goToMonth(${y},${m})">
+    const isOld = oldKeys.includes(key);
+    return `<div class="archive-card${isActive ? ' active' : ''}${isOld ? ' archive-card--old' : ''}" onclick="goToMonth(${y},${m})">
       <div class="archive-month">${MONTHS[+m]} ${y}</div>
       <div class="archive-stats">
         <span class="archive-chip mob">${t('mobile')}: <b>${mob}</b></span>
@@ -919,6 +948,14 @@ function renderArchive() {
       </div>
     </div>`;
   }).join('');
+
+  const cleanBtn = oldKeys.length > 0
+    ? `<button class="archive-clean-btn" onclick="cleanOldData(${JSON.stringify(oldKeys)})">`
+      + (lang === 'pl' ? `🗑 Usuń stare (${oldKeys.length} mies.)` : `🗑 Удалить старые (${oldKeys.length} мес.)`)
+      + `</button>`
+    : '';
+
+  content.innerHTML = cards + cleanBtn;
 }
 
 function goToMonth(y, m) {
@@ -1063,7 +1100,8 @@ function backupData() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const d = new Date();
-  a.download = `otchet_backup_${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}.json`;
+  const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+  a.download = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1073,12 +1111,18 @@ function backupData() {
 function restoreData(event) {
   const file = event.target.files[0];
   if (!file) return;
+  event.target.value = '';
+  const confirmMsg = lang === 'pl'
+    ? 'Wczytać kopię zapasową? Wszystkie bieżące dane zostaną nadpisane.'
+    : 'Загрузить бэкап? Все текущие данные будут перезаписаны.';
+  if (!confirm(confirmMsg)) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
       const allData = JSON.parse(e.target.result);
       Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
       if (allData.lang) lang = allData.lang;
+      invalidateLogCache();
       render();
       alert(t('restored'));
     } catch(err) { alert(t('restoreError')); }
@@ -1086,6 +1130,20 @@ function restoreData(event) {
   reader.readAsText(file);
 }
 
+
+// ── Swipe between months ──────────────────────
+(function() {
+  let x0 = null;
+  const el = document.getElementById('pageMain');
+  el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) < 60) return;
+    changeMonth(dx < 0 ? 1 : -1);
+  }, { passive: true });
+})();
 // ── Init ──────────────────────────────────────
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
