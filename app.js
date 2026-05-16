@@ -978,6 +978,7 @@ function shareSummary() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
   const wCount = wl.length;
+  const workTotalMins = wl.reduce((s,x) => s+(x.mins||0), 0);
   const tm = tl.reduce((s,x) => s+x.mins, 0);
   const totalAll = mob + sklad + mbSklad;
   const workdays = getWorkdays(year, month);
@@ -993,7 +994,7 @@ function shareSummary() {
   const text = [
     `${t('months')[month]} ${year}`,
     `${t('summaryLabel')} ${mob}`,
-    `${t('summaryOther')} ${wCount}`,
+    `${t('summaryOther')} ${wCount}${workTotalMins > 0 ? ' · ' + toHM(workTotalMins) : ''}`,
     `${t('summaryRegGave')} ${sklad}`,
     `${t('summaryMbGave')} ${mbSklad}`,
     `${t('summaryTotal')} ${totalAll}`,
@@ -1096,16 +1097,17 @@ function backupData() {
     if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang')
       allData[key] = JSON.parse(localStorage.getItem(key));
   }
-  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const json = JSON.stringify(allData, null, 2);
   const d = new Date();
   const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
-  a.download = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
+  const filename = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
+  const uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  const a = document.createElement('a');
+  a.href = uri;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function restoreData(event) {
