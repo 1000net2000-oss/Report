@@ -1123,6 +1123,7 @@ function restoreData(event) {
       Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
       if (allData.lang) lang = allData.lang;
       invalidateLogCache();
+      load();
       render();
       alert(t('restored'));
     } catch(err) { alert(t('restoreError')); }

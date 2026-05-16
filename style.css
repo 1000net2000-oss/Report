@@ -77,6 +77,7 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 
 .days-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
 .day-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid #2a2a38; }
+.day-card:not(.has-data) { opacity: 0.4; }
 .day-card.has-data { border-color: #2e3a4e; }
 .day-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; user-select: none; }
 .day-date { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; }
@@ -258,32 +259,18 @@ input[type=number] { -moz-appearance: textfield; }
 .hist-title--accent2 { color: var(--accent2); }
 .hist-title--accent  { color: var(--accent); }
 
-/* ── DAY PILLS ── */
-.day-rows { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.day-pill { display: flex; align-items: center; gap: 6px; border-radius: 8px; padding: 3px 8px; border: 1px solid transparent; }
-.pill-icon { font-size: 11px; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; }
-.pill-label { flex: 1; font-size: 11px; color: #64748b; }
+/* ── DAY PILLS (монохром) ── */
+.day-rows { display: flex; flex-direction: column; flex: 1; gap: 1px; }
+.day-pill { display: flex; align-items: center; gap: 7px; padding: 3px 0; background: none; border: none; border-radius: 0; }
+.pill-icon { font-size: 10px; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; color: #4a4a5e; }
+.pill-label { flex: 1; font-size: 11px; color: #4a4a5e; }
 .pill-val { font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700; flex-shrink: 0; }
 
-.day-pill--mob   { background: #1e0f28; border-color: #f472b620; }
-.day-pill--mob   .pill-icon { color: #f472b6; }
-.pill-val--mob   { color: #f472b6; }
-
-.day-pill--prok  { background: #1a1200; border-color: #fbbf2420; }
-.day-pill--prok  .pill-icon { color: #fbbf24; }
-.pill-val--prok  { color: #fbbf24; }
-
-.day-pill--distr { background: #001a0e; border-color: #34d39920; }
-.day-pill--distr .pill-icon { color: #34d399; }
-.pill-val--distr { color: #34d399; }
-
-.day-pill--work  { background: #1a0e00; border-color: #fb923c20; }
-.day-pill--work  .pill-icon { color: #fb923c; }
-.pill-val--work  { color: #fb923c; }
-
-.day-pill--travel { background: #0e0e1e; border-color: #818cf820; }
-.day-pill--travel .pill-icon { color: #818cf8; }
-.pill-val--travel { color: #818cf8; }
+.pill-val--mob    { color: #f472b6; }
+.pill-val--prok   { color: #fbbf24; }
+.pill-val--distr  { color: #34d399; }
+.pill-val--work   { color: #e2e8f0; }
+.pill-val--travel { color: #e2e8f0; }
 
 /* ── ARCHIVE CLEANUP ── */
 .archive-card--old { opacity: 0.55; }
