@@ -1157,5 +1157,6 @@ function restoreData(event) {
 // ── Init ──────────────────────────────────────
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
+document.getElementById('btnBackup').addEventListener('click', backupData);
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');

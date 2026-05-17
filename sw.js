@@ -1,8 +1,14 @@
-const CACHE = 'otchet-v54';
+const CACHE = 'otchet-v55';
 const FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
+  e.waitUntil(
+    caches.open(CACHE).then(cache =>
+      Promise.all(FILES.map(url =>
+        fetch(url, { cache: 'no-store' }).then(r => cache.put(url, r))
+      ))
+    )
+  );
   self.skipWaiting();
 });
 
