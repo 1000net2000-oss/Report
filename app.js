@@ -1091,22 +1091,30 @@ function exportHistory() {
 
 // ── Backup / Restore ──────────────────────────
 function backupData() {
-  const allData = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang')
-      allData[key] = JSON.parse(localStorage.getItem(key));
+  try {
+    const allData = {};
+    let count = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang') {
+        allData[key] = JSON.parse(localStorage.getItem(key));
+        count++;
+      }
+    }
+    alert('Данных: ' + count + ' ключей. Создаю файл...');
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const d = new Date();
+    const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+    a.download = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  } catch(e) {
+    alert('Ошибка: ' + e.message);
   }
-  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  const d = new Date();
-  const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
-  a.download = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function restoreData(event) {
