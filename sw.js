@@ -1,4 +1,4 @@
-const CACHE = 'otchet-v55';
+const CACHE = 'otchet-v56';
 const FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {

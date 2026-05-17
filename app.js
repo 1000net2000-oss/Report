@@ -1096,8 +1096,9 @@ function backupData() {
     let count = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang') {
-        allData[key] = JSON.parse(localStorage.getItem(key));
+    if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang') {
+        const raw = localStorage.getItem(key);
+        try { allData[key] = JSON.parse(raw); } catch(e) { allData[key] = raw; }
         count++;
       }
     }
