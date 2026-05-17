@@ -1097,25 +1097,16 @@ function backupData() {
     if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang')
       allData[key] = JSON.parse(localStorage.getItem(key));
   }
-  const json = JSON.stringify(allData, null, 2);
+  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
   const d = new Date();
   const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
-  const filename = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
-  const blob = new Blob([json], { type: 'application/json' });
-  const file = new File([blob], filename, { type: 'application/json' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({ files: [file], title: filename }).catch(() => {});
-  } else if (navigator.share) {
-    navigator.share({ title: filename, text: json }).catch(() => {});
-  } else {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  }
+  a.download = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function restoreData(event) {
