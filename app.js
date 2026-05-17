@@ -242,7 +242,7 @@ function workItemHtml(x, dateStr) {
 
 function pill(mod, icon, label, value) {
   const valHtml = value != null ? `<span class="pill-val pill-val--${mod}">${value}</span>` : '';
-  return `<div class="day-pill day-pill--${mod}"><span class="pill-icon">${icon}</span><span class="pill-label">${label}</span>${valHtml}</div>`;
+  return `<div class="day-pill day-pill--${mod}"><span class="pill-label">${label}</span>${valHtml}</div>`;
 }
 
 function getDayRows(dateStr, r, wl, tl) {
@@ -1101,13 +1101,19 @@ function backupData() {
   const d = new Date();
   const mm = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
   const filename = `otchet_${d.getFullYear()}-${mm}-${dd}.json`;
-  const uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-  const a = document.createElement('a');
-  a.href = uri;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const blob = new Blob([json], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: filename });
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
 }
 
 function restoreData(event) {
