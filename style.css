@@ -79,7 +79,8 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 .day-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid #2a2a38; }
 .day-card:not(.has-data) { opacity: 0.4; }
 .day-card.has-data { border-color: #2e3a4e; }
-.day-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; user-select: none; }
+.day-header { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; user-select: none; }
+.day-left { flex-shrink: 0; width: 46px; }
 .day-date { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; }
 .day-weekday { font-size: 11px; color: var(--muted); margin-top: 2px; }
 .day-preview { display: flex; gap: 6px; flex-wrap: wrap; }

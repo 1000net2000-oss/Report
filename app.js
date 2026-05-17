@@ -1104,7 +1104,9 @@ function backupData() {
   const blob = new Blob([json], { type: 'application/json' });
   const file = new File([blob], filename, { type: 'application/json' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({ files: [file], title: filename });
+    navigator.share({ files: [file], title: filename }).catch(() => {});
+  } else if (navigator.share) {
+    navigator.share({ title: filename, text: json }).catch(() => {});
   } else {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
