@@ -1064,12 +1064,15 @@ function renderHistory() {
         <div class="hist-item">
           <div class="hist-dot ${isTravel ? 'travel' : ''}"></div>
           <div class="hist-text">${isTravel ? toHM(x.mins) : x.desc}</div>
-          ${isTravel ? `<div class="hist-min travel">${x.mins} мин</div>` : (x.mins ? `<div class="hist-min">${x.mins} мин</div>` : '')}
+          ${isTravel ? `<div class="hist-min travel">${toHM(x.mins)}</div>` : (x.mins ? `<div class="hist-min">${toHM(x.mins)}</div>` : '')}
         </div>`).join('')}
     </div>`;
   }).join('')
   + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
-  + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
+  + `<div class="export-btns">
+      <button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>
+      <button class="export-btn export-btn--pl" onclick="exportHistoryPl()">🇵🇱 Kopiuj po polsku</button>
+    </div>`;
 }
 
 function exportHistory() {
@@ -1081,28 +1084,77 @@ function exportHistory() {
   const text = Object.keys(byDate).sort().reverse().map(date => {
     const items = byDate[date];
     const total = items.reduce((s,x) => s + (x.mins||0), 0);
-    const lines = items.map(x => isTravel ? `  • ${x.mins} мин` : `  • ${x.desc}`).join('\n');
-    return `=== ${date}${isTravel ? ` (${toHM(total)})` : ''} ===\n${lines}`;
+    const lines = items.map(x => isTravel
+      ? `  • ${toHM(x.mins)}`
+      : `  • ${x.desc}${x.mins ? ' — ' + toHM(x.mins) : ''}`
+    ).join('\n');
+    return `=== ${date}${isTravel ? ` (${toHM(total)})` : ` (${items.length} ${t('records')}${total ? ', ' + toHM(total) : ''})`} ===\n${lines}`;
   }).join('\n\n');
   navigator.clipboard.writeText((isTravel ? t('histTravel') : t('histOtherWork')) + '\n\n' + text)
-    .then(() => alert(t('copied')))
+    .then(() => showToast(t('copied')))
     .catch(() => alert(text));
+}
+
+async function exportHistoryPl() {
+  const isTravel = curHistTab === 'travel';
+  const log = isTravel ? loadTravelLog() : loadWorkLog();
+  if (!log.length) { alert(t('noData')); return; }
+
+  // Collect only unique descriptions to translate
+  const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
+  if (!descs.length) { exportHistory(); return; }
+
+  showToast('Перевод...');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации и пояснений:\n${descs.join('\n')}`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const translated = data.content[0].text.trim().split('\n');
+    const map = {};
+    descs.forEach((d, i) => { map[d] = translated[i] || d; });
+
+    const byDate = {};
+    log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
+    const text = Object.keys(byDate).sort().reverse().map(date => {
+      const items = byDate[date];
+      const total = items.reduce((s,x) => s + (x.mins||0), 0);
+      const lines = items.map(x => isTravel
+        ? `  • ${toHM(x.mins)}`
+        : `  • ${map[x.desc] || x.desc}${x.mins ? ' — ' + toHM(x.mins) : ''}`
+      ).join('\n');
+      return `=== ${date}${isTravel ? ` (${toHM(total)})` : ` (${items.length} wpisów${total ? ', ' + toHM(total) : ''})`} ===\n${lines}`;
+    }).join('\n\n');
+
+    const header = isTravel ? 'Czas w drodze' : 'Inne prace';
+    await navigator.clipboard.writeText(header + '\n\n' + text);
+    showToast('Skopiowano!');
+  } catch(e) {
+    showToast('Ошибка перевода');
+  }
 }
 
 // ── Backup / Restore ──────────────────────────
 function backupData() {
   try {
     const allData = {};
-    let count = 0;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
     if (key.startsWith('report_') || key.startsWith('worklog_') || key.startsWith('travellog_') || key === 'lang') {
         const raw = localStorage.getItem(key);
         try { allData[key] = JSON.parse(raw); } catch(e) { allData[key] = raw; }
-        count++;
       }
     }
-    alert('Данных: ' + count + ' ключей. Создаю файл...');
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
