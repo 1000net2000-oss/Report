@@ -104,7 +104,18 @@
     </button>
   </div>
 
-  <div class="days-list" id="daysList"></div>
+  <div class="days-grid" id="daysList"></div>
+  <div class="day-detail-panel" id="dayDetailPanel">
+    <div class="day-detail-header">
+      <div>
+        <div class="day-detail-date" id="detailDate"></div>
+        <div class="day-detail-wd" id="detailWd"></div>
+      </div>
+      <div class="day-detail-totals" id="detailTotals"></div>
+      <button class="day-detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="day-detail-body" id="detailBody"></div>
+  </div>
 
 </div>
 

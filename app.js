@@ -303,92 +303,150 @@ function render() {
     const wl  = _wl.filter(x => x.date === dateStr);
     const tl  = _tl.filter(x => x.date === dateStr);
     const tm  = tl.reduce((s,x) => s+x.mins, 0);
+    const total = (+r.mob||0) + (+r.prok||0) + (+r.sklad||0) + (+r.mbSklad||0);
+    const hd = hasData(dateStr) || wl.length > 0 || tm > 0;
 
-    const card = document.createElement('div');
-    card.className = 'day-card' + (hasData(dateStr) ? ' has-data' : '');
-    card.dataset.date = dateStr;
+    // Dominant color
+    let domColor = '';
+    if (+r.mob)    domColor = '#f472b6';
+    else if (+r.prok)  domColor = '#fbbf24';
+    else if (+r.sklad||+r.mbSklad) domColor = '#34d399';
+    else if (tm)   domColor = '#818cf8';
 
-    card.innerHTML = `
-      <div class="day-header" onclick="toggle(this)">
-        <div class="day-left">
-          <div class="day-date">${dateStr.slice(0,5)}</div>
-          <div class="day-weekday">${wd}</div>
+    const cell = document.createElement('div');
+    cell.className = 'day-cell' + (hd ? ' day-cell--data' : '') + (domColor ? '' : '');
+    cell.dataset.date = dateStr;
+    if (domColor && hd) cell.style.setProperty('--dom', domColor);
+
+    const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+    const dots = [
+      r.mob   ? `<span class="dc dc--mob">${r.mob}</span>` : '',
+      r.prok  ? `<span class="dc dc--prok">${r.prok}</span>` : '',
+      sklad   ? `<span class="dc dc--gave">${sklad}</span>` : '',
+    ].join('');
+
+    const indicators = [
+      tm      ? '<span class="di di--travel"></span>' : '',
+    ].join('');
+
+    cell.innerHTML = `
+      <div class="day-cell-top">
+        <div>
+          <div class="day-cell-date">${dateStr.slice(0,5)}</div>
+          <div class="day-cell-wd">${wd}</div>
         </div>
-        <div class="day-rows">${getDayRows(dateStr, r, wl, tl)}</div>
-        <div class="chevron">▼</div>
+        <div class="day-cell-indicators">${indicators}</div>
       </div>
-      <div class="day-body">
-        <div>
-          <div class="section-label">${t('sectionMobile')}</div>
-          <div class="fields-grid">
-            <div class="field mob">
-              <label>${t('mobile')}</label>
-              <input type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
-            </div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">${t('sectionProk')}</div>
-          <div class="fields-grid">
-            <div class="field prok">
-              <label>${t('prok')}</label>
-              <input type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','prok')" onfocus="focusField(this,'${dateStr}','prok')">
-            </div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">${t('sectionDist')}</div>
-          <div class="fields-grid">
-            <div class="field">
-              <label>${t('gaveReady')}</label>
-              <input type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
-            </div>
-            <div class="field">
-              <label>${t('mbGave')}</label>
-              <input type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
-                onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
-            </div>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">${t('sectionOther')}</div>
-          <div class="work-row">
-            <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
-              onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
-            <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
-            <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
-          </div>
-          <div id="wlist_${dateStr}" class="wlist-items">
-            ${wl.map(x => workItemHtml(x, dateStr)).join('')}
-          </div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="section-label">${t('sectionTravel')}</div>
-          <div class="travel-row">
-            <input class="travel-mins" type="number" min="1" placeholder="${t('minutes')}" id="tm_${dateStr}"/>
-            <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
-          </div>
-        </div>
-        <div class="day-time-totals">
-          <div class="day-time-chip" id="wchip_${dateStr}">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}</span></div>
-          <div class="day-time-chip travel" id="tchip_${dateStr}">${t('onRoad')}<span>${toHM(tm)}</span></div>
-        </div>
-        <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>
-      </div>`;
+      ${total > 0 ? `<div class="day-cell-total">${total}</div>` : ''}
+      <div class="day-cell-dots">${dots}</div>`;
 
-    setupLongPress(card, dateStr);
-    list.appendChild(card);
+    cell.addEventListener('click', () => openDetail(dateStr));
+    list.appendChild(cell);
   });
 
   updateTotals();
   updateBestDays();
+}
+
+let _activeDetail = null;
+
+function openDetail(dateStr) {
+  _activeDetail = dateStr;
+  const r   = data[dateStr] || {};
+  const _wl = loadWorkLog();
+  const _tl = loadTravelLog();
+  const wl  = _wl.filter(x => x.date === dateStr);
+  const tl  = _tl.filter(x => x.date === dateStr);
+  const tm  = tl.reduce((s,x) => s+x.mins, 0);
+  const d   = new Date(dateStr.split('.').reverse().join('-'));
+  const wd  = t('weekdays')[d.getDay()];
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  const total = (+r.mob||0)+(+r.prok||0)+sklad;
+
+  document.getElementById('detailDate').textContent = dateStr;
+  document.getElementById('detailWd').textContent   = wd;
+
+  const totalsEl = document.getElementById('detailTotals');
+  totalsEl.innerHTML = total > 0 ? `<span class="detail-total-lbl">Итого</span><span class="detail-total-val">${total}</span>` : '';
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-stats">
+      ${r.mob   ? `<div class="detail-stat detail-stat--mob"><div class="ds-lbl">${t('mobile')}</div><div class="ds-val">${r.mob}</div></div>` : ''}
+      ${r.prok  ? `<div class="detail-stat detail-stat--prok"><div class="ds-lbl">${t('prok')}</div><div class="ds-val">${r.prok}</div></div>` : ''}
+      ${sklad   ? `<div class="detail-stat detail-stat--gave"><div class="ds-lbl">${t('gave')}</div><div class="ds-val">${sklad}</div></div>` : ''}
+      ${tm      ? `<div class="detail-stat detail-stat--travel"><div class="ds-lbl">${t('onRoad')}</div><div class="ds-val">${toHM(tm)}</div></div>` : ''}
+      ${wl.length ? `<div class="detail-stat detail-stat--work"><div class="ds-lbl">${t('otherWork')}</div><div class="ds-val">${wl.length}</div></div>` : ''}
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">${t('sectionMobile')}</div>
+    <div class="fields-grid">
+      <div class="field mob">
+        <label>${t('mobile')}</label>
+        <input type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
+          onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">${t('sectionProk')}</div>
+    <div class="fields-grid">
+      <div class="field prok">
+        <label>${t('prok')}</label>
+        <input type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
+          onblur="evalField(this,'${dateStr}','prok')" onfocus="focusField(this,'${dateStr}','prok')">
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">${t('sectionDist')}</div>
+    <div class="fields-grid">
+      <div class="field">
+        <label>${t('gaveReady')}</label>
+        <input type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
+          onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
+      </div>
+      <div class="field">
+        <label>${t('mbGave')}</label>
+        <input type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
+          onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">${t('sectionOther')}</div>
+    <div class="work-row">
+      <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
+        onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
+      <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
+      <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
+    </div>
+    <div id="wlist_${dateStr}" class="wlist-items">${wl.map(x => workItemHtml(x, dateStr)).join('')}</div>
+    <div class="divider"></div>
+    <div class="section-label">${t('sectionTravel')}</div>
+    <div class="travel-row">
+      <input class="travel-mins" type="number" min="1" placeholder="${t('minutes')}" id="tm_${dateStr}"/>
+      <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
+    </div>
+    <div class="day-time-totals">
+      <div class="day-time-chip" id="wchip_${dateStr}">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}</span></div>
+      <div class="day-time-chip travel" id="tchip_${dateStr}">${t('onRoad')}<span>${toHM(tm)}</span></div>
+    </div>
+    <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>`;
+
+  const panel = document.getElementById('dayDetailPanel');
+  panel.classList.add('open');
+
+  // Highlight active cell
+  document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('day-cell--active'));
+  const activeCell = document.querySelector(`.day-cell[data-date="${dateStr}"]`);
+  if (activeCell) activeCell.classList.add('day-cell--active');
+}
+
+function closeDetail() {
+  document.getElementById('dayDetailPanel').classList.remove('open');
+  document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('day-cell--active'));
+  _activeDetail = null;
+}
+
+function refreshDetail(dateStr) {
+  if (_activeDetail === dateStr) openDetail(dateStr);
 }
 
 function toggle(header) { header.parentElement.classList.toggle('open'); }
@@ -440,11 +498,8 @@ function refreshDayExtras(dateStr) {
   const tchip = document.getElementById('tchip_' + dateStr);
   if (tchip) tchip.innerHTML = `${t('onRoad')}<span>${toHM(tm)}</span>`;
 
-  const card = document.querySelector(`.day-card[data-date="${dateStr}"]`);
-  if (card) {
-    const rows = card.querySelector('.day-rows');
-    if (rows) rows.innerHTML = getDayRows(dateStr, null, wl, tl);
-  }
+  refreshDetail(dateStr);
+  updateCellData(dateStr);
 }
 
 // ── Report fields ─────────────────────────────
@@ -462,17 +517,45 @@ function clearDay(dateStr) {
   save();
   saveWorkLog(loadWorkLog().filter(x => x.date !== dateStr));
   saveTravelLog(loadTravelLog().filter(x => x.date !== dateStr));
+  closeDetail();
   render();
 }
 
-function updateCard(dateStr) {
-  document.querySelectorAll('.day-card').forEach(card => {
-    if (card.querySelector('.day-date')?.textContent === dateStr.slice(0,5)) {
-      card.classList.toggle('has-data', hasData(dateStr));
-      const rows = card.querySelector('.day-rows');
-      if (rows) rows.innerHTML = getDayRows(dateStr);
-    }
-  });
+function updateCard(dateStr) { updateCellData(dateStr); }
+
+function updateCellData(dateStr) {
+  const cell = document.querySelector(`.day-cell[data-date="${dateStr}"]`);
+  if (!cell) return;
+  const r  = data[dateStr] || {};
+  const wl = loadWorkLog().filter(x => x.date === dateStr);
+  const tl = loadTravelLog().filter(x => x.date === dateStr);
+  const tm = tl.reduce((s,x) => s+x.mins, 0);
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  const total = (+r.mob||0)+(+r.prok||0)+sklad;
+  const hd = hasData(dateStr) || wl.length > 0 || tm > 0;
+
+  let domColor = '';
+  if (+r.mob)   domColor = '#f472b6';
+  else if (+r.prok)  domColor = '#fbbf24';
+  else if (sklad)    domColor = '#34d399';
+  else if (tm)       domColor = '#818cf8';
+
+  cell.classList.toggle('day-cell--data', hd);
+  if (domColor) cell.style.setProperty('--dom', domColor);
+
+  const dots = [
+    r.mob  ? `<span class="dc dc--mob">${r.mob}</span>`   : '',
+    r.prok ? `<span class="dc dc--prok">${r.prok}</span>` : '',
+    sklad  ? `<span class="dc dc--gave">${sklad}</span>`  : '',
+  ].join('');
+  const indicators = tm ? '<span class="di di--travel"></span>' : '';
+
+  const dotsEl = cell.querySelector('.day-cell-dots');
+  if (dotsEl) dotsEl.innerHTML = dots;
+  const totalEl = cell.querySelector('.day-cell-total');
+  if (totalEl) totalEl.textContent = total > 0 ? total : '';
+  const indEl = cell.querySelector('.day-cell-indicators');
+  if (indEl) indEl.innerHTML = indicators;
 }
 
 function updateTotals() {
@@ -799,7 +882,8 @@ function generatePDF() {
 }
 
 // ── Long press on day card ────────────────────
-function setupLongPress(card, dateStr) {
+function setupLongPress(card, dateStr) { return; // disabled in grid mode
+  // eslint-disable-next-line no-unreachable
   let timer = null;
   const start = () => { timer = setTimeout(() => copyDaySummary(dateStr), 600); };
   const cancel = () => { clearTimeout(timer); };
@@ -855,14 +939,13 @@ function getBestDay() {
 
 function updateBestDays() {
   const { bestMob, bestStation } = getBestDay();
-  document.querySelectorAll('.day-card').forEach(card => {
-    card.classList.remove('best-mob', 'best-station');
-    const dateEl = card.querySelector('.day-date');
-    if (!dateEl) return;
-    const d = dateEl.textContent;
-    const fullDate = d.length === 5 ? d + String(new Date().getMonth()+1).padStart(2,'0') + '.' : d;
-    if (bestMob.date && bestMob.date.startsWith(d) && bestMob.val > 0) card.classList.add('best-mob');
-    else if (bestStation.date && bestStation.date.startsWith(d) && bestStation.val > 0) card.classList.add('best-station');
+  document.querySelectorAll('.day-cell').forEach(cell => {
+    cell.classList.remove('best-mob', 'best-station');
+    const dateStr = cell.dataset.date;
+    if (!dateStr) return;
+    const d = dateStr.slice(0,5);
+    if (bestMob.date && bestMob.date.startsWith(d) && bestMob.val > 0) cell.classList.add('best-mob');
+    else if (bestStation.date && bestStation.date.startsWith(d) && bestStation.val > 0) cell.classList.add('best-station');
   });
 }
 
