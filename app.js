@@ -1095,53 +1095,114 @@ function exportHistory() {
     .catch(() => alert(text));
 }
 
-async function exportHistoryPl() {
+function translateToPl(text) {
+  const dict = [
+    // Дистрибуторы
+    ['деинсталляция дистрибутора', 'deinstalacja dystrybutora'],
+    ['деинсталяция дистрибутора', 'deinstalacja dystrybutora'],
+    ['деинсталляция дистр', 'deinstalacja dystrybutora'],
+    ['деинсталяция дистр', 'deinstalacja dystrybutora'],
+    ['инсталляция дистрибутора', 'instalacja dystrybutora'],
+    ['инсталляция дистр', 'instalacja dystrybutora'],
+    ['инсталяция дистрибутора', 'instalacja dystrybutora'],
+    ['инсталяция дистр', 'instalacja dystrybutora'],
+    ['установка дистрибутора', 'instalacja dystrybutora'],
+    ['установка дистр', 'instalacja dystrybutora'],
+    ['замена дистрибутора', 'wymiana dystrybutora'],
+    ['замена дистр', 'wymiana dystrybutora'],
+    ['ремонт дистрибутора', 'naprawa dystrybutora'],
+    ['ремонт дистр', 'naprawa dystrybutora'],
+    ['дистрибутор', 'dystrybutor'],
+    ['дистр', 'dystrybutor'],
+    // Осмос
+    ['смена осмоса', 'wymiana osmozy'],
+    ['замена осмоса', 'wymiana osmozy'],
+    ['ремонт осмоса', 'naprawa osmozy'],
+    ['установка осмоса', 'instalacja osmozy'],
+    ['инсталляция осмоса', 'instalacja osmozy'],
+    ['осмос', 'osmoza'],
+    // Кран
+    ['замена крана', 'wymiana kranu'],
+    ['ремонт крана', 'naprawa kranu'],
+    ['установка крана', 'instalacja kranu'],
+    ['кран', 'kran'],
+    // Протечки
+    ['устранение протекания', 'usunięcie wycieku'],
+    ['устранение протечки', 'usunięcie wycieku'],
+    ['устранение течи', 'usunięcie wycieku'],
+    ['протекание', 'wyciek'],
+    ['протечка', 'wyciek'],
+    ['течь', 'wyciek'],
+    // Клиент
+    ['поиск клиента', 'szukanie klienta'],
+    ['ожидание клиента', 'oczekiwanie na klienta'],
+    ['встреча с клиентом', 'spotkanie z klientem'],
+    ['консультация клиента', 'konsultacja klienta'],
+    ['клиент', 'klient'],
+    // Парковка / дорога
+    ['поиск парковки', 'szukanie parkingu'],
+    ['парковка', 'parking'],
+    // Доставка
+    ['доставка игрушки', 'dostawa zabawki'],
+    ['доставка', 'dostawa'],
+    // Общие действия
+    ['замена', 'wymiana'],
+    ['установка', 'instalacja'],
+    ['инсталляция', 'instalacja'],
+    ['инсталяция', 'instalacja'],
+    ['деинсталляция', 'deinstalacja'],
+    ['деинсталяция', 'deinstalacja'],
+    ['ремонт', 'naprawa'],
+    ['проверка', 'kontrola'],
+    ['осмотр', 'przegląd'],
+    ['чистка', 'czyszczenie'],
+    ['промывка', 'płukanie'],
+    ['настройка', 'konfiguracja'],
+    ['подключение', 'podłączenie'],
+    ['отключение', 'odłączenie'],
+    ['перенос', 'przeniesienie'],
+    ['забрал', 'zabrał'],
+    ['отдал', 'oddał'],
+    ['Co2', 'CO2'],
+    ['со2', 'CO2'],
+    // Места
+    ['у пожарников', 'u strażaków'],
+    ['у подарников', 'u prezentowni'],
+    ['склад', 'magazyn'],
+    ['офис', 'biuro'],
+  ];
+
+  let result = text.toLowerCase();
+  // Sort by length descending to match longer phrases first
+  const sorted = [...dict].sort((a, b) => b[0].length - a[0].length);
+  for (const [ru, pl] of sorted) {
+    result = result.replace(new RegExp(ru.toLowerCase(), 'gi'), pl);
+  }
+  // Capitalize first letter
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
+function exportHistoryPl() {
   const isTravel = curHistTab === 'travel';
   const log = isTravel ? loadTravelLog() : loadWorkLog();
   if (!log.length) { alert(t('noData')); return; }
 
-  // Collect only unique descriptions to translate
-  const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
-  if (!descs.length) { exportHistory(); return; }
+  const byDate = {};
+  log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
+  const text = Object.keys(byDate).sort().reverse().map(date => {
+    const items = byDate[date];
+    const total = items.reduce((s,x) => s + (x.mins||0), 0);
+    const lines = items.map(x => isTravel
+      ? `  • ${toHM(x.mins)}`
+      : `  • ${translateToPl(x.desc)}${x.mins ? ' — ' + toHM(x.mins) : ''}`
+    ).join('\n');
+    return `=== ${date}${isTravel ? ` (${toHM(total)})` : ` (${items.length} wpisów${total ? ', ' + toHM(total) : ''})`} ===\n${lines}`;
+  }).join('\n\n');
 
-  showToast('Перевод...');
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации и пояснений:\n${descs.join('\n')}`
-        }]
-      })
-    });
-    const data = await resp.json();
-    const translated = data.content[0].text.trim().split('\n');
-    const map = {};
-    descs.forEach((d, i) => { map[d] = translated[i] || d; });
-
-    const byDate = {};
-    log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
-    const text = Object.keys(byDate).sort().reverse().map(date => {
-      const items = byDate[date];
-      const total = items.reduce((s,x) => s + (x.mins||0), 0);
-      const lines = items.map(x => isTravel
-        ? `  • ${toHM(x.mins)}`
-        : `  • ${map[x.desc] || x.desc}${x.mins ? ' — ' + toHM(x.mins) : ''}`
-      ).join('\n');
-      return `=== ${date}${isTravel ? ` (${toHM(total)})` : ` (${items.length} wpisów${total ? ', ' + toHM(total) : ''})`} ===\n${lines}`;
-    }).join('\n\n');
-
-    const header = isTravel ? 'Czas w drodze' : 'Inne prace';
-    await navigator.clipboard.writeText(header + '\n\n' + text);
-    showToast('Skopiowano!');
-  } catch(e) {
-    showToast('Ошибка перевода');
-  }
+  const header = isTravel ? 'Czas w drodze' : 'Inne prace';
+  navigator.clipboard.writeText(header + '\n\n' + text)
+    .then(() => showToast('Skopiowano!'))
+    .catch(() => alert(text));
 }
 
 // ── Backup / Restore ──────────────────────────
