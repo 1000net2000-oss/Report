@@ -310,6 +310,7 @@ input[type=number] { -moz-appearance: textfield; }
 .dc--mob  { background: #f472b620; color: #f472b6; }
 .dc--prok { background: #fbbf2420; color: #fbbf24; }
 .dc--gave { background: #34d39920; color: #34d399; }
+.dc--work { background: #fb923c20; color: #fb923c; }
 
 /* ── DAY DETAIL PANEL ── */
 .day-detail-panel { position: fixed; bottom: 0; left: 0; right: 0; background: #16161e; border-top: 1px solid #2a2a38; border-radius: 20px 20px 0 0; padding: 16px 16px 32px; max-height: 80vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 200; }

@@ -319,14 +319,16 @@ function render() {
     if (domColor && hd) cell.style.setProperty('--dom', domColor);
 
     const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+    const workMinsCell = wl.reduce((s,x) => s+(x.mins||0), 0);
     const dots = [
-      r.mob   ? `<span class="dc dc--mob">${r.mob}</span>` : '',
-      r.prok  ? `<span class="dc dc--prok">${r.prok}</span>` : '',
-      sklad   ? `<span class="dc dc--gave">${sklad}</span>` : '',
+      r.mob      ? `<span class="dc dc--mob">${r.mob}</span>`   : '',
+      r.prok     ? `<span class="dc dc--prok">${r.prok}</span>` : '',
+      sklad      ? `<span class="dc dc--gave">${sklad}</span>`  : '',
+      wl.length  ? `<span class="dc dc--work">${wl.length}${workMinsCell > 0 ? '·' + toHM(workMinsCell) : ''}</span>` : '',
     ].join('');
 
     const indicators = [
-      tm      ? '<span class="di di--travel"></span>' : '',
+      tm ? '<span class="di di--travel"></span>' : '',
     ].join('');
 
     cell.innerHTML = `
@@ -337,9 +339,12 @@ function render() {
         </div>
         <div class="day-cell-indicators">${indicators}</div>
       </div>
-      ${total > 0 ? `<div class="day-cell-total">${total}</div>` : ''}
       <div class="day-cell-dots">${dots}</div>`;
 
+    let pressTimer = null;
+    cell.addEventListener('touchstart', () => { pressTimer = setTimeout(() => copyDaySummary(dateStr), 600); }, { passive:true });
+    cell.addEventListener('touchend',   () => clearTimeout(pressTimer), { passive:true });
+    cell.addEventListener('touchmove',  () => clearTimeout(pressTimer), { passive:true });
     cell.addEventListener('click', () => openDetail(dateStr));
     list.appendChild(cell);
   });
@@ -358,6 +363,7 @@ function openDetail(dateStr) {
   const wl  = _wl.filter(x => x.date === dateStr);
   const tl  = _tl.filter(x => x.date === dateStr);
   const tm  = tl.reduce((s,x) => s+x.mins, 0);
+  const workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
   const d   = new Date(dateStr.split('.').reverse().join('-'));
   const wd  = t('weekdays')[d.getDay()];
   const sklad = (+r.sklad||0)+(+r.mbSklad||0);
@@ -418,6 +424,7 @@ function openDetail(dateStr) {
       <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
     </div>
     <div id="wlist_${dateStr}" class="wlist-items">${wl.map(x => workItemHtml(x, dateStr)).join('')}</div>
+    <div class="day-time-chip" id="wchip_${dateStr}" style="margin-top:6px">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}${workMins > 0 ? ' · ' + toHM(workMins) : ''}</span></div>
     <div class="divider"></div>
     <div class="section-label">${t('sectionTravel')}</div>
     <div class="travel-row">
@@ -543,17 +550,18 @@ function updateCellData(dateStr) {
   cell.classList.toggle('day-cell--data', hd);
   if (domColor) cell.style.setProperty('--dom', domColor);
 
+  const workMinsU = wl.reduce((s,x) => s+(x.mins||0), 0);
   const dots = [
-    r.mob  ? `<span class="dc dc--mob">${r.mob}</span>`   : '',
-    r.prok ? `<span class="dc dc--prok">${r.prok}</span>` : '',
-    sklad  ? `<span class="dc dc--gave">${sklad}</span>`  : '',
+    r.mob     ? `<span class="dc dc--mob">${r.mob}</span>`   : '',
+    r.prok    ? `<span class="dc dc--prok">${r.prok}</span>` : '',
+    sklad     ? `<span class="dc dc--gave">${sklad}</span>`  : '',
+    wl.length ? `<span class="dc dc--work">${wl.length}${workMinsU > 0 ? '·' + toHM(workMinsU) : ''}</span>` : '',
   ].join('');
   const indicators = tm ? '<span class="di di--travel"></span>' : '';
 
   const dotsEl = cell.querySelector('.day-cell-dots');
   if (dotsEl) dotsEl.innerHTML = dots;
-  const totalEl = cell.querySelector('.day-cell-total');
-  if (totalEl) totalEl.textContent = total > 0 ? total : '';
+
   const indEl = cell.querySelector('.day-cell-indicators');
   if (indEl) indEl.innerHTML = indicators;
 }
@@ -1338,19 +1346,6 @@ function restoreData(event) {
 }
 
 
-// ── Swipe between months ──────────────────────
-(function() {
-  let x0 = null;
-  const el = document.getElementById('pageMain');
-  el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
-  el.addEventListener('touchend', e => {
-    if (x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    x0 = null;
-    if (Math.abs(dx) < 60) return;
-    changeMonth(dx < 0 ? 1 : -1);
-  }, { passive: true });
-})();
 // ── Init ──────────────────────────────────────
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
