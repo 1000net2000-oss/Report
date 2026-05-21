@@ -268,6 +268,21 @@ function getDayRows(dateStr, r, wl, tl) {
 function render() {
   load();
   document.getElementById('monthLabel').textContent = `${t('months')[month]} ${year}`;
+
+  // Day counter
+  const allWorkdays = getWorkdays(year, month);
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const totalDays = allWorkdays.length;
+  const passedDays = isCurrentMonth
+    ? allWorkdays.filter(d => d <= today).length
+    : (new Date(year, month+1, 1) <= today ? totalDays : 0);
+  const counterEl = document.getElementById('monthDayCounter');
+  if (counterEl) {
+    counterEl.textContent = isCurrentMonth
+      ? `День ${passedDays} из ${totalDays}`
+      : passedDays === totalDays ? `${totalDays} дней` : '';
+  }
   document.getElementById('btnBackup').textContent   = t('backup');
   const restoreEl = document.getElementById('btnRestoreLbl');
   if (restoreEl) restoreEl.textContent = t('restore');
@@ -1044,7 +1059,6 @@ function renderArchive() {
   });
 
   const maxMob    = Math.max(...monthStats.map(s => s.mob), 1);
-  const maxProk   = Math.max(...monthStats.map(s => s.prok), 1);
   const maxGave   = Math.max(...monthStats.map(s => s.gave), 1);
   const maxWork   = Math.max(...monthStats.map(s => s.workMins), 1);
   const maxTravel = Math.max(...monthStats.map(s => s.travelMins), 1);
@@ -1075,7 +1089,6 @@ function renderArchive() {
       </div>
       <div class="arc-bars">
         <div class="arc-row"><span class="arc-lbl">Моб</span>${bar(s.mob, maxMob, '#f472b6')}<span class="arc-val" style="color:#f472b6">${s.mob}</span></div>
-        <div class="arc-row"><span class="arc-lbl">Прок</span>${bar(s.prok, maxProk, '#fbbf24')}<span class="arc-val" style="color:#fbbf24">${s.prok}</span></div>
         <div class="arc-row"><span class="arc-lbl">Отдал</span>${bar(s.gave, maxGave, '#34d399')}<span class="arc-val" style="color:#34d399">${s.gave}</span></div>
         <div class="arc-row"><span class="arc-lbl">Работы</span>${bar(s.workMins, maxWork, '#fb923c')}<span class="arc-val" style="color:#fb923c">${workLabel}</span></div>
         <div class="arc-row"><span class="arc-lbl">Путь</span>${bar(s.travelMins, maxTravel, '#818cf8')}<span class="arc-val" style="color:#818cf8">${travelLabel}</span></div>

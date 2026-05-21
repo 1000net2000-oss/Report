@@ -348,3 +348,6 @@ input[type=number] { -moz-appearance: textfield; }
 .arc-bar-wrap { flex: 1; height: 6px; background: #22222e; border-radius: 3px; overflow: hidden; }
 .arc-bar { height: 100%; border-radius: 3px; min-width: 3px; }
 .arc-val { font-size: 9px; font-weight: 600; width: 44px; text-align: right; flex-shrink: 0; white-space: nowrap; }
+
+/* ── MONTH DAY COUNTER ── */
+.month-day-counter { font-size: 10px; color: #64748b; text-align: center; margin-top: 2px; }
