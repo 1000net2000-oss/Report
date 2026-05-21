@@ -333,3 +333,18 @@ input[type=number] { -moz-appearance: textfield; }
 .detail-stat--gave   { border-left: 3px solid #34d399; } .detail-stat--gave   .ds-val { color: #34d399; }
 .detail-stat--travel { border-left: 3px solid #818cf8; } .detail-stat--travel .ds-val { color: #818cf8; }
 .detail-stat--work   { border-left: 3px solid #fb923c; } .detail-stat--work   .ds-val { color: #fb923c; }
+
+/* ── ARCHIVE MINI-BARS ── */
+.arc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.arc-total-wrap { display: flex; align-items: center; gap: 6px; }
+.arc-total { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; color: #e2e8f0; }
+.arc-diff { font-size: 10px; font-weight: 700; }
+.arc-diff--up { color: #34d399; }
+.arc-diff--dn { color: #f87171; }
+
+.arc-bars { display: flex; flex-direction: column; gap: 5px; }
+.arc-row { display: flex; align-items: center; gap: 6px; }
+.arc-lbl { font-size: 9px; color: #64748b; width: 36px; flex-shrink: 0; }
+.arc-bar-wrap { flex: 1; height: 6px; background: #22222e; border-radius: 3px; overflow: hidden; }
+.arc-bar { height: 100%; border-radius: 3px; min-width: 3px; }
+.arc-val { font-size: 9px; font-weight: 600; width: 44px; text-align: right; flex-shrink: 0; white-space: nowrap; }

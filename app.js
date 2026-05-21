@@ -1015,27 +1015,70 @@ function renderArchive() {
     return (+y < curY) || (+y === curY && +m < curM - 1);
   });
 
-  const cards = keys.map(key => {
+  // Collect stats for all months to compute maxes and diffs
+  const monthStats = keys.map(key => {
     const [, y, m] = key.split('_');
     let d = {};
     try { d = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
-    let mob=0, sklad=0, mbSklad=0;
+    let mob=0, prok=0, sklad=0, mbSklad=0;
     Object.values(d).forEach(r => {
       mob    += +r.mob    || 0;
+      prok   += +r.prok   || 0;
       sklad  += +r.sklad  || 0;
       mbSklad+= +r.mbSklad|| 0;
     });
-    const wlKey = `worklog_${y}_${m}`;
-    let wCount = 0;
-    try { wCount = JSON.parse(localStorage.getItem(wlKey) || '[]').length; } catch(e) {}
-    const total = mob + wCount + sklad + mbSklad;
-    const isActive = +y === year && +m === month;
-    const isOld = oldKeys.includes(key);
-    return `<div class="archive-card${isActive ? ' active' : ''}${isOld ? ' archive-card--old' : ''}" onclick="goToMonth(${y},${m})">
-      <div class="archive-month">${MONTHS[+m]} ${y}</div>
-      <div class="archive-stats">
-        <span class="archive-chip mob">${t('mobile')}: <b>${mob}</b></span>
-        <span class="archive-chip">${t('total')}: <b>${total}</b></span>
+    const gave = sklad + mbSklad;
+    let wCount=0, workMins=0;
+    try {
+      const wl = JSON.parse(localStorage.getItem(`worklog_${y}_${m}`) || '[]');
+      wCount = wl.length;
+      workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
+    } catch(e) {}
+    let travelMins=0;
+    try {
+      const tl = JSON.parse(localStorage.getItem(`travellog_${y}_${m}`) || '[]');
+      travelMins = tl.reduce((s,x) => s+(x.mins||0), 0);
+    } catch(e) {}
+    const total = mob + prok + gave;
+    return { key, y, m, mob, prok, gave, wCount, workMins, travelMins, total };
+  });
+
+  const maxMob    = Math.max(...monthStats.map(s => s.mob), 1);
+  const maxProk   = Math.max(...monthStats.map(s => s.prok), 1);
+  const maxGave   = Math.max(...monthStats.map(s => s.gave), 1);
+  const maxWork   = Math.max(...monthStats.map(s => s.workMins), 1);
+  const maxTravel = Math.max(...monthStats.map(s => s.travelMins), 1);
+
+  const bar = (val, max, color) => {
+    const pct = Math.round((val/max)*100);
+    return `<div class="arc-bar-wrap">
+      <div class="arc-bar" style="width:${pct}%;background:${color}"></div>
+    </div>`;
+  };
+
+  const cards = monthStats.map((s, i) => {
+    const prev = monthStats[i+1] || null;
+    const diff = prev ? s.total - prev.total : null;
+    const diffHtml = diff !== null
+      ? `<span class="arc-diff ${diff >= 0 ? 'arc-diff--up' : 'arc-diff--dn'}">${diff >= 0 ? '▲' : '▼'}${Math.abs(diff)}</span>`
+      : '';
+    const isActive = +s.y === year && +s.m === month;
+    const isOld = oldKeys.includes(s.key);
+
+    const workLabel = s.workMins > 0 ? toHM(s.workMins) : '0';
+    const travelLabel = s.travelMins > 0 ? toHM(s.travelMins) : '0';
+
+    return `<div class="archive-card${isActive ? ' active' : ''}${isOld ? ' archive-card--old' : ''}" onclick="goToMonth(${s.y},${s.m})">
+      <div class="arc-header">
+        <div class="archive-month">${MONTHS[+s.m]} ${s.y}</div>
+        <div class="arc-total-wrap">${diffHtml}<span class="arc-total">${s.total}</span></div>
+      </div>
+      <div class="arc-bars">
+        <div class="arc-row"><span class="arc-lbl">Моб</span>${bar(s.mob, maxMob, '#f472b6')}<span class="arc-val" style="color:#f472b6">${s.mob}</span></div>
+        <div class="arc-row"><span class="arc-lbl">Прок</span>${bar(s.prok, maxProk, '#fbbf24')}<span class="arc-val" style="color:#fbbf24">${s.prok}</span></div>
+        <div class="arc-row"><span class="arc-lbl">Отдал</span>${bar(s.gave, maxGave, '#34d399')}<span class="arc-val" style="color:#34d399">${s.gave}</span></div>
+        <div class="arc-row"><span class="arc-lbl">Работы</span>${bar(s.workMins, maxWork, '#fb923c')}<span class="arc-val" style="color:#fb923c">${workLabel}</span></div>
+        <div class="arc-row"><span class="arc-lbl">Путь</span>${bar(s.travelMins, maxTravel, '#818cf8')}<span class="arc-val" style="color:#818cf8">${travelLabel}</span></div>
       </div>
     </div>`;
   }).join('');
