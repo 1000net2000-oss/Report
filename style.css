@@ -350,4 +350,4 @@ input[type=number] { -moz-appearance: textfield; }
 .arc-val { font-size: 9px; font-weight: 600; width: 44px; text-align: right; flex-shrink: 0; white-space: nowrap; }
 
 /* ── MONTH DAY COUNTER ── */
-.month-day-counter { font-size: 10px; color: #64748b; text-align: center; margin-top: 2px; }
+.month-day-counter { font-size: 10px; color: #e2e8f0; text-align: center; margin-top: 2px; }
