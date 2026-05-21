@@ -1160,10 +1160,7 @@ function renderHistory() {
     </div>`;
   }).join('')
   + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
-  + `<div class="export-btns">
-      <button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>
-      <button class="export-btn export-btn--pl" onclick="exportHistoryPl()">🇵🇱 Kopiuj po polsku</button>
-    </div>`;
+  + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
 }
 
 function exportHistory() {
@@ -1184,93 +1181,6 @@ function exportHistory() {
   navigator.clipboard.writeText((isTravel ? t('histTravel') : t('histOtherWork')) + '\n\n' + text)
     .then(() => showToast(t('copied')))
     .catch(() => alert(text));
-}
-
-function translateToPl(text) {
-  const dict = [
-    // Дистрибуторы
-    ['деинсталляция дистрибутора', 'deinstalacja dystrybutora'],
-    ['деинсталяция дистрибутора', 'deinstalacja dystrybutora'],
-    ['деинсталляция дистр', 'deinstalacja dystrybutora'],
-    ['деинсталяция дистр', 'deinstalacja dystrybutora'],
-    ['инсталляция дистрибутора', 'instalacja dystrybutora'],
-    ['инсталляция дистр', 'instalacja dystrybutora'],
-    ['инсталяция дистрибутора', 'instalacja dystrybutora'],
-    ['инсталяция дистр', 'instalacja dystrybutora'],
-    ['установка дистрибутора', 'instalacja dystrybutora'],
-    ['установка дистр', 'instalacja dystrybutora'],
-    ['замена дистрибутора', 'wymiana dystrybutora'],
-    ['замена дистр', 'wymiana dystrybutora'],
-    ['ремонт дистрибутора', 'naprawa dystrybutora'],
-    ['ремонт дистр', 'naprawa dystrybutora'],
-    ['дистрибутор', 'dystrybutor'],
-    ['дистр', 'dystrybutor'],
-    // Осмос
-    ['смена осмоса', 'wymiana osmozy'],
-    ['замена осмоса', 'wymiana osmozy'],
-    ['ремонт осмоса', 'naprawa osmozy'],
-    ['установка осмоса', 'instalacja osmozy'],
-    ['инсталляция осмоса', 'instalacja osmozy'],
-    ['осмос', 'osmoza'],
-    // Кран
-    ['замена крана', 'wymiana kranu'],
-    ['ремонт крана', 'naprawa kranu'],
-    ['установка крана', 'instalacja kranu'],
-    ['кран', 'kran'],
-    // Протечки
-    ['устранение протекания', 'usunięcie wycieku'],
-    ['устранение протечки', 'usunięcie wycieku'],
-    ['устранение течи', 'usunięcie wycieku'],
-    ['протекание', 'wyciek'],
-    ['протечка', 'wyciek'],
-    ['течь', 'wyciek'],
-    // Клиент
-    ['поиск клиента', 'szukanie klienta'],
-    ['ожидание клиента', 'oczekiwanie na klienta'],
-    ['встреча с клиентом', 'spotkanie z klientem'],
-    ['консультация клиента', 'konsultacja klienta'],
-    ['клиент', 'klient'],
-    // Парковка / дорога
-    ['поиск парковки', 'szukanie parkingu'],
-    ['парковка', 'parking'],
-    // Доставка
-    ['доставка игрушки', 'dostawa zabawki'],
-    ['доставка', 'dostawa'],
-    // Общие действия
-    ['замена', 'wymiana'],
-    ['установка', 'instalacja'],
-    ['инсталляция', 'instalacja'],
-    ['инсталяция', 'instalacja'],
-    ['деинсталляция', 'deinstalacja'],
-    ['деинсталяция', 'deinstalacja'],
-    ['ремонт', 'naprawa'],
-    ['проверка', 'kontrola'],
-    ['осмотр', 'przegląd'],
-    ['чистка', 'czyszczenie'],
-    ['промывка', 'płukanie'],
-    ['настройка', 'konfiguracja'],
-    ['подключение', 'podłączenie'],
-    ['отключение', 'odłączenie'],
-    ['перенос', 'przeniesienie'],
-    ['забрал', 'zabrał'],
-    ['отдал', 'oddał'],
-    ['Co2', 'CO2'],
-    ['со2', 'CO2'],
-    // Места
-    ['у пожарников', 'u strażaków'],
-    ['у подарников', 'u prezentowni'],
-    ['склад', 'magazyn'],
-    ['офис', 'biuro'],
-  ];
-
-  let result = text.toLowerCase();
-  // Sort by length descending to match longer phrases first
-  const sorted = [...dict].sort((a, b) => b[0].length - a[0].length);
-  for (const [ru, pl] of sorted) {
-    result = result.replace(new RegExp(ru.toLowerCase(), 'gi'), pl);
-  }
-  // Capitalize first letter
-  return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
 function exportHistoryPl() {
