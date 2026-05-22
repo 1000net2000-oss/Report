@@ -1264,7 +1264,9 @@ async function exportPdf() {
       const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(desc) + '&langpair=ru|pl';
       const r = await fetch(url);
       const d = await r.json();
-      map[desc] = d.responseStatus === 200 ? d.responseData.translatedText : desc;
+      map[desc] = d.responseStatus === 200
+        ? d.responseData.translatedText.replace(/<\d+=?>/g, '').replace(/\s+$/, '')
+        : desc;
     }));
   } catch(e) {
     showToast('Blad tlumaczenia');
