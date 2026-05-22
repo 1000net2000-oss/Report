@@ -163,8 +163,8 @@ input[type=number] { -moz-appearance: textfield; }
 .export-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
 .export-btn { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #2a2a38; background: none; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; }
 .export-btn:active { border-color: var(--accent); color: var(--accent); }
-.export-btn--pl { border-color: #dc2626aa; color: #f87171; }
-.export-btn--pl:active { border-color: #dc2626; color: #fca5a5; }
+.export-btn--pdf { border-color: #dc2626aa; color: #f87171; }
+.export-btn--pdf:active { border-color: #dc2626; color: #fca5a5; }
 .hist-empty { text-align: center; padding: 32px 0; font-size: 13px; color: var(--muted); }
 
 .day-card.best-mob { border-color: #818cf8; box-shadow: 0 0 0 1px #818cf844; }

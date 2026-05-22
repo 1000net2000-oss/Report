@@ -1054,7 +1054,7 @@ function renderArchive() {
       const tl = JSON.parse(localStorage.getItem(`travellog_${y}_${m}`) || '[]');
       travelMins = tl.reduce((s,x) => s+(x.mins||0), 0);
     } catch(e) {}
-    const total = mob + prok + gave;
+    const total = mob + gave;
     return { key, y, m, mob, prok, gave, wCount, workMins, travelMins, total };
   });
 
@@ -1216,7 +1216,10 @@ function renderHistory() {
     </div>`;
   }).join('')
   + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
-  + `<button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>`;
+  + `<div class="export-btns">
+      <button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>
+      ${!isTravel ? `<button class="export-btn export-btn--pdf" onclick="exportPdf()">🇵🇱 Скачать PDF (польский)</button>` : ''}
+    </div>`;
 }
 
 function exportHistory() {
@@ -1237,6 +1240,82 @@ function exportHistory() {
   navigator.clipboard.writeText((isTravel ? t('histTravel') : t('histOtherWork')) + '\n\n' + text)
     .then(() => showToast(t('copied')))
     .catch(() => alert(text));
+}
+
+
+async function exportPdf() {
+  const log = loadWorkLog();
+  if (!log.length) { alert(t('noData')); return; }
+
+  showToast('Перевод...');
+
+  // Collect unique descriptions
+  const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
+
+  // Translate each via MyMemory
+  const map = {};
+  try {
+    await Promise.all(descs.map(async desc => {
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(desc)}&langpair=ru|pl`;
+      const r = await fetch(url);
+      const d = await r.json();
+      map[desc] = d.responseStatus === 200 ? d.responseData.translatedText : desc;
+    }));
+  } catch(e) {
+    showToast('Ошибка перевода');
+    return;
+  }
+
+  // Build PDF via jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+
+  // Load font supporting Polish characters
+  doc.setFont('helvetica');
+
+  const byDate = {};
+  log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
+
+  const monthName = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
+    'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'][month];
+
+  let y = 15;
+  const lh = 6, margin = 15, pageH = 280;
+
+  // Title
+  doc.setFontSize(14); doc.setTextColor(40,40,40);
+  doc.text(`Inne prace — ${monthName} ${year}`, margin, y); y += 10;
+
+  Object.keys(byDate).sort().reverse().forEach(date => {
+    const items = byDate[date];
+    const total = items.reduce((s,x) => s+(x.mins||0), 0);
+    const count = items.length;
+
+    if (y > pageH) { doc.addPage(); y = 15; }
+
+    // Date header
+    doc.setFontSize(11); doc.setTextColor(80,80,200);
+    const sub = `${count} wpisów${total ? ', ' + toHM(total) : ''}`;
+    doc.text(`${date}`, margin, y);
+    doc.setFontSize(9); doc.setTextColor(120,120,120);
+    doc.text(sub, margin + 20, y);
+    y += lh;
+
+    doc.setFontSize(10); doc.setTextColor(40,40,40);
+    items.forEach(x => {
+      if (y > pageH) { doc.addPage(); y = 15; }
+      const translated = map[x.desc] || x.desc;
+      const line = `• ${translated}${x.mins ? ' — ' + toHM(x.mins) : ''}`;
+      const split = doc.splitTextToSize(line, 180);
+      doc.text(split, margin + 3, y);
+      y += lh * split.length;
+    });
+    y += 3;
+  });
+
+  const mm = String(month+1).padStart(2,'0');
+  doc.save(`inne_prace_${year}-${mm}.pdf`);
+  showToast('PDF готов!');
 }
 
 function exportHistoryPl() {
