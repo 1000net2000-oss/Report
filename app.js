@@ -1267,31 +1267,15 @@ async function exportPdf() {
 
   const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
   const map = {};
-  const servers = [
-    'https://libretranslate.com',
-    'https://translate.argosopentech.com',
-    'https://libretranslate.de',
-  ];
   try {
-    let translated = null;
-    for (const server of servers) {
-      try {
-        const resp = await fetch(server + '/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ q: descs.join('\n'), source: 'ru', target: 'pl', format: 'text' })
-        });
-        if (resp.ok) {
-          const data = await resp.json();
-          if (data.translatedText) { translated = data.translatedText; break; }
-        }
-      } catch(e) { continue; }
-    }
-    if (!translated) { showToast('Нет доступа к переводчику'); return; }
-    const lines = translated.trim().split('\n');
-    descs.forEach((d, i) => { map[d] = (lines[i] || d).trim(); });
+    await Promise.all(descs.map(async desc => {
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=ru&tl=pl&dt=t&q=' + encodeURIComponent(desc);
+      const r = await fetch(url);
+      const d = await r.json();
+      map[desc] = d[0].map(x => x[0]).join('');
+    }));
   } catch(e) {
-    showToast('Ошибка перевода');
+    alert('catch: ' + e.message);
     return;
   }
 
