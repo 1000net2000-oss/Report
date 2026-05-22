@@ -1278,7 +1278,7 @@ async function exportPdf() {
   const map = {};
   try {
     const prompt = 'Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации, без пояснений:\n' + descs.join('\n');
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiKey, {
+    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + geminiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
