@@ -1255,19 +1255,34 @@ async function exportPdf() {
   const log = loadWorkLog();
   if (!log.length) { alert(t('noData')); return; }
 
+  // Get or ask for Gemini API key
+  let geminiKey = localStorage.getItem('gemini_key') || '';
+  if (!geminiKey) {
+    geminiKey = prompt('Введи Gemini API ключ (сохранится автоматически):');
+    if (!geminiKey) return;
+    localStorage.setItem('gemini_key', geminiKey.trim());
+    geminiKey = geminiKey.trim();
+  }
+
   showToast('Tlumaczenie...');
 
   const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
   const map = {};
   try {
-    await Promise.all(descs.map(async desc => {
-      const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(desc) + '&langpair=ru|pl';
-      const r = await fetch(url);
-      const d = await r.json();
-      map[desc] = d.responseStatus === 200
-        ? d.responseData.translatedText.replace(/<\d+=?>/g, '').replace(/\s+$/, '')
-        : desc;
-    }));
+    const prompt = 'Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации, без пояснений:\n' + descs.join('\n');
+    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    if (!resp.ok) {
+      localStorage.removeItem('gemini_key');
+      showToast('Неверный ключ — введи заново');
+      return;
+    }
+    const data = await resp.json();
+    const translated = data.candidates[0].content.parts[0].text.trim().split('\n');
+    descs.forEach((d, i) => { map[d] = (translated[i] || d).trim(); });
   } catch(e) {
     showToast('Blad tlumaczenia');
     return;
