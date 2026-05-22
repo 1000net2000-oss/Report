@@ -1243,79 +1243,91 @@ function exportHistory() {
 }
 
 
+function toHMlat(mins) {
+  if (!mins) return '';
+  const h = Math.floor(mins/60), m = mins%60;
+  if (h === 0) return m + ' min';
+  if (m === 0) return h + ' godz';
+  return h + ' godz ' + m + ' min';
+}
+
 async function exportPdf() {
   const log = loadWorkLog();
   if (!log.length) { alert(t('noData')); return; }
 
-  showToast('Перевод...');
+  showToast('Tlumaczenie...');
 
-  // Collect unique descriptions
   const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
-
-  // Translate each via MyMemory
   const map = {};
   try {
     await Promise.all(descs.map(async desc => {
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(desc)}&langpair=ru|pl`;
+      const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(desc) + '&langpair=ru|pl';
       const r = await fetch(url);
       const d = await r.json();
       map[desc] = d.responseStatus === 200 ? d.responseData.translatedText : desc;
     }));
   } catch(e) {
-    showToast('Ошибка перевода');
+    showToast('Blad tlumaczenia');
     return;
   }
 
-  // Build PDF via jsPDF
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
-
-  // Load font supporting Polish characters
   doc.setFont('helvetica');
 
   const byDate = {};
   log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
 
-  const monthName = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec',
-    'Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'][month];
+  const MONTHS_PL = ['Styczen','Luty','Marzec','Kwiecien','Maj','Czerwiec',
+    'Lipiec','Sierpien','Wrzesien','Pazdziernik','Listopad','Grudzien'];
 
   let y = 15;
-  const lh = 6, margin = 15, pageH = 280;
+  const lh = 7, margin = 15, pageH = 277;
+  let grandTotal = 0;
 
-  // Title
-  doc.setFontSize(14); doc.setTextColor(40,40,40);
-  doc.text(`Inne prace — ${monthName} ${year}`, margin, y); y += 10;
+  doc.setFontSize(14); doc.setTextColor(30,30,30);
+  doc.text('Inne prace - ' + MONTHS_PL[month] + ' ' + year, margin, y); y += 10;
 
   Object.keys(byDate).sort().reverse().forEach(date => {
     const items = byDate[date];
     const total = items.reduce((s,x) => s+(x.mins||0), 0);
+    grandTotal += total;
     const count = items.length;
 
-    if (y > pageH) { doc.addPage(); y = 15; }
+    if (y > pageH - 10) { doc.addPage(); y = 15; }
 
-    // Date header
-    doc.setFontSize(11); doc.setTextColor(80,80,200);
-    const sub = `${count} wpisów${total ? ', ' + toHM(total) : ''}`;
-    doc.text(`${date}`, margin, y);
-    doc.setFontSize(9); doc.setTextColor(120,120,120);
-    doc.text(sub, margin + 20, y);
+    doc.setFontSize(11); doc.setTextColor(60,60,180);
+    doc.text(date, margin, y);
+    doc.setFontSize(9); doc.setTextColor(110,110,110);
+    const sub = count + ' wpisow' + (total ? '  ' + toHMlat(total) : '');
+    doc.text(sub, margin + 22, y);
     y += lh;
 
-    doc.setFontSize(10); doc.setTextColor(40,40,40);
+    doc.setFontSize(10); doc.setTextColor(30,30,30);
     items.forEach(x => {
       if (y > pageH) { doc.addPage(); y = 15; }
       const translated = map[x.desc] || x.desc;
-      const line = `• ${translated}${x.mins ? ' — ' + toHM(x.mins) : ''}`;
-      const split = doc.splitTextToSize(line, 180);
+      const timeStr = x.mins ? ' - ' + toHMlat(x.mins) : '';
+      const line = '- ' + translated + timeStr;
+      const split = doc.splitTextToSize(line, 175);
       doc.text(split, margin + 3, y);
       y += lh * split.length;
     });
-    y += 3;
+    y += 4;
   });
 
+  if (grandTotal > 0) {
+    if (y > pageH - 10) { doc.addPage(); y = 15; }
+    y += 2;
+    doc.setDrawColor(180,180,180);
+    doc.line(margin, y, 195, y); y += 5;
+    doc.setFontSize(11); doc.setTextColor(60,60,180);
+    doc.text('Lacznie: ' + toHMlat(grandTotal), margin, y);
+  }
+
   const mm = String(month+1).padStart(2,'0');
-  doc.save(`inne_prace_${year}-${mm}.pdf`);
-  showToast('PDF готов!');
+  doc.save('inne_prace_' + year + '-' + mm + '.pdf');
+  showToast('PDF gotowy!');
 }
 
 function exportHistoryPl() {
