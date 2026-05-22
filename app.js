@@ -1218,7 +1218,10 @@ function renderHistory() {
   + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
   + `<div class="export-btns">
       <button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>
-      ${!isTravel ? `<button class="export-btn export-btn--pdf" onclick="exportPdf()">🇵🇱 Скачать PDF (польский)</button>` : ''}
+      ${!isTravel ? `<div style="display:flex;gap:8px">
+        <button class="export-btn export-btn--pdf" onclick="exportPdf()" style="flex:1">🇵🇱 PDF (польский)</button>
+        <button class="export-btn export-btn--pdf" onclick="resetGeminiKey()" style="width:44px;flex-shrink:0">⚙️</button>
+      </div>` : ''}
     </div>`;
 }
 
@@ -1251,6 +1254,11 @@ function toHMlat(mins) {
   return h + ' godz ' + m + ' min';
 }
 
+function resetGeminiKey() {
+  localStorage.removeItem('gemini_key');
+  showToast('Ключ сброшен');
+}
+
 async function exportPdf() {
   const log = loadWorkLog();
   if (!log.length) { alert(t('noData')); return; }
@@ -1270,7 +1278,7 @@ async function exportPdf() {
   const map = {};
   try {
     const prompt = 'Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации, без пояснений:\n' + descs.join('\n');
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
+    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + geminiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
