@@ -1284,15 +1284,16 @@ async function exportPdf() {
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     if (!resp.ok) {
+      const errText = await resp.text();
+      alert('Ошибка ' + resp.status + ': ' + errText.slice(0, 200));
       localStorage.removeItem('gemini_key');
-      showToast('Неверный ключ — введи заново');
       return;
     }
     const data = await resp.json();
     const translated = data.candidates[0].content.parts[0].text.trim().split('\n');
     descs.forEach((d, i) => { map[d] = (translated[i] || d).trim(); });
   } catch(e) {
-    showToast('Blad tlumaczenia');
+    alert('catch: ' + e.message);
     return;
   }
 
