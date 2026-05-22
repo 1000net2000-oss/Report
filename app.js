@@ -1263,37 +1263,35 @@ async function exportPdf() {
   const log = loadWorkLog();
   if (!log.length) { alert(t('noData')); return; }
 
-  // Get or ask for Gemini API key
-  let geminiKey = localStorage.getItem('gemini_key') || '';
-  if (!geminiKey) {
-    geminiKey = prompt('Введи Gemini API ключ (сохранится автоматически):');
-    if (!geminiKey) return;
-    localStorage.setItem('gemini_key', geminiKey.trim());
-    geminiKey = geminiKey.trim();
-  }
-
   showToast('Tlumaczenie...');
 
   const descs = [...new Set(log.filter(x => x.desc).map(x => x.desc))];
   const map = {};
+  const servers = [
+    'https://libretranslate.com',
+    'https://translate.argosopentech.com',
+    'https://libretranslate.de',
+  ];
   try {
-    const prompt = 'Переведи каждую строку на польский язык. Отвечай ТОЛЬКО переведёнными строками в том же порядке, по одной на строку, без нумерации, без пояснений:\n' + descs.join('\n');
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=' + geminiKey, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-    });
-    if (!resp.ok) {
-      const errText = await resp.text();
-      alert('Ошибка ' + resp.status + ': ' + errText.slice(0, 200));
-      localStorage.removeItem('gemini_key');
-      return;
+    let translated = null;
+    for (const server of servers) {
+      try {
+        const resp = await fetch(server + '/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ q: descs.join('\n'), source: 'ru', target: 'pl', format: 'text' })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data.translatedText) { translated = data.translatedText; break; }
+        }
+      } catch(e) { continue; }
     }
-    const data = await resp.json();
-    const translated = data.candidates[0].content.parts[0].text.trim().split('\n');
-    descs.forEach((d, i) => { map[d] = (translated[i] || d).trim(); });
+    if (!translated) { showToast('Нет доступа к переводчику'); return; }
+    const lines = translated.trim().split('\n');
+    descs.forEach((d, i) => { map[d] = (lines[i] || d).trim(); });
   } catch(e) {
-    alert('catch: ' + e.message);
+    showToast('Ошибка перевода');
     return;
   }
 
