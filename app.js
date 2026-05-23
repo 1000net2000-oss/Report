@@ -1281,7 +1281,15 @@ async function exportPdf() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
-  doc.setFont('helvetica');
+
+  // Load font with Polish character support
+  if (window._pdfFont) {
+    doc.addFileToVFS('Roboto-Regular.ttf', window._pdfFont);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+    doc.setFont('Roboto');
+  } else {
+    doc.setFont(window._pdfFont ? 'Roboto' : 'helvetica');
+  }
 
   const byDate = {};
   log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
@@ -1412,6 +1420,16 @@ function restoreData(event) {
 
 
 // ── Init ──────────────────────────────────────
+// Preload font for PDF Polish support
+fetch('https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2')
+  .then(r => r.arrayBuffer())
+  .then(buf => {
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    window._pdfFont = btoa(binary);
+  }).catch(() => {});
+
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
 document.getElementById('btnBackup').addEventListener('click', backupData);
