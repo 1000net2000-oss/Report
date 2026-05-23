@@ -685,106 +685,58 @@ function renderChart() {
   document.getElementById('chartMonthLabel').textContent = `${t('months')[month]} ${year}`;
 
   const workdays = getWorkdays(year, month);
-  const tl = loadTravelLog();
+  const _wl = loadWorkLog();
+  const _tl = loadTravelLog();
 
   const rows = [];
   workdays.forEach(d => {
     const dateStr = formatDate(d);
     const r = data[dateStr] || {};
-    const mob  = +r.mob || 0;
-    const gave = (+r.sklad||0) + (+r.mbSklad||0);
-    if (mob || gave) rows.push({ label: dateStr.slice(0,2), mob, gave });
+    const mob   = +r.mob  || 0;
+    const prok  = +r.prok || 0;
+    const gave  = (+r.sklad||0) + (+r.mbSklad||0);
+    const wl    = _wl.filter(x => x.date === dateStr);
+    const tl    = _tl.filter(x => x.date === dateStr);
+    const work  = wl.reduce((s,x) => s+(x.mins||0), 0);
+    const travel= tl.reduce((s,x) => s+x.mins, 0);
+    if (mob || prok || gave || work || travel)
+      rows.push({ label: dateStr.slice(0,5), mob, prok, gave, work, travel });
   });
 
-  const canvas = document.getElementById('chartCanvas');
-  const ctx = canvas.getContext('2d');
-  const wrap = canvas.parentElement;
-  canvas.width  = wrap.clientWidth  || 340;
+  const maxMob    = Math.max(...rows.map(r => r.mob),    1);
+  const maxProk   = Math.max(...rows.map(r => r.prok),   1);
+  const maxGave   = Math.max(...rows.map(r => r.gave),   1);
+  const maxWork   = Math.max(...rows.map(r => r.work),   1);
+  const maxTravel = Math.max(...rows.map(r => r.travel), 1);
 
-  const ROW_H  = 36;
-  const LEG_H  = 24;
-  const PAD    = { top: 8, right: 48, bottom: LEG_H + 8, left: 28 };
-  canvas.height = PAD.top + rows.length * ROW_H + PAD.bottom;
+  const bar = (val, max, color) =>
+    `<div class="ch-bar-wrap"><div class="ch-bar" style="width:${Math.round((val/max)*100)}%;background:${color}"></div></div>`;
 
-  const W = canvas.width, H = canvas.height;
-  const barAreaW = W - PAD.left - PAD.right;
-  const maxVal = Math.max(...rows.map(r => Math.max(r.mob, r.gave)), 1);
-  const BAR_H  = 10;
-  const GAP    = 3;
+  const wrap = document.getElementById('chartWrap');
+  if (!rows.length) {
+    wrap.innerHTML = `<div class="chart-empty">Нет данных</div>`;
+    return;
+  }
 
-  ctx.fillStyle = '#0f0f12';
-  ctx.fillRect(0, 0, W, H);
-
-  rows.forEach((row, i) => {
-    const y = PAD.top + i * ROW_H;
-    const cy = y + ROW_H / 2;
-
-    // Day label
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 9px Inter, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(row.label, PAD.left - 4, cy + 3);
-
-    // Mob bar
-    const mW = (row.mob / maxVal) * barAreaW;
-    if (mW > 0) {
-      const g1 = ctx.createLinearGradient(PAD.left, 0, PAD.left + mW, 0);
-      g1.addColorStop(0, '#a78bfa');
-      g1.addColorStop(1, '#818cf844');
-      ctx.fillStyle = g1;
-      ctx.beginPath();
-      ctx.roundRect
-        ? ctx.roundRect(PAD.left, cy - BAR_H - GAP, mW, BAR_H, [0, 3, 3, 0])
-        : ctx.rect(PAD.left, cy - BAR_H - GAP, mW, BAR_H);
-      ctx.fill();
-      // value
-      ctx.fillStyle = '#a78bfa';
-      ctx.font = 'bold 9px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(row.mob, PAD.left + mW + 4, cy - GAP - 1);
-    }
-
-    // Gave bar (stacionarnaya + mb)
-    const gW = (row.gave / maxVal) * barAreaW;
-    if (gW > 0) {
-      const g2 = ctx.createLinearGradient(PAD.left, 0, PAD.left + gW, 0);
-      g2.addColorStop(0, '#34d399');
-      g2.addColorStop(1, '#6ee7b744');
-      ctx.fillStyle = g2;
-      ctx.beginPath();
-      ctx.roundRect
-        ? ctx.roundRect(PAD.left, cy + GAP, gW, BAR_H, [0, 3, 3, 0])
-        : ctx.rect(PAD.left, cy + GAP, gW, BAR_H);
-      ctx.fill();
-      // value
-      ctx.fillStyle = '#34d399';
-      ctx.font = 'bold 9px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(row.gave, PAD.left + gW + 4, cy + GAP + BAR_H - 1);
-    }
-
-    // Separator line
-    if (i < rows.length - 1) {
-      ctx.strokeStyle = '#2a2a38';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(PAD.left, y + ROW_H);
-      ctx.lineTo(W - 8, y + ROW_H);
-      ctx.stroke();
-    }
-  });
-
-  // Legend
-  const legY = H - LEG_H + 8;
-  [[t('chartMobile'), '#a78bfa'], [t('chartStation'), '#34d399']].forEach(([name, color], i) => {
-    const lx = PAD.left + i * 130;
-    ctx.fillStyle = color;
-    ctx.fillRect(lx, legY - 7, 10, 6);
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '9px Inter, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(name, lx + 14, legY - 1);
-  });
+  wrap.innerHTML = `
+    <div class="ch-legend">
+      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#f472b6"></span>Моб</span>
+      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#fbbf24"></span>Прок</span>
+      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#34d399"></span>Отдал</span>
+      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#fb923c"></span>Работы</span>
+      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#818cf8"></span>Путь</span>
+    </div>
+    ${rows.map(r => `
+      <div class="ch-row">
+        <div class="ch-label">${r.label}</div>
+        <div class="ch-bars">
+          ${r.mob    ? `<div class="ch-bar-row">${bar(r.mob,    maxMob,    '#f472b6')}<span class="ch-val" style="color:#f472b6">${r.mob}</span></div>`    : ''}
+          ${r.prok   ? `<div class="ch-bar-row">${bar(r.prok,   maxProk,   '#fbbf24')}<span class="ch-val" style="color:#fbbf24">${r.prok}</span></div>`   : ''}
+          ${r.gave   ? `<div class="ch-bar-row">${bar(r.gave,   maxGave,   '#34d399')}<span class="ch-val" style="color:#34d399">${r.gave}</span></div>`   : ''}
+          ${r.work   ? `<div class="ch-bar-row">${bar(r.work,   maxWork,   '#fb923c')}<span class="ch-val" style="color:#fb923c">${toHM(r.work)}</span></div>`   : ''}
+          ${r.travel ? `<div class="ch-bar-row">${bar(r.travel, maxTravel, '#818cf8')}<span class="ch-val" style="color:#818cf8">${toHM(r.travel)}</span></div>` : ''}
+        </div>
+      </div>`).join('')}`;
 }
 
 // ── PDF ───────────────────────────────────────

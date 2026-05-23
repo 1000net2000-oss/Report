@@ -76,7 +76,7 @@
   </div>
 
   <div class="stats-grid stats-grid--bottom">
-    <button class="stat-tile stat-tile--travel stat-tile--travel-btn" onclick="openHistory('travel')">
+    <button class="stat-tile stat-tile--travel stat-tile--travel-btn stat-tile--full" onclick="openHistory('travel')">
       <div class="stat-tile-label" id="labelTravel">В пути</div>
       <div class="stat-tile-val stat-tile-val--travel" id="totalExtraTravel">0 мин</div>
     </button>
@@ -142,9 +142,7 @@
     <div class="hist-title hist-title--accent2" id="chartPageTitle">График</div>
   </div>
   <div class="chart-month-lbl" id="chartMonthLabel"></div>
-  <div class="chart-wrap">
-    <canvas id="chartCanvas"></canvas>
-  </div>
+  <div class="chart-wrap" id="chartWrap"></div>
 </div>
 
 <!-- ══ ARCHIVE PAGE ══ -->
