@@ -1281,14 +1281,20 @@ async function exportPdf() {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
+  doc.setFont('helvetica');
 
-  // Load font with Polish character support
-  if (window._pdfFont) {
-    doc.addFileToVFS('Roboto-Regular.ttf', window._pdfFont);
-    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-    doc.setFont('Roboto');
-  } else {
-    doc.setFont(window._pdfFont ? 'Roboto' : 'helvetica');
+  // Normalize Polish chars to ASCII equivalents for helvetica compatibility
+  function normPl(s) {
+    return s
+      .replace(/ą/g,'a').replace(/Ą/g,'A')
+      .replace(/ć/g,'c').replace(/Ć/g,'C')
+      .replace(/ę/g,'e').replace(/Ę/g,'E')
+      .replace(/ł/g,'l').replace(/Ł/g,'L')
+      .replace(/ń/g,'n').replace(/Ń/g,'N')
+      .replace(/ó/g,'o').replace(/Ó/g,'O')
+      .replace(/ś/g,'s').replace(/Ś/g,'S')
+      .replace(/ź/g,'z').replace(/Ź/g,'Z')
+      .replace(/ż/g,'z').replace(/Ż/g,'Z');
   }
 
   const byDate = {};
@@ -1302,7 +1308,7 @@ async function exportPdf() {
   let grandTotal = 0;
 
   doc.setFontSize(14); doc.setTextColor(30,30,30);
-  doc.text('Inne prace - ' + MONTHS_PL[month] + ' ' + year, margin, y); y += 10;
+  doc.text(normPl('Inne prace - ' + MONTHS_PL[month] + ' ' + year), margin, y); y += 10;
 
   Object.keys(byDate).sort().reverse().forEach(date => {
     const items = byDate[date];
@@ -1315,7 +1321,7 @@ async function exportPdf() {
     doc.setFontSize(11); doc.setTextColor(60,60,180);
     doc.text(date, margin, y);
     doc.setFontSize(9); doc.setTextColor(110,110,110);
-    const sub = count + ' wpisow' + (total ? '  ' + toHMlat(total) : '');
+    const sub = normPl(count + ' wpisow' + (total ? '  ' + toHMlat(total) : ''));
     doc.text(sub, margin + 22, y);
     y += lh;
 
@@ -1324,7 +1330,7 @@ async function exportPdf() {
       if (y > pageH) { doc.addPage(); y = 15; }
       const translated = map[x.desc] || x.desc;
       const timeStr = x.mins ? ' - ' + toHMlat(x.mins) : '';
-      const line = '- ' + translated + timeStr;
+      const line = normPl('- ' + translated + timeStr);
       const split = doc.splitTextToSize(line, 175);
       doc.text(split, margin + 3, y);
       y += lh * split.length;
@@ -1338,7 +1344,7 @@ async function exportPdf() {
     doc.setDrawColor(180,180,180);
     doc.line(margin, y, 195, y); y += 5;
     doc.setFontSize(11); doc.setTextColor(60,60,180);
-    doc.text('Lacznie: ' + toHMlat(grandTotal), margin, y);
+    doc.text(normPl('Lacznie: ' + toHMlat(grandTotal)), margin, y);
   }
 
   const mm = String(month+1).padStart(2,'0');
@@ -1420,16 +1426,6 @@ function restoreData(event) {
 
 
 // ── Init ──────────────────────────────────────
-// Preload font for PDF Polish support
-fetch('https://fonts.gstatic.com/s/roboto/v32/KFOmCnqEu92Fr1Mu4mxK.woff2')
-  .then(r => r.arrayBuffer())
-  .then(buf => {
-    const bytes = new Uint8Array(buf);
-    let binary = '';
-    bytes.forEach(b => binary += String.fromCharCode(b));
-    window._pdfFont = btoa(binary);
-  }).catch(() => {});
-
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
 document.getElementById('btnBackup').addEventListener('click', backupData);
