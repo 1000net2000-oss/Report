@@ -283,7 +283,10 @@ function render() {
       ? `День ${passedDays} из ${totalDays}`
       : passedDays === totalDays ? `${totalDays} дней` : '';
   }
-  document.getElementById('btnBackup').textContent   = t('backup');
+  const btnBackupLbl = document.getElementById('btnBackup-lbl');
+  if (btnBackupLbl) btnBackupLbl.textContent = t('backup');
+  const btnRestoreLbl2 = document.getElementById('btnRestoreLbl');
+  if (btnRestoreLbl2) btnRestoreLbl2.textContent = t('restore');
   const restoreEl = document.getElementById('btnRestoreLbl');
   if (restoreEl) restoreEl.textContent = t('restore');
   document.getElementById('btnSummary-lbl').textContent = lang === 'pl' ? 'Udostępnij' : 'Поделиться';
