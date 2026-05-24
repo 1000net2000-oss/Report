@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sklad','mbSklad','prok'];
+const COLS = ['mob','sklad','mbSklad','prok','missed'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -340,6 +340,7 @@ function render() {
       r.prok     ? `<span class="dc dc--prok">${r.prok}</span>` : '',
       sklad      ? `<span class="dc dc--gave">${sklad}</span>`  : '',
       wl.length  ? `<span class="dc dc--work">${wl.length}${workMinsCell > 0 ? '·' + toHM(workMinsCell) : ''}</span>` : '',
+      r.missed   ? `<span class="dc dc--missed">-${r.missed}</span>` : '',
     ].join('');
 
     const indicators = [
@@ -450,6 +451,16 @@ function openDetail(dateStr) {
       <div class="day-time-chip" id="wchip_${dateStr}">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}</span></div>
       <div class="day-time-chip travel" id="tchip_${dateStr}">${t('onRoad')}<span>${toHM(tm)}</span></div>
     </div>
+    <div class="divider"></div>
+    <div class="missed-block">
+      <div class="section-label missed-label">Мимо</div>
+      <div class="missed-controls">
+        <button class="missed-btn" onclick="changeMissed('${dateStr}', -1)">−</button>
+        <div class="missed-val" id="missed_${dateStr}">${+r.missed||0}</div>
+        <button class="missed-btn" onclick="changeMissed('${dateStr}', 1)">+</button>
+        <span class="missed-clients">дистр.</span>
+      </div>
+    </div>
     <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>`;
 
   const panel = document.getElementById('dayDetailPanel');
@@ -503,6 +514,19 @@ function addTravel(dateStr) {
   saveTravelLog(log);
   document.getElementById('tm_' + dateStr).value = '';
   refreshDayExtras(dateStr);
+  updateTotals();
+}
+
+
+function changeMissed(dateStr, delta) {
+  if (!data[dateStr]) data[dateStr] = {};
+  const cur = +data[dateStr].missed || 0;
+  const next = Math.max(0, cur + delta);
+  data[dateStr].missed = next;
+  save();
+  const el = document.getElementById('missed_' + dateStr);
+  if (el) el.textContent = next;
+  updateCellData(dateStr);
   updateTotals();
 }
 
@@ -571,6 +595,7 @@ function updateCellData(dateStr) {
     r.prok    ? `<span class="dc dc--prok">${r.prok}</span>` : '',
     sklad     ? `<span class="dc dc--gave">${sklad}</span>`  : '',
     wl.length ? `<span class="dc dc--work">${wl.length}${workMinsU > 0 ? '·' + toHM(workMinsU) : ''}</span>` : '',
+    r.missed  ? `<span class="dc dc--missed">-${r.missed}</span>` : '',
   ].join('');
   const indicators = tm ? '<span class="di di--travel"></span>' : '';
 
@@ -582,12 +607,13 @@ function updateCellData(dateStr) {
 }
 
 function updateTotals() {
-  let mob=0, sklad=0, mbSklad=0, prok=0;
+  let mob=0, sklad=0, mbSklad=0, prok=0, missed=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
     sklad  += +r.sklad  || 0;
     mbSklad+= +r.mbSklad|| 0;
     prok   += +r.prok   || 0;
+    missed += +r.missed || 0;
   });
 
   document.getElementById('totalMob').textContent     = mob;
@@ -614,6 +640,8 @@ function updateTotals() {
   const totalAll = mob + sklad + mbSklad;
   const elAll = document.getElementById('totalAll');
   if (elAll) elAll.textContent = totalAll;
+  const elMissed = document.getElementById('totalMissed');
+  if (elMissed) elMissed.textContent = missed;
 
   const workdays = getWorkdays(year, month);
   let skladDays = 0, trassaDays = 0;
@@ -746,7 +774,7 @@ function generatePDF() {
   const wl = loadWorkLog();
   const tl = loadTravelLog();
 
-  let mob=0, sklad=0, mbSklad=0, prok=0;
+  let mob=0, sklad=0, mbSklad=0, prok=0, missed=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
     sklad  += +r.sklad  || 0;

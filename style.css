@@ -366,3 +366,16 @@ input[type=number] { -moz-appearance: textfield; }
 .ch-bar-wrap { flex:1; height:6px; background:#1e1e28; border-radius:3px; overflow:hidden; }
 .ch-bar { height:100%; border-radius:3px; min-width:3px; }
 .ch-val { font-size:10px; font-weight:600; width:52px; text-align:right; flex-shrink:0; white-space:nowrap; }
+
+/* ── MISSED (Мимо) ── */
+.stat-tile--missed { border-left: 3px solid #f87171; }
+.stat-tile--missed .stat-tile-val { color: #f87171; }
+.dc--missed { background: #f8717122; color: #f87171; }
+
+.missed-block { background: #1a0a0a; border-radius: 10px; padding: 10px 12px; border: 1px solid #f8717130; margin-bottom: 12px; }
+.missed-label { color: #f87171 !important; }
+.missed-controls { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.missed-btn { width: 36px; height: 36px; border-radius: 8px; background: #22222e; border: none; color: #f87171; font-size: 20px; cursor: pointer; font-weight: 700; flex-shrink: 0; }
+.missed-btn:active { background: #2a1010; }
+.missed-val { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 700; color: #f87171; min-width: 36px; text-align: center; }
+.missed-clients { font-size: 11px; color: #64748b; }
