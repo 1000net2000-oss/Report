@@ -379,3 +379,12 @@ input[type=number] { -moz-appearance: textfield; }
 .missed-btn:active { background: #2a1010; }
 .missed-val { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 700; color: #f87171; min-width: 36px; text-align: center; }
 .missed-clients { font-size: 11px; color: #64748b; }
+
+/* ── HEADER BUTTONS UNIFIED ── */
+.header-actions { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+.hdr-btn--icon { display: flex; align-items: center; justify-content: center; padding: 8px; width: 36px; height: 36px; border-radius: 10px; border: 1px solid #2a2a38; background: #1e1e28; color: #94a3b8; cursor: pointer; flex-shrink: 0; }
+.hdr-btn--icon:active { border-color: #818cf8; color: #818cf8; }
+.hdr-btn--icon.green { background: #1e3a2e; color: #6ee7b7; border-color: #6ee7b730; }
+.hdr-btn--icon.green:active { border-color: #6ee7b7; }
+.hdr-btn--icon.purple { background: #1e1e3a; color: #818cf8; border-color: #818cf830; }
+.hdr-btn--icon.purple:active { border-color: #818cf8; }
