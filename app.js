@@ -283,15 +283,8 @@ function render() {
       ? `День ${passedDays} из ${totalDays}`
       : passedDays === totalDays ? `${totalDays} дней` : '';
   }
-  const btnBackupLbl = document.getElementById('btnBackup-lbl');
-  if (btnBackupLbl) btnBackupLbl.textContent = t('backup');
-  const btnRestoreLbl2 = document.getElementById('btnRestoreLbl');
-  if (btnRestoreLbl2) btnRestoreLbl2.textContent = t('restore');
   const restoreEl = document.getElementById('btnRestoreLbl');
   if (restoreEl) restoreEl.textContent = t('restore');
-  document.getElementById('btnSummary-lbl').textContent = lang === 'pl' ? 'Udostępnij' : 'Поделиться';
-  document.getElementById('btnArchive-lbl').textContent  = lang === 'pl' ? 'Archiwum'   : 'Архив';
-  document.getElementById('btnChart-lbl').textContent    = lang === 'pl' ? 'Wykres'     : 'График';
   document.getElementById('labelMob').textContent        = t('mobile');
   document.getElementById('labelOtherWork').textContent  = t('otherWork');
               document.getElementById('labelTotal').textContent      = t('total');
