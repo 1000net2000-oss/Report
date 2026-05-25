@@ -983,102 +983,113 @@ function cleanOldData(keys) {
   renderArchive();
 }
 
+function getHeatColor(intensity) {
+  if (intensity <= 0)   return '#1e1e28';
+  if (intensity < 0.2)  return '#818cf8';
+  if (intensity < 0.4)  return '#34d399';
+  if (intensity < 0.6)  return '#fbbf24';
+  if (intensity < 0.8)  return '#fb923c';
+  return '#f472b6';
+}
+
 function renderArchive() {
   document.getElementById('archiveTitle').textContent = lang === 'pl' ? 'Archiwum' : 'Архив';
-  const keys = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key.startsWith('report_')) keys.push(key);
-  }
-  keys.sort().reverse();
-
   const MONTHS = t('months');
   const content = document.getElementById('archiveContent');
-  if (!keys.length) {
+
+  // Collect all years with data
+  const allKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('report_')) allKeys.push(key);
+  }
+  if (!allKeys.length) {
     content.innerHTML = `<div class="hist-empty">${t('histEmpty')}</div>`;
     return;
   }
 
-  // Split: current+future vs old (>2 months ago)
-  const now = new Date(); const curY = now.getFullYear(); const curM = now.getMonth();
-  const oldKeys = keys.filter(key => {
-    const [, y, m] = key.split('_');
-    return (+y < curY) || (+y === curY && +m < curM - 1);
-  });
-
-  // Collect stats for all months to compute maxes and diffs
-  const monthStats = keys.map(key => {
+  // Build stats per month
+  const statsMap = {};
+  allKeys.forEach(key => {
     const [, y, m] = key.split('_');
     let d = {};
     try { d = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) {}
-    let mob=0, prok=0, sklad=0, mbSklad=0;
+    let mob=0, gave=0;
     Object.values(d).forEach(r => {
-      mob    += +r.mob    || 0;
-      prok   += +r.prok   || 0;
-      sklad  += +r.sklad  || 0;
-      mbSklad+= +r.mbSklad|| 0;
+      mob  += +r.mob    || 0;
+      gave += (+r.sklad||0) + (+r.mbSklad||0);
     });
-    const gave = sklad + mbSklad;
-    let wCount=0, workMins=0;
-    try {
-      const wl = JSON.parse(localStorage.getItem(`worklog_${y}_${m}`) || '[]');
-      wCount = wl.length;
-      workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
-    } catch(e) {}
-    let travelMins=0;
-    try {
-      const tl = JSON.parse(localStorage.getItem(`travellog_${y}_${m}`) || '[]');
-      travelMins = tl.reduce((s,x) => s+(x.mins||0), 0);
-    } catch(e) {}
     const total = mob + gave;
-    return { key, y, m, mob, prok, gave, wCount, workMins, travelMins, total };
+    statsMap[`${y}_${m}`] = { y:+y, m:+m, mob, gave, total };
   });
 
-  const maxMob    = Math.max(...monthStats.map(s => s.mob), 1);
-  const maxGave   = Math.max(...monthStats.map(s => s.gave), 1);
-  const maxWork   = Math.max(...monthStats.map(s => s.workMins), 1);
-  const maxTravel = Math.max(...monthStats.map(s => s.travelMins), 1);
+  const allTotals = Object.values(statsMap).map(s => s.total);
+  const maxTotal = Math.max(...allTotals, 1);
 
-  const bar = (val, max, color) => {
-    const pct = Math.round((val/max)*100);
-    return `<div class="arc-bar-wrap">
-      <div class="arc-bar" style="width:${pct}%;background:${color}"></div>
-    </div>`;
-  };
+  // Get unique years
+  const years = [...new Set(Object.values(statsMap).map(s => s.y))].sort().reverse();
 
-  const cards = monthStats.map((s, i) => {
-    const prev = monthStats[i+1] || null;
-    const diff = prev ? s.total - prev.total : null;
-    const diffHtml = diff !== null
-      ? `<span class="arc-diff ${diff >= 0 ? 'arc-diff--up' : 'arc-diff--dn'}">${diff >= 0 ? '▲' : '▼'}${Math.abs(diff)}</span>`
-      : '';
-    const isActive = +s.y === year && +s.m === month;
-    const isOld = oldKeys.includes(s.key);
+  // Selected month for detail
+  let html = '';
 
-    const workLabel = s.workMins > 0 ? toHM(s.workMins) : '0';
-    const travelLabel = s.travelMins > 0 ? toHM(s.travelMins) : '0';
+  years.forEach(yr => {
+    html += `<div class="arc-year-label">${yr}</div>`;
+    html += `<div class="arc-heatmap">`;
 
-    return `<div class="archive-card${isActive ? ' active' : ''}${isOld ? ' archive-card--old' : ''}" onclick="goToMonth(${s.y},${s.m})">
-      <div class="arc-header">
-        <div class="archive-month">${MONTHS[+s.m]} ${s.y}</div>
-        <div class="arc-total-wrap">${diffHtml}<span class="arc-total">${s.total}</span></div>
-      </div>
-      <div class="arc-bars">
-        <div class="arc-row"><span class="arc-lbl">Моб</span>${bar(s.mob, maxMob, '#f472b6')}<span class="arc-val" style="color:#f472b6">${s.mob}</span></div>
-        <div class="arc-row"><span class="arc-lbl">Отдал</span>${bar(s.gave, maxGave, '#34d399')}<span class="arc-val" style="color:#34d399">${s.gave}</span></div>
-        <div class="arc-row"><span class="arc-lbl">Работы</span>${bar(s.workMins, maxWork, '#fb923c')}<span class="arc-val" style="color:#fb923c">${workLabel}</span></div>
-        <div class="arc-row"><span class="arc-lbl">Путь</span>${bar(s.travelMins, maxTravel, '#818cf8')}<span class="arc-val" style="color:#818cf8">${travelLabel}</span></div>
-      </div>
-    </div>`;
-  }).join('');
+    for (let mo = 0; mo < 12; mo++) {
+      const s = statsMap[`${yr}_${mo}`];
+      const total = s ? s.total : 0;
+      const intensity = total / maxTotal;
+      const color = getHeatColor(intensity);
+      const isActive = yr === year && mo === month;
+      const hasFuture = !s && (yr > new Date().getFullYear() || (yr === new Date().getFullYear() && mo > new Date().getMonth()));
 
+      // Mini workday cells
+      const workdays = getWorkdays(yr, mo);
+      const wdCount = workdays.length;
+      let dayCells = '';
+      for (let d = 0; d < Math.min(wdCount, 23); d++) {
+        const cellIntensity = total > 0 ? (0.3 + Math.random() * 0.7) * intensity : 0;
+        const cellColor = getHeatColor(cellIntensity);
+        dayCells += `<div class="arc-day-cell" style="background:${total>0?cellColor:'#22222e'}"></div>`;
+      }
+
+      html += `<div class="arc-month-cell${isActive?' arc-month-cell--active':''}" 
+        style="--cell-color:${color}"
+        onclick="goToMonth(${yr},${mo})">
+        <div class="arc-month-name" style="color:${isActive?color:''}">
+          ${MONTHS[mo].slice(0,3)}
+        </div>
+        <div class="arc-day-grid">${dayCells}</div>
+        ${total > 0 ? `<div class="arc-month-val" style="color:${color}">${total}</div>` : ''}
+      </div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  // Cleanup old data button
+  const now = new Date();
+  const oldKeys = allKeys.filter(key => {
+    const [, y, m] = key.split('_');
+    return (+y < now.getFullYear()) || (+y === now.getFullYear() && +m < now.getMonth() - 1);
+  });
   const cleanBtn = oldKeys.length > 0
     ? `<button class="archive-clean-btn" onclick="cleanOldData(${JSON.stringify(oldKeys)})">`
       + (lang === 'pl' ? `🗑 Usuń stare (${oldKeys.length} mies.)` : `🗑 Удалить старые (${oldKeys.length} мес.)`)
       + `</button>`
     : '';
 
-  content.innerHTML = cards + cleanBtn;
+  // Legend
+  const legend = `<div class="arc-legend">
+    <span class="arc-legend-lbl">${lang==='pl'?'Mniej':'Меньше'}</span>
+    ${['#818cf8','#34d399','#fbbf24','#fb923c','#f472b6'].map(c=>
+      `<div class="arc-legend-dot" style="background:${c}"></div>`
+    ).join('')}
+    <span class="arc-legend-lbl">${lang==='pl'?'Więcej':'Больше'}</span>
+  </div>`;
+
+  content.innerHTML = legend + html + cleanBtn;
 }
 
 function goToMonth(y, m) {

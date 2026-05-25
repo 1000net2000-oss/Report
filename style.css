@@ -396,3 +396,20 @@ input[type=number] { -moz-appearance: textfield; }
 .hist-month-total-val { font-family: 'Unbounded', sans-serif; font-size: 15px; font-weight: 700; color: #fb923c; }
 .hist-month-total-val.travel { color: #818cf8; }
 .hist-month-total-val.workdays { color: #a78bfa; font-size: 14px; }
+
+/* ── ARCHIVE HEATMAP ── */
+.arc-year-label { font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700; color:#64748b; padding:16px 16px 8px; }
+.arc-heatmap { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:0 16px 8px; }
+
+.arc-month-cell { background:#1a1a22; border-radius:12px; padding:8px; border:1px solid #1e1e28; cursor:pointer; transition:border-color 0.15s, background 0.15s; }
+.arc-month-cell:active { opacity:0.8; }
+.arc-month-cell--active { border-color:var(--cell-color); background:color-mix(in srgb, var(--cell-color) 10%, #1a1a22); }
+
+.arc-month-name { font-family:'Unbounded',sans-serif; font-size:9px; font-weight:700; color:#64748b; margin-bottom:5px; }
+.arc-day-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; margin-bottom:5px; }
+.arc-day-cell { aspect-ratio:1; border-radius:1px; }
+.arc-month-val { font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700; text-align:right; }
+
+.arc-legend { display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 16px 4px; }
+.arc-legend-lbl { font-size:9px; color:#3a3a52; }
+.arc-legend-dot { width:10px; height:10px; border-radius:2px; }
