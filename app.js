@@ -1172,7 +1172,8 @@ function renderHistory() {
   const byDate = {};
   log.forEach(x => { if (!byDate[x.date]) byDate[x.date] = []; byDate[x.date].push(x); });
 
-  const totalAllMins = !isTravel ? log.reduce((s,x) => s + (x.mins||0), 0) : 0;
+  const totalAllMins = log.reduce((s,x) => s + (x.mins||0), 0);
+  const workDays = totalAllMins > 0 ? (totalAllMins / 480).toFixed(1) : 0;
 
   content.innerHTML = Object.keys(byDate).sort().reverse().map(date => {
     const items = byDate[date];
@@ -1191,7 +1192,17 @@ function renderHistory() {
         </div>`).join('')}
     </div>`;
   }).join('')
-  + (!isTravel && totalAllMins > 0 ? `<div class="hist-total-row"><span class="hist-total-lbl">${lang === 'pl' ? 'Łącznie' : 'Итого'}</span><span class="hist-total-val">${toHM(totalAllMins)}</span></div>` : '')
+  + (totalAllMins > 0 ? `
+    <div class="hist-month-total">
+      <div class="hist-month-total-row">
+        <span class="hist-month-total-lbl">${lang === 'pl' ? 'Łącznie za miesiąc' : 'Итого за месяц'}</span>
+        <span class="hist-month-total-val ${isTravel ? 'travel' : ''}">${toHM(totalAllMins)}</span>
+      </div>
+      ${isTravel ? `<div class="hist-month-total-row">
+        <span class="hist-month-total-lbl">${lang === 'pl' ? 'Dni robocze (8 godz)' : 'Рабочих дней (8 ч)'}</span>
+        <span class="hist-month-total-val workdays">${workDays} ${lang === 'pl' ? 'dni' : 'дн.'}</span>
+      </div>` : ''}
+    </div>` : '')
   + `<div class="export-btns">
       <button class="export-btn" onclick="exportHistory()">${t('exportBtn')}</button>
       ${!isTravel ? `<div style="display:flex;gap:8px">
@@ -1216,7 +1227,13 @@ function exportHistory() {
     ).join('\n');
     return `=== ${date}${isTravel ? ` (${toHM(total)})` : ` (${items.length} ${t('records')}${total ? ', ' + toHM(total) : ''})`} ===\n${lines}`;
   }).join('\n\n');
-  navigator.clipboard.writeText((isTravel ? t('histTravel') : t('histOtherWork')) + '\n\n' + text)
+  const totalAllMins = log.reduce((s,x) => s+(x.mins||0), 0);
+  const workDays = totalAllMins > 0 ? (totalAllMins/480).toFixed(1) : null;
+  const totalLine = totalAllMins > 0
+    ? `\n${lang==='pl' ? 'Łącznie' : 'Итого'}: ${toHM(totalAllMins)}`
+      + (isTravel && workDays ? `\n${lang==='pl' ? 'Dni robocze (8 godz)' : 'Рабочих дней (8 ч)'}: ${workDays} ${lang==='pl'?'dni':'дн.'}` : '')
+    : '';
+  navigator.clipboard.writeText((isTravel ? t('histTravel') : t('histOtherWork')) + '\n\n' + text + totalLine)
     .then(() => showToast(t('copied')))
     .catch(() => alert(text));
 }

@@ -388,3 +388,11 @@ input[type=number] { -moz-appearance: textfield; }
 .hdr-btn--icon.green:active { border-color: #6ee7b7; }
 .hdr-btn--icon.purple { background: #1e1e3a; color: #818cf8; border-color: #818cf830; }
 .hdr-btn--icon.purple:active { border-color: #818cf8; }
+
+/* ── HISTORY MONTH TOTAL ── */
+.hist-month-total { margin: 16px 0 8px; background: #1a1a2e; border-radius: 12px; border: 1px solid #818cf840; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.hist-month-total-row { display: flex; justify-content: space-between; align-items: center; }
+.hist-month-total-lbl { font-size: 11px; color: #64748b; }
+.hist-month-total-val { font-family: 'Unbounded', sans-serif; font-size: 15px; font-weight: 700; color: #fb923c; }
+.hist-month-total-val.travel { color: #818cf8; }
+.hist-month-total-val.workdays { color: #a78bfa; font-size: 14px; }
