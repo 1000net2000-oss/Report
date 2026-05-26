@@ -52,49 +52,52 @@
     </div>
   </header>
 
-  <div class="stats-grid">
-    <div class="stat-tile stat-tile--mob">
-      <div class="stat-tile-label" id="labelMob">Мобильная</div>
-      <div class="stat-tile-val" id="totalMob">0</div>
+  <div class="stats-scroll">
+    <div class="stat-chip stat-chip--total">
+      <div class="stat-chip-label" id="labelTotal">Всего</div>
+      <div class="stat-chip-val" id="totalAll">0</div>
     </div>
-    <button class="stat-tile stat-tile--work" onclick="openHistory('work')">
-      <div class="stat-tile-label" id="labelOtherWork">Другие работы</div>
-      <div class="stat-tile-work-val">
-        <span class="stat-tile-val" id="totalExtraWork">0</span>
-        <span class="stat-tile-sub stat-tile-dot">·</span>
-        <span class="stat-tile-sub" id="totalExtraWorkTime"></span>
+    <div class="stat-chip stat-chip--mob">
+      <div class="stat-chip-label" id="labelMob">Моб</div>
+      <div class="stat-chip-val" id="totalMob">0</div>
+    </div>
+    <div class="stat-chip stat-chip--distr">
+      <div class="stat-chip-label" id="labelSklad">Отдал</div>
+      <div class="stat-chip-val" id="totalSklad">0</div>
+    </div>
+    <button class="stat-chip stat-chip--work" onclick="openHistory('work')">
+      <div class="stat-chip-label" id="labelOtherWork">Работы</div>
+      <div class="stat-chip-val-wrap">
+        <span class="stat-chip-val" id="totalExtraWork">0</span>
+        <span class="stat-chip-sub stat-tile-dot">·</span>
+        <span class="stat-chip-sub" id="totalExtraWorkTime"></span>
       </div>
     </button>
-    <div class="stat-tile stat-tile--prok">
-      <div class="stat-tile-label" id="labelProk">Проклеенные</div>
-      <div class="stat-tile-val" id="totalProk">0</div>
+    <div class="stat-chip stat-chip--mb">
+      <div class="stat-chip-label" id="labelMbSklad">МБ</div>
+      <div class="stat-chip-val" id="totalMbSklad">0</div>
     </div>
-    <div class="stat-tile stat-tile--distr">
-      <div class="stat-tile-label" id="labelSklad">Отдал дистр.</div>
-      <div class="stat-tile-val" id="totalSklad">0</div>
+    <div class="stat-chip stat-chip--prok">
+      <div class="stat-chip-label" id="labelProk">Прок</div>
+      <div class="stat-chip-val" id="totalProk">0</div>
     </div>
-    <div class="stat-tile stat-tile--mb">
-      <div class="stat-tile-label" id="labelMbSklad">Отдал МБ</div>
-      <div class="stat-tile-val" id="totalMbSklad">0</div>
+    <div class="stat-chip stat-chip--missed">
+      <div class="stat-chip-label">Мимо</div>
+      <div class="stat-chip-val" id="totalMissed">0</div>
     </div>
-    <div class="stat-tile stat-tile--missed">
-      <div class="stat-tile-label">Мимо</div>
-      <div class="stat-tile-val" id="totalMissed">0</div>
-    </div>
-    <div class="stat-tile stat-tile--total">
-      <div class="stat-tile-label" id="labelTotal">Всего</div>
-      <div class="stat-tile-val stat-tile-val--big" id="totalAll">0</div>
-    </div>
-    <div class="stat-tile stat-tile--salary stat-tile--full" onclick="toggleSalary()">
-      <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
-    </div>
+    <button class="stat-chip stat-chip--travel" onclick="openHistory('travel')">
+      <div class="stat-chip-label" id="labelTravel">В пути</div>
+      <div class="stat-chip-val" id="totalExtraTravel">0</div>
+    </button>
   </div>
 
-  <div class="stats-grid stats-grid--bottom">
-    <button class="stat-tile stat-tile--travel stat-tile--travel-btn stat-tile--full" onclick="openHistory('travel')">
-      <div class="stat-tile-label" id="labelTravel">В пути</div>
-      <div class="stat-tile-val stat-tile-val--travel" id="totalExtraTravel">0 мин</div>
-    </button>
+  <div class="stat-salary" onclick="toggleSalary()">
+    <div class="salary-val"><span id="salaryNum" class="salary-hidden">—</span></div>
+  </div>
+
+  <div class="days-grid" id="daysList"></div>
+
+  <div class="stats-warehouse">
     <div class="stat-tile stat-tile--warehouse">
       <div class="stat-tile-label" id="labelWarehouse">Склад</div>
       <div class="stat-tile-val stat-tile-val--danger" id="totalSkladDays">0</div>
@@ -106,8 +109,6 @@
       <div class="stat-tile-days" id="labelHighwayDays">дней</div>
     </div>
   </div>
-
-  <div class="days-grid" id="daysList"></div>
   <div class="day-detail-panel" id="dayDetailPanel">
     <div class="day-detail-header">
       <div>
