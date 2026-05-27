@@ -307,6 +307,60 @@ function render() {
   const _wl = loadWorkLog();
   const _tl = loadTravelLog();
 
+  // Update chip active states
+  document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('stat-chip--active'));
+  const activeChip = document.querySelector(`.stat-chip--${activeFilter}`);
+  if (activeChip) activeChip.classList.add('stat-chip--active');
+
+  if (activeFilter !== 'total') {
+    // Filter view — card list
+    const filterColors = { mob:'#f472b6', gave:'#34d399', prok:'#fbbf24' };
+    const color = filterColors[activeFilter] || '#e2e8f0';
+
+    days.forEach(d => {
+      const dateStr = formatDate(d);
+      const r   = data[dateStr] || {};
+      const wl  = _wl.filter(x => x.date === dateStr);
+      const tl  = _tl.filter(x => x.date === dateStr);
+      const tm  = tl.reduce((s,x) => s+x.mins, 0);
+      const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+      const mainVal = activeFilter === 'gave' ? sklad : (+r[activeFilter]||0);
+      if (!mainVal) return;
+
+      const wd = t('weekdays')[d.getDay()];
+      const card = document.createElement('div');
+      card.className = 'filter-card';
+      card.style.setProperty('--fc', color);
+
+      const workHtml = wl.length ? wl.map(x =>
+        `<div class="filter-work-item">
+          <span class="filter-work-desc">${x.desc}</span>
+          ${x.mins ? `<span class="filter-work-time">${toHM(x.mins)}</span>` : ''}
+        </div>`).join('') : '';
+
+      card.innerHTML = `
+        <div class="filter-card-hdr">
+          <div class="filter-card-left">
+            <span class="filter-card-date">${dateStr.slice(0,5)}</span>
+            <span class="filter-card-wd">${wd}</span>
+          </div>
+          <div class="filter-card-right">
+            ${tm ? `<span class="filter-card-travel">🚗 ${toHM(tm)}</span>` : ''}
+            <span class="filter-card-val">${mainVal}</span>
+          </div>
+        </div>
+        ${workHtml ? `<div class="filter-work-list">${workHtml}</div>` : ''}`;
+
+      card.addEventListener('click', () => openDetail(dateStr));
+      list.appendChild(card);
+    });
+
+    updateTotals();
+    updateBestDays();
+    return;
+  }
+
+  // Normal grid view
   days.forEach(d => {
     const dateStr = formatDate(d);
     const wd  = t('weekdays')[d.getDay()];
@@ -363,6 +417,12 @@ function render() {
 
   updateTotals();
   updateBestDays();
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  closeDetail();
+  render();
 }
 
 let _activeDetail = null;
@@ -951,6 +1011,7 @@ function updateBestDays() {
 // ── Archive page ──────────────────────────────
 // ── Salary toggle ─────────────────────────────
 let salaryVisible = false;
+let activeFilter = 'total'; // total | mob | gave | prok
 function toggleSalary() {
   salaryVisible = !salaryVisible;
   const num = document.getElementById('salaryNum');

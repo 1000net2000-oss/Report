@@ -437,3 +437,24 @@ input[type=number] { -moz-appearance: textfield; }
 .stat-salary .salary-val { font-family:'Unbounded',sans-serif; font-size:16px; font-weight:700; color:#d4a017; }
 
 .stats-warehouse { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 14px 12px; }
+
+/* ── FILTER VIEW ── */
+.stat-chip { cursor: pointer; }
+.stat-chip--active { border: 2px solid var(--fc, #818cf8) !important; background: color-mix(in srgb, var(--fc, #818cf8) 15%, #1e1e28) !important; }
+
+.filter-card { background:#1e1e28; border-radius:12px; padding:10px 14px; border:1px solid color-mix(in srgb, var(--fc) 20%, transparent); margin:0 14px 8px; cursor:pointer; }
+.filter-card-hdr { display:flex; justify-content:space-between; align-items:center; }
+.filter-card-left { display:flex; align-items:baseline; gap:8px; }
+.filter-card-date { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:var(--fc); }
+.filter-card-wd { font-size:10px; color:#64748b; }
+.filter-card-right { display:flex; align-items:center; gap:10px; }
+.filter-card-travel { font-size:10px; color:#818cf8; }
+.filter-card-val { font-family:'Unbounded',sans-serif; font-size:18px; font-weight:700; color:var(--fc); }
+
+.filter-work-list { margin-top:8px; display:flex; flex-direction:column; gap:3px; }
+.filter-work-item { display:flex; justify-content:space-between; align-items:center; background:#22222e; border-radius:7px; padding:4px 8px; }
+.filter-work-desc { font-size:10px; color:#94a3b8; }
+.filter-work-time { font-size:10px; color:#fb923c; font-weight:600; }
+
+/* days-grid in filter mode becomes list */
+.days-grid:has(.filter-card) { display:block; padding:8px 0; }

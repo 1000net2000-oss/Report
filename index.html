@@ -53,15 +53,15 @@
   </header>
 
   <div class="stats-scroll">
-    <div class="stat-chip stat-chip--total">
+    <div class="stat-chip stat-chip--total" onclick="setFilter('total')">
       <div class="stat-chip-label" id="labelTotal">Всего</div>
       <div class="stat-chip-val" id="totalAll">0</div>
     </div>
-    <div class="stat-chip stat-chip--mob">
+    <div class="stat-chip stat-chip--mob" onclick="setFilter('mob')">
       <div class="stat-chip-label" id="labelMob">Моб</div>
       <div class="stat-chip-val" id="totalMob">0</div>
     </div>
-    <div class="stat-chip stat-chip--distr">
+    <div class="stat-chip stat-chip--distr" onclick="setFilter('gave')">
       <div class="stat-chip-label" id="labelSklad">Отдал</div>
       <div class="stat-chip-val" id="totalSklad">0</div>
     </div>
@@ -73,15 +73,15 @@
         <span class="stat-chip-sub" id="totalExtraWorkTime"></span>
       </div>
     </button>
-    <div class="stat-chip stat-chip--mb">
+    <div class="stat-chip stat-chip--mb" onclick="setFilter('mb')">
       <div class="stat-chip-label" id="labelMbSklad">МБ</div>
       <div class="stat-chip-val" id="totalMbSklad">0</div>
     </div>
-    <div class="stat-chip stat-chip--prok">
+    <div class="stat-chip stat-chip--prok" onclick="setFilter('prok')">
       <div class="stat-chip-label" id="labelProk">Прок</div>
       <div class="stat-chip-val" id="totalProk">0</div>
     </div>
-    <div class="stat-chip stat-chip--missed">
+    <div class="stat-chip stat-chip--missed" onclick="setFilter('missed')">
       <div class="stat-chip-label">Мимо</div>
       <div class="stat-chip-val" id="totalMissed">0</div>
     </div>
