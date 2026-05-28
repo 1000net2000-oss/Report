@@ -448,66 +448,29 @@ function openDetail(dateStr) {
   totalsEl.innerHTML = total > 0 ? `<span class="detail-total-lbl">Итого</span><span class="detail-total-val">${total}</span>` : '';
 
   document.getElementById('detailBody').innerHTML = `
-    <div class="detail-stats">
-      ${r.mob   ? `<div class="detail-stat detail-stat--mob"><div class="ds-lbl">${t('mobile')}</div><div class="ds-val">${r.mob}</div></div>` : ''}
-      ${r.prok  ? `<div class="detail-stat detail-stat--prok"><div class="ds-lbl">${t('prok')}</div><div class="ds-val">${r.prok}</div></div>` : ''}
-      ${sklad   ? `<div class="detail-stat detail-stat--gave"><div class="ds-lbl">${t('gave')}</div><div class="ds-val">${sklad}</div></div>` : ''}
-      ${tm      ? `<div class="detail-stat detail-stat--travel"><div class="ds-lbl">${t('onRoad')}</div><div class="ds-val">${toHM(tm)}</div></div>` : ''}
-      ${wl.length ? `<div class="detail-stat detail-stat--work"><div class="ds-lbl">${t('otherWork')}</div><div class="ds-val">${wl.length}</div></div>` : ''}
-    </div>
-    <div class="divider"></div>
-    <div class="section-label">${t('sectionMobile')}</div>
-    <div class="fields-grid">
-      <div class="field mob">
-        <label>${t('mobile')}</label>
-        <input type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
+    <div class="dp-grid">
+      <div class="dp-tile dp-tile--mob" onclick="this.querySelector('input').focus()">
+        <div class="dp-tile-label">${t('mobile')}</div>
+        <input class="dp-tile-input" type="text" inputmode="text" value="${r.mob||''}" placeholder="0"
           onblur="evalField(this,'${dateStr}','mob')" onfocus="focusField(this,'${dateStr}','mob')">
       </div>
-    </div>
-    <div class="divider"></div>
-    <div class="section-label">${t('sectionProk')}</div>
-    <div class="fields-grid">
-      <div class="field prok">
-        <label>${t('prok')}</label>
-        <input type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
+      <div class="dp-tile dp-tile--prok" onclick="this.querySelector('input').focus()">
+        <div class="dp-tile-label">${t('prok')}</div>
+        <input class="dp-tile-input" type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
           onblur="evalField(this,'${dateStr}','prok')" onfocus="focusField(this,'${dateStr}','prok')">
       </div>
-    </div>
-    <div class="divider"></div>
-    <div class="section-label">${t('sectionDist')}</div>
-    <div class="fields-grid">
-      <div class="field">
-        <label>${t('gaveReady')}</label>
-        <input type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
+      <div class="dp-tile dp-tile--gave" onclick="this.querySelector('input').focus()">
+        <div class="dp-tile-label">${t('gaveReady')}</div>
+        <input class="dp-tile-input" type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
           onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
       </div>
-      <div class="field">
-        <label>${t('mbGave')}</label>
-        <input type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
+      <div class="dp-tile dp-tile--mb" onclick="this.querySelector('input').focus()">
+        <div class="dp-tile-label">${t('mbGave')}</div>
+        <input class="dp-tile-input" type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
           onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
       </div>
     </div>
-    <div class="divider"></div>
-    <div class="section-label">${t('sectionOther')}</div>
-    <div class="work-row">
-      <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
-        onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
-      <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
-      <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
-    </div>
-    <div id="wlist_${dateStr}" class="wlist-items">${wl.map(x => workItemHtml(x, dateStr)).join('')}</div>
-    <div class="day-time-chip" id="wchip_${dateStr}" style="margin-top:6px">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}${workMins > 0 ? ' · ' + toHM(workMins) : ''}</span></div>
-    <div class="divider"></div>
-    <div class="section-label">${t('sectionTravel')}</div>
-    <div class="travel-row">
-      <input class="travel-mins" type="number" min="1" placeholder="${t('minutes')}" id="tm_${dateStr}"/>
-      <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
-    </div>
-    <div class="day-time-totals">
-      <div class="day-time-chip" id="wchip_${dateStr}">${t('otherWorkRecords')}<span>${wl.length} ${t('records')}</span></div>
-      <div class="day-time-chip travel" id="tchip_${dateStr}">${t('onRoad')}<span>${toHM(tm)}</span></div>
-    </div>
-    <div class="divider"></div>
+
     <div class="missed-block">
       <div class="section-label missed-label">Мимо</div>
       <div class="missed-controls">
@@ -517,6 +480,32 @@ function openDetail(dateStr) {
         <span class="missed-clients">дистр.</span>
       </div>
     </div>
+
+    <div class="dp-section">
+      <div class="dp-section-hdr">
+        <span class="dp-section-title dp-section-title--work">${t('sectionOther')}</span>
+        <span class="day-time-chip" id="wchip_${dateStr}">${wl.length} ${t('records')}${workMins > 0 ? ' · ' + toHM(workMins) : ''}</span>
+      </div>
+      <div class="work-row">
+        <input class="work-desc" type="text" placeholder="${t('workDesc')}" id="wd_${dateStr}"
+          onkeydown="if(event.key==='Enter') addWork('${dateStr}')"/>
+        <input class="work-mins" type="text" inputmode="numeric" placeholder="мин" id="wm_${dateStr}"/>
+        <button class="add-work-btn" onclick="addWork('${dateStr}')">+</button>
+      </div>
+      <div id="wlist_${dateStr}" class="wlist-items">${wl.map(x => workItemHtml(x, dateStr)).join('')}</div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-hdr">
+        <span class="dp-section-title dp-section-title--travel">${t('sectionTravel')}</span>
+        <span class="day-time-chip travel" id="tchip_${dateStr}">${toHM(tm)}</span>
+      </div>
+      <div class="travel-row">
+        <input class="travel-mins" type="number" min="1" placeholder="${t('minutes')}" id="tm_${dateStr}"/>
+        <button class="add-travel-btn" onclick="addTravel('${dateStr}')">+</button>
+      </div>
+    </div>
+
     <button class="clear-btn" onclick="clearDay('${dateStr}')">${t('clearDay')}</button>`;
 
   const panel = document.getElementById('dayDetailPanel');

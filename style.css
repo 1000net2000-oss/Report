@@ -458,3 +458,25 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* days-grid in filter mode becomes list */
 .days-grid:has(.filter-card) { display:block; padding:8px 0; }
+
+/* ── DETAIL PANEL NEW TILES ── */
+.dp-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+.dp-tile { border-radius:14px; padding:12px 14px; border:2px solid #2a2a38; cursor:text; transition:border-color 0.15s; }
+.dp-tile-label { font-size:10px; font-weight:600; margin-bottom:8px; }
+.dp-tile-input { background:none; border:none; outline:none; font-family:'Unbounded',sans-serif; font-size:28px; font-weight:700; width:100%; padding:0; line-height:1; }
+
+.dp-tile--mob  { border-color:#f472b620; } .dp-tile--mob  .dp-tile-label { color:#f472b6; } .dp-tile--mob  .dp-tile-input { color:#f472b6; }
+.dp-tile--prok { border-color:#fbbf2420; } .dp-tile--prok .dp-tile-label { color:#fbbf24; } .dp-tile--prok .dp-tile-input { color:#fbbf24; }
+.dp-tile--gave { border-color:#34d39920; } .dp-tile--gave .dp-tile-label { color:#34d399; } .dp-tile--gave .dp-tile-input { color:#34d399; }
+.dp-tile--mb   { border-color:#60a5fa20; } .dp-tile--mb   .dp-tile-label { color:#60a5fa; } .dp-tile--mb   .dp-tile-input { color:#60a5fa; }
+.dp-tile:focus-within { border-color:var(--accent); }
+.dp-tile--mob:focus-within  { border-color:#f472b6; }
+.dp-tile--prok:focus-within { border-color:#fbbf24; }
+.dp-tile--gave:focus-within { border-color:#34d399; }
+.dp-tile--mb:focus-within   { border-color:#60a5fa; }
+
+.dp-section { background:#1e1e28; border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+.dp-section-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.dp-section-title { font-size:10px; font-weight:600; }
+.dp-section-title--work   { color:#fb923c; }
+.dp-section-title--travel { color:#818cf8; }
