@@ -480,3 +480,13 @@ input[type=number] { -moz-appearance: textfield; }
 .dp-section-title { font-size:10px; font-weight:600; }
 .dp-section-title--work   { color:#fb923c; }
 .dp-section-title--travel { color:#818cf8; }
+
+/* ── CHIP AVERAGE ── */
+.stat-chip-avg { font-size:8px; color:#64748b; margin-top:2px; white-space:nowrap; }
+
+/* ── FILTER SUMMARY ── */
+.filter-summary { display:flex; align-items:baseline; gap:6px; padding:6px 14px 10px; }
+.filter-summary-total { font-family:'Unbounded',sans-serif; font-size:22px; font-weight:700; }
+.filter-summary-sep { font-size:12px; color:#3a3a52; }
+.filter-summary-avg { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:600; color:#e2e8f0; }
+.filter-summary-days { font-size:10px; color:#64748b; margin-left:4px; }

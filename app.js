@@ -314,8 +314,29 @@ function render() {
 
   if (activeFilter !== 'total') {
     // Filter view — card list
-    const filterColors = { mob:'#f472b6', gave:'#34d399', prok:'#fbbf24' };
+    const filterColors = { mob:'#f472b6', gave:'#34d399', prok:'#fbbf24', mb:'#60a5fa', missed:'#f87171' };
     const color = filterColors[activeFilter] || '#e2e8f0';
+
+    // Calculate summary
+    let filterTotal = 0, filterDays = 0;
+    days.forEach(d => {
+      const dateStr = formatDate(d);
+      const r = data[dateStr] || {};
+      const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+      const val = activeFilter === 'gave' ? sklad : (+r[activeFilter]||0);
+      if (val > 0) { filterTotal += val; filterDays++; }
+    });
+    const avg = filterDays > 0 ? (filterTotal / filterDays).toFixed(1) : 0;
+
+    const summary = document.createElement('div');
+    summary.className = 'filter-summary';
+    summary.style.setProperty('--fc', color);
+    summary.innerHTML = `
+      <span class="filter-summary-total" style="color:${color}">${filterTotal}</span>
+      <span class="filter-summary-sep">·</span>
+      <span class="filter-summary-avg">~${avg}/д</span>
+      <span class="filter-summary-days">${filterDays} дн.</span>`;
+    list.appendChild(summary);
 
     days.forEach(d => {
       const dateStr = formatDate(d);
@@ -661,9 +682,20 @@ function updateTotals() {
     missed += +r.missed || 0;
   });
 
-  document.getElementById('totalMob').textContent     = mob;
+  // Count days with mob/gave data
+  const mobDays  = Object.values(data).filter(r => +r.mob  > 0).length;
+  const gladDays = Object.values(data).filter(r => (+r.sklad||0)+(+r.mbSklad||0) > 0).length;
+  const mobAvg  = mobDays  > 0 ? (mob  / mobDays).toFixed(1)  : null;
+  const gaveAvg = gladDays > 0 ? ((sklad+mbSklad) / gladDays).toFixed(1) : null;
+
+  document.getElementById('totalMob').textContent = mob;
+  const elMobAvg = document.getElementById('avgMob');
+  if (elMobAvg) elMobAvg.textContent = mobAvg ? `~${mobAvg}/д` : '';
+
   const elSklad = document.getElementById('totalSklad');
   if (elSklad) elSklad.textContent = sklad;
+  const elGaveAvg = document.getElementById('avgGave');
+  if (elGaveAvg) elGaveAvg.textContent = gaveAvg ? `~${gaveAvg}/д` : '';
   const elMbSklad = document.getElementById('totalMbSklad');
   if (elMbSklad) elMbSklad.textContent = mbSklad;
   const elProk = document.getElementById('totalProk');
