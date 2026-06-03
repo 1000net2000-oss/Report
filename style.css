@@ -490,3 +490,21 @@ input[type=number] { -moz-appearance: textfield; }
 .filter-summary-sep { font-size:12px; color:#3a3a52; }
 .filter-summary-avg { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:600; color:#e2e8f0; }
 .filter-summary-days { font-size:10px; color:#64748b; margin-left:4px; }
+
+/* ── MISSED CATEGORIES ── */
+.missed-block-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.missed-add-btn { width:28px; height:28px; borderRadius:8px; background:#f87171; border:none; color:#0f0f12; font-size:18px; font-weight:700; cursor:pointer; border-radius:8px; }
+.missed-picker { flex-direction:column; gap:4px; margin-bottom:8px; background:#1a0a0a; border-radius:10px; overflow:hidden; border:1px solid #f8717130; }
+.missed-cat-btn { display:flex; align-items:center; gap:10px; width:100%; padding:9px 12px; background:none; border:none; border-bottom:1px solid #2a2a38; cursor:pointer; text-align:left; }
+.missed-cat-btn:last-child { border-bottom:none; }
+.missed-entries { display:flex; flex-direction:column; gap:5px; }
+.missed-entry { display:flex; align-items:center; gap:8px; border-radius:10px; padding:7px 10px; border:1px solid transparent; }
+.missed-entry-label { flex:1; font-size:11px; font-weight:500; }
+.missed-entry-val { font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; min-width:16px; text-align:center; }
+.missed-entry button { background:#22222e; border:none; border-radius:6px; width:26px; height:26px; font-size:14px; cursor:pointer; }
+.filter-missed-cats { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+.fmc { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; }
+.fmc--ml     { background:#fbbf2420; color:#fbbf24; }
+.fmc--refuse { background:#f8717120; color:#f87171; }
+.fmc--late   { background:#818cf820; color:#818cf8; }
+.fmc--closed { background:#60a5fa20; color:#60a5fa; }

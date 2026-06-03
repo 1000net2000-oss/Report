@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sklad','mbSklad','prok','missed'];
+const COLS = ['mob','sklad','mbSklad','prok','missed','missedMl','missedRefuse','missedLate','missedClosed'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -345,7 +345,8 @@ function render() {
       const tl  = _tl.filter(x => x.date === dateStr);
       const tm  = tl.reduce((s,x) => s+x.mins, 0);
       const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-      const mainVal = activeFilter === 'gave' ? sklad : (+r[activeFilter]||0);
+      const missedTotal = (+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
+      const mainVal = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTotal : (+r[activeFilter]||0);
       if (!mainVal) return;
 
       const wd = t('weekdays')[d.getDay()];
@@ -359,6 +360,14 @@ function render() {
           ${x.mins ? `<span class="filter-work-time">${toHM(x.mins)}</span>` : ''}
         </div>`).join('') : '';
 
+      const missedBreakdown = activeFilter === 'missed' ? `
+        <div class="filter-missed-cats">
+          ${r.missedMl     > 0 ? `<span class="fmc fmc--ml">📋 ${r.missedMl}</span>` : ''}
+          ${r.missedRefuse > 0 ? `<span class="fmc fmc--refuse">🚫 ${r.missedRefuse}</span>` : ''}
+          ${r.missedLate   > 0 ? `<span class="fmc fmc--late">⏱ ${r.missedLate}</span>` : ''}
+          ${r.missedClosed > 0 ? `<span class="fmc fmc--closed">🔒 ${r.missedClosed}</span>` : ''}
+        </div>` : '';
+
       card.innerHTML = `
         <div class="filter-card-hdr">
           <div class="filter-card-left">
@@ -370,6 +379,7 @@ function render() {
             <span class="filter-card-val">${mainVal}</span>
           </div>
         </div>
+        ${missedBreakdown}
         ${workHtml ? `<div class="filter-work-list">${workHtml}</div>` : ''}`;
 
       card.addEventListener('click', () => openDetail(dateStr));
@@ -493,12 +503,32 @@ function openDetail(dateStr) {
     </div>
 
     <div class="missed-block">
-      <div class="section-label missed-label">Мимо</div>
-      <div class="missed-controls">
-        <button class="missed-btn" onclick="changeMissed('${dateStr}', -1)">−</button>
-        <div class="missed-val" id="missed_${dateStr}">${+r.missed||0}</div>
-        <button class="missed-btn" onclick="changeMissed('${dateStr}', 1)">+</button>
-        <span class="missed-clients">дистр.</span>
+      <div class="missed-block-hdr">
+        <span class="section-label missed-label">Мимо · <span id="missedTotal_${dateStr}" style="font-size:11px">${(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)}</span></span>
+        <button class="missed-add-btn" onclick="toggleMissedPicker('${dateStr}')">+</button>
+      </div>
+      <div class="missed-picker" id="missedPicker_${dateStr}" style="display:none">
+        ${[['missedMl','📋','Расхождение','В МЛ больше чем по факту','#fbbf24'],
+           ['missedRefuse','🚫','Отказ','Клиент не захотел','#f87171'],
+           ['missedLate','⏱','Не успел','Не доехал физически','#818cf8'],
+           ['missedClosed','🔒','Закрыто','Точка была закрыта','#60a5fa']].map(([key,icon,label,desc,color])=>
+          `<button class="missed-cat-btn" onclick="addMissedCat('${dateStr}','${key}')" style="border-color:${color}20">
+            <span>${icon}</span>
+            <div><div style="color:${color};font-size:11px;font-weight:600">${label}</div><div style="color:#64748b;font-size:9px">${desc}</div></div>
+          </button>`).join('')}
+      </div>
+      <div class="missed-entries" id="missedEntries_${dateStr}">
+        ${[['missedMl','📋','Расхождение','#fbbf24'],
+           ['missedRefuse','🚫','Отказ','#f87171'],
+           ['missedLate','⏱','Не успел','#818cf8'],
+           ['missedClosed','🔒','Закрыто','#60a5fa']].filter(([key])=>(+r[key]||0)>0).map(([key,icon,label,color])=>
+          `<div class="missed-entry" style="background:${color}12;border-color:${color}30">
+            <span>${icon}</span>
+            <span class="missed-entry-label" style="color:#e2e8f0">${label}</span>
+            <button onclick="changeMissedCat('${dateStr}','${key}',-1)" style="color:${color}">−</button>
+            <span class="missed-entry-val" id="${key}_${dateStr}" style="color:${color}">${+r[key]||0}</span>
+            <button onclick="changeMissedCat('${dateStr}','${key}',1)" style="color:${color}">+</button>
+          </div>`).join('')}
       </div>
     </div>
 
@@ -583,6 +613,29 @@ function addTravel(dateStr) {
   updateTotals();
 }
 
+
+function toggleMissedPicker(dateStr) {
+  const picker = document.getElementById('missedPicker_' + dateStr);
+  if (picker) picker.style.display = picker.style.display === 'none' ? 'flex' : 'none';
+}
+
+function addMissedCat(dateStr, key) {
+  if (!data[dateStr]) data[dateStr] = {};
+  data[dateStr][key] = (+data[dateStr][key]||0) + 1;
+  save();
+  toggleMissedPicker(dateStr);
+  refreshDetail(dateStr);
+  updateTotals();
+}
+
+function changeMissedCat(dateStr, key, delta) {
+  if (!data[dateStr]) data[dateStr] = {};
+  data[dateStr][key] = Math.max(0, (+data[dateStr][key]||0) + delta);
+  save();
+  refreshDetail(dateStr);
+  updateCellData(dateStr);
+  updateTotals();
+}
 
 function changeMissed(dateStr, delta) {
   if (!data[dateStr]) data[dateStr] = {};
@@ -679,7 +732,7 @@ function updateTotals() {
     sklad  += +r.sklad  || 0;
     mbSklad+= +r.mbSklad|| 0;
     prok   += +r.prok   || 0;
-    missed += +r.missed || 0;
+    missed += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0);
   });
 
   // Count days with mob/gave data
