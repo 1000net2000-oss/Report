@@ -323,7 +323,8 @@ function render() {
       const dateStr = formatDate(d);
       const r = data[dateStr] || {};
       const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-      const val = activeFilter === 'gave' ? sklad : (+r[activeFilter]||0);
+      const missedTot = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
+      const val = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTot : (+r[activeFilter]||0);
       if (val > 0) { filterTotal += val; filterDays++; }
     });
     const avg = filterDays > 0 ? (filterTotal / filterDays).toFixed(1) : 0;
@@ -345,7 +346,7 @@ function render() {
       const tl  = _tl.filter(x => x.date === dateStr);
       const tm  = tl.reduce((s,x) => s+x.mins, 0);
       const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-      const missedTotal = (+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
+      const missedTotal = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
       const mainVal = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTotal : (+r[activeFilter]||0);
       if (!mainVal) return;
 
@@ -421,7 +422,7 @@ function render() {
       r.prok     ? `<span class="dc dc--prok">${r.prok}</span>` : '',
       sklad      ? `<span class="dc dc--gave">${sklad}</span>`  : '',
       wl.length  ? `<span class="dc dc--work">${wl.length}${workMinsCell > 0 ? '·' + toHM(workMinsCell) : ''}</span>` : '',
-      r.missed   ? `<span class="dc dc--missed">-${r.missed}</span>` : '',
+      (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
     ].join('');
 
     const indicators = [
@@ -714,7 +715,7 @@ function updateCellData(dateStr) {
     r.prok    ? `<span class="dc dc--prok">${r.prok}</span>` : '',
     sklad     ? `<span class="dc dc--gave">${sklad}</span>`  : '',
     wl.length ? `<span class="dc dc--work">${wl.length}${workMinsU > 0 ? '·' + toHM(workMinsU) : ''}</span>` : '',
-    r.missed  ? `<span class="dc dc--missed">-${r.missed}</span>` : '',
+    (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
   ].join('');
   const indicators = tm ? '<span class="di di--travel"></span>' : '';
 
