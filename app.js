@@ -840,62 +840,174 @@ function closeChart() {
 
 function renderChart() {
   load();
-  document.getElementById('chartPageTitle').textContent  = t('chartTitle');
+  document.getElementById('chartPageTitle').textContent  = lang === 'pl' ? 'Diagram' : 'Диаграмма';
   document.getElementById('chartMonthLabel').textContent = `${t('months')[month]} ${year}`;
+
+  const wrap = document.getElementById('chartWrap');
+
+  // Collect totals
+  let mob=0, prok=0, sklad=0, mbSklad=0;
+  Object.values(data).forEach(r => {
+    mob    += +r.mob    || 0;
+    prok   += +r.prok   || 0;
+    sklad  += +r.sklad  || 0;
+    mbSklad+= +r.mbSklad|| 0;
+  });
+  const gave = sklad + mbSklad;
+  const total = mob + prok + gave;
+
+  const _wl = loadWorkLog();
+  const _tl = loadTravelLog();
+  const workMins   = _wl.reduce((s,x) => s+(x.mins||0), 0);
+  const travelMins = _tl.reduce((s,x) => s+x.mins, 0);
+
+  if (total === 0) {
+    wrap.innerHTML = `<div class="chart-empty">${lang==='pl'?'Brak danych':'Нет данных'}</div>`;
+    return;
+  }
+
+  const segments = [
+    { label: t('mobile'),  val: mob,  color:'#f472b6' },
+    { label: t('prok'),    val: prok, color:'#fbbf24' },
+    { label: t('gave'),    val: gave, color:'#34d399' },
+  ].filter(s => s.val > 0);
+
+  // Build SVG donut
+  const cx=110, cy=110, r=80, thick=28;
+  let angle = -90;
+
+  const polarToXY = (deg, radius) => {
+    const rad = deg * Math.PI / 180;
+    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+  };
+
+  const arcPath = (startDeg, endDeg, radius) => {
+    const s = polarToXY(startDeg, radius);
+    const e = polarToXY(endDeg - 0.5, radius);
+    const large = endDeg - startDeg > 180 ? 1 : 0;
+    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 1 ${e.x} ${e.y}`;
+  };
+
+  const paths = segments.map(s => {
+    const deg = (s.val / total) * 360;
+    const start = angle;
+    angle += deg;
+    const path = arcPath(start, angle, r);
+    return `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="${thick}" stroke-linecap="butt"/>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div style="padding:16px">
+      <svg width="220" height="220" style="display:block;margin:0 auto">
+        ${paths}
+        <circle cx="${cx}" cy="${cy}" r="${r-thick/2-2}" fill="#0f0f12"/>
+        <text x="${cx}" y="${cy-8}" text-anchor="middle" fill="#e2e8f0" font-size="26" font-weight="700" font-family="'Unbounded',sans-serif">${total}</text>
+        <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#64748b" font-size="10">${lang==='pl'?'łącznie':'всего'}</text>
+      </svg>
+
+      <div class="donut-legend">
+        ${segments.map(s => `
+          <div class="donut-leg-item">
+            <div class="donut-leg-color" style="background:${s.color}"></div>
+            <div class="donut-leg-body">
+              <div class="donut-leg-label">${s.label}</div>
+              <div class="donut-leg-row">
+                <span class="donut-leg-val" style="color:${s.color}">${s.val}</span>
+                <span class="donut-leg-pct">${Math.round(s.val/total*100)}%</span>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="donut-secondary">
+        ${workMins > 0 ? `<div class="donut-sec-item" style="border-left-color:#fb923c">
+          <div class="donut-sec-lbl">${lang==='pl'?'Inne prace':'Другие работы'}</div>
+          <div class="donut-sec-val" style="color:#fb923c">${toHM(workMins)}</div>
+        </div>` : ''}
+        ${travelMins > 0 ? `<div class="donut-sec-item" style="border-left-color:#818cf8">
+          <div class="donut-sec-lbl">${lang==='pl'?'W drodze':'В пути'}</div>
+          <div class="donut-sec-val" style="color:#818cf8">${toHM(travelMins)}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+}
+
+
 
   const workdays = getWorkdays(year, month);
   const _wl = loadWorkLog();
   const _tl = loadTravelLog();
 
-  const rows = [];
+  const allRows = [];
   workdays.forEach(d => {
     const dateStr = formatDate(d);
     const r = data[dateStr] || {};
-    const mob   = +r.mob  || 0;
-    const prok  = +r.prok || 0;
-    const gave  = (+r.sklad||0) + (+r.mbSklad||0);
-    const wl    = _wl.filter(x => x.date === dateStr);
-    const tl    = _tl.filter(x => x.date === dateStr);
-    const work  = wl.reduce((s,x) => s+(x.mins||0), 0);
-    const travel= tl.reduce((s,x) => s+x.mins, 0);
-    if (mob || prok || gave || work || travel)
-      rows.push({ label: dateStr.slice(0,5), mob, prok, gave, work, travel });
+    const mob    = +r.mob || 0;
+    const prok   = +r.prok || 0;
+    const gave   = (+r.sklad||0) + (+r.mbSklad||0);
+    const wl     = _wl.filter(x => x.date === dateStr);
+    const tl     = _tl.filter(x => x.date === dateStr);
+    const work   = wl.reduce((s,x) => s+(x.mins||0), 0);
+    const travel = tl.reduce((s,x) => s+x.mins, 0);
+    allRows.push({ label: dateStr.slice(0,5), mob, prok, gave, work, travel });
   });
 
-  const maxMob    = Math.max(...rows.map(r => r.mob),    1);
-  const maxProk   = Math.max(...rows.map(r => r.prok),   1);
-  const maxGave   = Math.max(...rows.map(r => r.gave),   1);
-  const maxWork   = Math.max(...rows.map(r => r.work),   1);
-  const maxTravel = Math.max(...rows.map(r => r.travel), 1);
-
-  const bar = (val, max, color) =>
-    `<div class="ch-bar-wrap"><div class="ch-bar" style="width:${Math.round((val/max)*100)}%;background:${color}"></div></div>`;
+  const metrics = [
+    { key:'mob',    label:'Моб',    color:'#f472b6', isTime:false },
+    { key:'prok',   label:'Прок',   color:'#fbbf24', isTime:false },
+    { key:'gave',   label:'Отдал',  color:'#34d399', isTime:false },
+    { key:'work',   label:'Работы', color:'#fb923c', isTime:true  },
+    { key:'travel', label:'Путь',   color:'#818cf8', isTime:true  },
+  ];
 
   const wrap = document.getElementById('chartWrap');
-  if (!rows.length) {
-    wrap.innerHTML = `<div class="chart-empty">Нет данных</div>`;
-    return;
-  }
 
-  wrap.innerHTML = `
-    <div class="ch-legend">
-      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#f472b6"></span>Моб</span>
-      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#fbbf24"></span>Прок</span>
-      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#34d399"></span>Отдал</span>
-      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#fb923c"></span>Работы</span>
-      <span class="ch-leg-item"><span class="ch-leg-dot" style="background:#818cf8"></span>Путь</span>
-    </div>
-    ${rows.map(r => `
-      <div class="ch-row">
-        <div class="ch-label">${r.label}</div>
-        <div class="ch-bars">
-          ${r.mob    ? `<div class="ch-bar-row">${bar(r.mob,    maxMob,    '#f472b6')}<span class="ch-val" style="color:#f472b6">${r.mob}</span></div>`    : ''}
-          ${r.prok   ? `<div class="ch-bar-row">${bar(r.prok,   maxProk,   '#fbbf24')}<span class="ch-val" style="color:#fbbf24">${r.prok}</span></div>`   : ''}
-          ${r.gave   ? `<div class="ch-bar-row">${bar(r.gave,   maxGave,   '#34d399')}<span class="ch-val" style="color:#34d399">${r.gave}</span></div>`   : ''}
-          ${r.work   ? `<div class="ch-bar-row">${bar(r.work,   maxWork,   '#fb923c')}<span class="ch-val" style="color:#fb923c">${toHM(r.work)}</span></div>`   : ''}
-          ${r.travel ? `<div class="ch-bar-row">${bar(r.travel, maxTravel, '#818cf8')}<span class="ch-val" style="color:#818cf8">${toHM(r.travel)}</span></div>` : ''}
+  const renderMetric = () => {
+    const active = metrics.find(m => m.key === chartMetric);
+    const vals = allRows.map(r => r[chartMetric]);
+    const maxV = Math.max(...vals, 1);
+    const total = vals.reduce((a,b)=>a+b,0);
+    const filledRows = allRows.filter(r => r[chartMetric] > 0);
+    const avg = filledRows.length > 0 ? (total/filledRows.length).toFixed(1) : 0;
+    const best = allRows.reduce((a,b) => b[chartMetric]>a[chartMetric]?b:a);
+
+    const fmt = (v) => active.isTime ? toHM(v) : v;
+
+    wrap.innerHTML = `
+      <div class="ch-metric-tabs">
+        ${metrics.map(m => `<button class="ch-metric-btn${chartMetric===m.key?' active':''}"
+          style="${chartMetric===m.key?`color:${m.color};border-color:${m.color};background:${m.color}18`:''}"
+          onclick="chartMetric='${m.key}';renderChart()">${m.label}</button>`).join('')}
+      </div>
+
+      <div class="ch-kpi">
+        <div class="ch-kpi-item">
+          <div class="ch-kpi-label">Итого</div>
+          <div class="ch-kpi-val" style="color:${active.color}">${fmt(total)}</div>
         </div>
-      </div>`).join('')}`;
+        <div class="ch-kpi-item">
+          <div class="ch-kpi-label">Среднее/д</div>
+          <div class="ch-kpi-val">${active.isTime ? toHM(Math.round(+avg)) : avg}</div>
+        </div>
+        <div class="ch-kpi-item">
+          <div class="ch-kpi-label">Лучший</div>
+          <div class="ch-kpi-val" style="color:${active.color};font-size:10px">${best[chartMetric]>0?`${best.label} · ${fmt(best[chartMetric])}`:'—'}</div>
+        </div>
+      </div>
+
+      ${allRows.map(r => {
+        const val = r[chartMetric];
+        const pct = Math.round((val/maxV)*100);
+        const isEmpty = val === 0;
+        return `<div class="ch-clean-row${isEmpty?' ch-clean-row--empty':''}">
+          <div class="ch-clean-date">${r.label}</div>
+          <div class="ch-clean-bar-wrap">
+            ${!isEmpty ? `<div class="ch-clean-bar" style="width:${pct}%;background:${active.color};box-shadow:0 0 8px ${active.color}44"></div>` : ''}
+          </div>
+          <div class="ch-clean-val" style="${isEmpty?'':'color:'+active.color}">${isEmpty?'—':fmt(val)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 // ── PDF ───────────────────────────────────────
