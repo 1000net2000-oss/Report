@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sklad','mbSklad','prok','missed','missedMl','missedRefuse','missedLate','missedClosed'];
+const COLS = ['mob','sklad','mbSklad','prok','missed','missedMl','missedRefuse','missedLate','missedClosed','missedParking'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -323,7 +323,7 @@ function render() {
       const dateStr = formatDate(d);
       const r = data[dateStr] || {};
       const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-      const missedTot = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
+      const missedTot = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0);
       const val = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTot : (+r[activeFilter]||0);
       if (val > 0) { filterTotal += val; filterDays++; }
     });
@@ -346,7 +346,7 @@ function render() {
       const tl  = _tl.filter(x => x.date === dateStr);
       const tm  = tl.reduce((s,x) => s+x.mins, 0);
       const sklad = (+r.sklad||0)+(+r.mbSklad||0);
-      const missedTotal = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0);
+      const missedTotal = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0);
       const mainVal = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTotal : (+r[activeFilter]||0);
       if (!mainVal) return;
 
@@ -366,7 +366,7 @@ function render() {
           ${r.missedMl     > 0 ? `<span class="fmc fmc--ml">📋 ${r.missedMl}</span>` : ''}
           ${r.missedRefuse > 0 ? `<span class="fmc fmc--refuse">🚫 ${r.missedRefuse}</span>` : ''}
           ${r.missedLate   > 0 ? `<span class="fmc fmc--late">⏱ ${r.missedLate}</span>` : ''}
-          ${r.missedClosed > 0 ? `<span class="fmc fmc--closed">🔒 ${r.missedClosed}</span>` : ''}
+          ${r.missedClosed > 0 ? `<span class="fmc fmc--closed">🔒 ${r.missedClosed}</span>` : ''}${r.missedParking > 0 ? `<span class="fmc fmc--parking">🅿️ ${r.missedParking}</span>` : ''}
         </div>` : '';
 
       card.innerHTML = `
@@ -422,7 +422,7 @@ function render() {
       r.prok     ? `<span class="dc dc--prok">${r.prok}</span>` : '',
       sklad      ? `<span class="dc dc--gave">${sklad}</span>`  : '',
       wl.length  ? `<span class="dc dc--work">${wl.length}${workMinsCell > 0 ? '·' + toHM(workMinsCell) : ''}</span>` : '',
-      (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
+      (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
     ].join('');
 
     const indicators = [
@@ -512,7 +512,7 @@ function openDetail(dateStr) {
         ${[['missedMl','📋','Расхождение','В МЛ больше чем по факту','#fbbf24'],
            ['missedRefuse','🚫','Отказ','Клиент не захотел','#f87171'],
            ['missedLate','⏱','Не успел','Не доехал физически','#818cf8'],
-           ['missedClosed','🔒','Закрыто','Точка была закрыта','#60a5fa']].map(([key,icon,label,desc,color])=>
+           ['missedClosed','🔒','Закрыто','Точка была закрыта','#60a5fa'],['missedParking','🅿️','Паркинг','Не нашёл парковку','#a78bfa']].map(([key,icon,label,desc,color])=>
           `<button class="missed-cat-btn" onclick="addMissedCat('${dateStr}','${key}')" style="border-color:${color}20">
             <span>${icon}</span>
             <div><div style="color:${color};font-size:11px;font-weight:600">${label}</div><div style="color:#64748b;font-size:9px">${desc}</div></div>
@@ -522,7 +522,7 @@ function openDetail(dateStr) {
         ${[['missedMl','📋','Расхождение','#fbbf24'],
            ['missedRefuse','🚫','Отказ','#f87171'],
            ['missedLate','⏱','Не успел','#818cf8'],
-           ['missedClosed','🔒','Закрыто','#60a5fa']].filter(([key])=>(+r[key]||0)>0).map(([key,icon,label,color])=>
+           ['missedClosed','🔒','Закрыто','#60a5fa'],['missedParking','🅿️','Паркинг','#a78bfa']].filter(([key])=>(+r[key]||0)>0).map(([key,icon,label,color])=>
           `<div class="missed-entry" style="background:${color}12;border-color:${color}30">
             <span>${icon}</span>
             <span class="missed-entry-label" style="color:#e2e8f0">${label}</span>
@@ -715,7 +715,7 @@ function updateCellData(dateStr) {
     r.prok    ? `<span class="dc dc--prok">${r.prok}</span>` : '',
     sklad     ? `<span class="dc dc--gave">${sklad}</span>`  : '',
     wl.length ? `<span class="dc dc--work">${wl.length}${workMinsU > 0 ? '·' + toHM(workMinsU) : ''}</span>` : '',
-    (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
+    (() => { const mt = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0); return mt > 0 ? `<span class="dc dc--missed">-${mt}</span>` : ''; })(),
   ].join('');
   const indicators = tm ? '<span class="di di--travel"></span>' : '';
 
@@ -733,7 +733,7 @@ function updateTotals() {
     sklad  += +r.sklad  || 0;
     mbSklad+= +r.mbSklad|| 0;
     prok   += +r.prok   || 0;
-    missed += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0);
+    missed += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0) + (+r.missedParking||0);
   });
 
   // Count days with mob/gave data

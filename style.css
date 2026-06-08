@@ -543,3 +543,4 @@ input[type=number] { -moz-appearance: textfield; }
 .donut-sec-item { background:#1e1e28; border-radius:12px; padding:10px 12px; border-left:3px solid; }
 .donut-sec-lbl { font-size:9px; color:#64748b; margin-bottom:4px; }
 .donut-sec-val { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
+.fmc--parking { background:#a78bfa20; color:#a78bfa; }
