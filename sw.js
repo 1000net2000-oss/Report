@@ -1,5 +1,5 @@
-const CACHE = 'otchet-v99';
-const FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon.svg'];
+const CACHE = 'otchet-v100';
+const FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon.svg', './icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
