@@ -686,6 +686,7 @@ input[type=number] { -moz-appearance: textfield; }
   width: 100%;
 }
 
+.stat-chip--sklad-open { min-width: 130px; }
 .stat-chip--sklad-open .sklad-chip-details { display: flex; }
 
 .sklad-chip-row {
