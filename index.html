@@ -61,9 +61,27 @@
       <div class="stat-chip-label" id="labelMob">Моб</div>
       <div class="stat-chip-val" id="totalMob">0</div>
     </div>
-    <div class="stat-chip stat-chip--distr" onclick="setFilter('gave')">
-      <div class="stat-chip-label" id="labelSklad">Отдал</div>
-      <div class="stat-chip-val" id="totalSklad">0</div>
+    <div class="stat-chip stat-chip--distr stat-chip--sklad" onclick="toggleSkladChip(this)">
+      <div class="stat-chip-label">Склад</div>
+      <div class="stat-chip-val" id="totalSkladNew">0</div>
+      <div class="sklad-chip-details" id="skladChipDetails">
+        <div class="sklad-chip-row">
+          <span class="sklad-chip-lbl sklad-chip-lbl--dist">Д забрал</span>
+          <span class="sklad-chip-num" id="chip_tookDist">0</span>
+        </div>
+        <div class="sklad-chip-row">
+          <span class="sklad-chip-lbl sklad-chip-lbl--dist">Д отдал</span>
+          <span class="sklad-chip-num" id="chip_gaveDist">0</span>
+        </div>
+        <div class="sklad-chip-row">
+          <span class="sklad-chip-lbl sklad-chip-lbl--mb">МБ забрал</span>
+          <span class="sklad-chip-num" id="chip_tookMb">0</span>
+        </div>
+        <div class="sklad-chip-row">
+          <span class="sklad-chip-lbl sklad-chip-lbl--mb">МБ отдал</span>
+          <span class="sklad-chip-num" id="chip_gaveMb">0</span>
+        </div>
+      </div>
     </div>
     <button class="stat-chip stat-chip--work" onclick="openHistory('work')">
       <div class="stat-chip-label" id="labelOtherWork">Работы</div>
@@ -120,10 +138,9 @@
     </div>
     <div class="day-detail-body" id="detailBody"></div>
   </div>
+  <div class="sklad-panel" id="skladPanel"></div>
 
 </div>
-
-<!-- ══ HISTORY PAGE ══ -->
 <div class="page" id="pageHistory">
   <div class="hist-header">
     <button class="back-btn" onclick="openMain()">←</button>

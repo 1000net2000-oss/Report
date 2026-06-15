@@ -113,7 +113,7 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 .travel-row { display: flex; gap: 8px; align-items: center; width: 100%; box-sizing: border-box; overflow: hidden; }
 .travel-mins { flex: 1; background: var(--surface2); border: 1px solid #2a2a38; border-radius: 8px; color: var(--text); font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 600; padding: 8px 10px; text-align: center; outline: none; -webkit-appearance: none; transition: border-color 0.15s; }
 .travel-mins:focus { border-color: var(--accent2); }
-.add-travel-btn { background: var(--accent2); border: none; border-radius: 8px; color: #0f0f12; font-size: 18px; width: 38px; height: 38px; flex-shrink: 0; cursor: pointer; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.add-travel-btn { background: var(--accent2); border: none; border-radius: 8px; color: #0f0f12; font-size: 18px; width: 38px; flex-shrink: 0; cursor: pointer; font-weight: 700; }
 .add-travel-btn:active { opacity: 0.8; }
 
 .day-time-totals { display: flex; gap: 8px; }
@@ -299,7 +299,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 .day-cell-top { display: flex; justify-content: space-between; align-items: flex-start; }
 .day-cell-date { font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700; color: #e2e8f0; }
-.day-cell-wd   { font-size: 9px; color: #6b7280; margin-top: 1px; }
+.day-cell-wd   { font-size: 9px; color: #3a3a52; margin-top: 1px; }
 .day-cell-indicators { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
 .di { width: 5px; height: 5px; border-radius: 50%; display: block; }
 .di--travel { background: #818cf8; }
@@ -544,3 +544,167 @@ input[type=number] { -moz-appearance: textfield; }
 .donut-sec-lbl { font-size:9px; color:#64748b; margin-bottom:4px; }
 .donut-sec-val { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
 .fmc--parking { background:#a78bfa20; color:#a78bfa; }
+
+/* ── СКЛАД PANEL ── */
+.sklad-panel {
+  position: fixed;
+  inset: 0;
+  background: #0f0f12;
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto;
+}
+.sklad-panel.open { transform: translateX(0); }
+
+.sklad-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid #22222e;
+}
+
+.sklad-back-btn {
+  background: none;
+  border: none;
+  color: #6b6b90;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.sklad-panel-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e8e8f0;
+}
+
+.sklad-panel-body { padding: 16px 14px; display: flex; flex-direction: column; gap: 16px; }
+
+.sp-group { display: flex; flex-direction: column; gap: 8px; }
+
+.sp-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sp-dist { color: #4fd1c5; }
+.sp-mb   { color: #b794f4; }
+
+.sp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.sp-cell {
+  background: #1e1e28;
+  border-radius: 14px;
+  padding: 12px 10px 10px;
+  border: 1.5px solid #22222e;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.sp-cell--active-dist { border-color: #4fd1c540; background: #1a2926; }
+.sp-cell--active-mb   { border-color: #b794f440; background: #201a2e; }
+
+.sp-cell-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8080aa;
+  margin-bottom: 10px;
+}
+
+.sp-cell--active-dist .sp-cell-label { color: #4fd1c5; }
+.sp-cell--active-mb   .sp-cell-label { color: #b794f4; }
+
+.sp-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+}
+
+.sp-btn:active { opacity: 0.6; }
+.sp-btn--minus       { background: #2a2a3a; color: #606088; }
+.sp-btn--plus-dist   { background: #4fd1c520; color: #4fd1c5; }
+.sp-btn--plus-mb     { background: #b794f420; color: #b794f4; }
+
+.sp-val {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: center;
+}
+
+.sp-val--zero { color: #333348; }
+.sp-val--dist { color: #4fd1c5; }
+.sp-val--mb   { color: #b794f4; }
+
+/* ── СКЛАД TILE IN DAY PANEL ── */
+.dp-tile--sklad-btn {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dp-tile-sklad-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.dp-sklad-dist { font-size: 11px; color: #4fd1c5; font-weight: 600; }
+.dp-sklad-mb   { font-size: 11px; color: #b794f4; font-weight: 600; }
+.dp-sklad-empty { font-size: 22px; color: #333348; }
+
+/* ── СКЛАД CHIP EXPANDED ── */
+.stat-chip--sklad { cursor: pointer; }
+
+.sklad-chip-details {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  width: 100%;
+}
+
+.stat-chip--sklad-open .sklad-chip-details { display: flex; }
+
+.sklad-chip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sklad-chip-lbl {
+  font-size: 9px;
+  color: #50507a;
+}
+
+.sklad-chip-lbl--dist { color: #4fd1c580; }
+.sklad-chip-lbl--mb   { color: #b794f480; }
+
+.sklad-chip-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e8e8f0;
+}

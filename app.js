@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sklad','mbSklad','prok','missed','missedMl','missedRefuse','missedLate','missedClosed','missedParking'];
+const COLS = ['mob','sklad','mbSklad','tookDist','gaveDist','tookMb','gaveMb','prok','missed','missedMl','missedRefuse','missedLate','missedClosed','missedParking'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -491,15 +491,13 @@ function openDetail(dateStr) {
         <input class="dp-tile-input" type="text" inputmode="text" value="${r.prok||''}" placeholder="0"
           onblur="evalField(this,'${dateStr}','prok')" onfocus="focusField(this,'${dateStr}','prok')">
       </div>
-      <div class="dp-tile dp-tile--gave" onclick="this.querySelector('input').focus()">
-        <div class="dp-tile-label">${t('gaveReady')}</div>
-        <input class="dp-tile-input" type="text" inputmode="text" value="${r.sklad||''}" placeholder="0"
-          onblur="evalField(this,'${dateStr}','sklad')" onfocus="focusField(this,'${dateStr}','sklad')">
-      </div>
-      <div class="dp-tile dp-tile--mb" onclick="this.querySelector('input').focus()">
-        <div class="dp-tile-label">${t('mbGave')}</div>
-        <input class="dp-tile-input" type="text" inputmode="text" value="${r.mbSklad||''}" placeholder="0"
-          onblur="evalField(this,'${dateStr}','mbSklad')" onfocus="focusField(this,'${dateStr}','mbSklad')">
+      <div class="dp-tile dp-tile--gave dp-tile--sklad-btn" onclick="openSkladPanel('${dateStr}')">
+        <div class="dp-tile-label">Склад</div>
+        <div class="dp-tile-sklad-preview">
+          <span class="dp-sklad-dist" id="skladDistPrev_${dateStr}">${(+r.tookDist||0)+(+r.gaveDist||0) > 0 ? `Д: ${+r.tookDist||0}↓ ${+r.gaveDist||0}↑` : ''}</span>
+          <span class="dp-sklad-mb" id="skladMbPrev_${dateStr}">${(+r.tookMb||0)+(+r.gaveMb||0) > 0 ? `МБ: ${+r.tookMb||0}↓ ${+r.gaveMb||0}↑` : ''}</span>
+          <span class="dp-sklad-empty" id="skladEmpty_${dateStr}">${(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0) === 0 ? '○' : ''}</span>
+        </div>
       </div>
     </div>
 
@@ -573,6 +571,114 @@ function closeDetail() {
   document.getElementById('dayDetailPanel').classList.remove('open');
   document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('day-cell--active'));
   _activeDetail = null;
+}
+
+function openSkladPanel(dateStr) {
+  const r = data[dateStr] || {};
+  const panel = document.getElementById('skladPanel');
+  panel.dataset.date = dateStr;
+
+  const renderSkladBody = () => {
+    const r2 = data[dateStr] || {};
+    document.getElementById('sp_tookDist').textContent = +r2.tookDist || 0;
+    document.getElementById('sp_gaveDist').textContent = +r2.gaveDist || 0;
+    document.getElementById('sp_tookMb').textContent   = +r2.tookMb   || 0;
+    document.getElementById('sp_gaveMb').textContent   = +r2.gaveMb   || 0;
+  };
+
+  panel.innerHTML = `
+    <div class="sklad-panel-header">
+      <button class="sklad-back-btn" onclick="closeSkladPanel('${dateStr}')">‹ День</button>
+      <span class="sklad-panel-title">Склад</span>
+      <span style="width:60px"></span>
+    </div>
+    <div class="sklad-panel-body">
+      <div class="sp-group">
+        <div class="sp-group-label sp-dist">Дистрибутор</div>
+        <div class="sp-row">
+          <div class="sp-cell ${(+r.tookDist||0) > 0 ? 'sp-cell--active-dist' : ''}">
+            <div class="sp-cell-label">← Забрал</div>
+            <div class="sp-counter">
+              <button class="sp-btn sp-btn--minus" onclick="changeSklad('${dateStr}','tookDist',-1)">−</button>
+              <span class="sp-val ${(+r.tookDist||0) > 0 ? 'sp-val--dist' : 'sp-val--zero'}" id="sp_tookDist">${+r.tookDist||0}</span>
+              <button class="sp-btn sp-btn--plus-dist" onclick="changeSklad('${dateStr}','tookDist',1)">+</button>
+            </div>
+          </div>
+          <div class="sp-cell ${(+r.gaveDist||0) > 0 ? 'sp-cell--active-dist' : ''}">
+            <div class="sp-cell-label">Отдал →</div>
+            <div class="sp-counter">
+              <button class="sp-btn sp-btn--minus" onclick="changeSklad('${dateStr}','gaveDist',-1)">−</button>
+              <span class="sp-val ${(+r.gaveDist||0) > 0 ? 'sp-val--dist' : 'sp-val--zero'}" id="sp_gaveDist">${+r.gaveDist||0}</span>
+              <button class="sp-btn sp-btn--plus-dist" onclick="changeSklad('${dateStr}','gaveDist',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-group">
+        <div class="sp-group-label sp-mb">Минибар</div>
+        <div class="sp-row">
+          <div class="sp-cell ${(+r.tookMb||0) > 0 ? 'sp-cell--active-mb' : ''}">
+            <div class="sp-cell-label">← Забрал</div>
+            <div class="sp-counter">
+              <button class="sp-btn sp-btn--minus" onclick="changeSklad('${dateStr}','tookMb',-1)">−</button>
+              <span class="sp-val ${(+r.tookMb||0) > 0 ? 'sp-val--mb' : 'sp-val--zero'}" id="sp_tookMb">${+r.tookMb||0}</span>
+              <button class="sp-btn sp-btn--plus-mb" onclick="changeSklad('${dateStr}','tookMb',1)">+</button>
+            </div>
+          </div>
+          <div class="sp-cell ${(+r.gaveMb||0) > 0 ? 'sp-cell--active-mb' : ''}">
+            <div class="sp-cell-label">Отдал →</div>
+            <div class="sp-counter">
+              <button class="sp-btn sp-btn--minus" onclick="changeSklad('${dateStr}','gaveMb',-1)">−</button>
+              <span class="sp-val ${(+r.gaveMb||0) > 0 ? 'sp-val--mb' : 'sp-val--zero'}" id="sp_gaveMb">${+r.gaveMb||0}</span>
+              <button class="sp-btn sp-btn--plus-mb" onclick="changeSklad('${dateStr}','gaveMb',1)">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  panel.classList.add('open');
+}
+
+function closeSkladPanel(dateStr) {
+  const panel = document.getElementById('skladPanel');
+  panel.classList.remove('open');
+  if (dateStr) refreshSkladPreview(dateStr);
+}
+
+function changeSklad(dateStr, key, delta) {
+  if (!data[dateStr]) data[dateStr] = {};
+  data[dateStr][key] = Math.max(0, (+data[dateStr][key]||0) + delta);
+  save();
+  // Update counter value in panel
+  const el = document.getElementById('sp_' + key);
+  if (el) {
+    const val = data[dateStr][key];
+    el.textContent = val;
+    const isDistKey = key === 'tookDist' || key === 'gaveDist';
+    el.className = 'sp-val ' + (val > 0 ? (isDistKey ? 'sp-val--dist' : 'sp-val--mb') : 'sp-val--zero');
+    // Update cell active state
+    const cell = el.closest('.sp-cell');
+    if (cell) {
+      cell.classList.toggle('sp-cell--active-dist', isDistKey && val > 0);
+      cell.classList.toggle('sp-cell--active-mb', !isDistKey && val > 0);
+    }
+  }
+  refreshSkladPreview(dateStr);
+  updateTotals();
+  updateCellData(dateStr);
+}
+
+function refreshSkladPreview(dateStr) {
+  const r = data[dateStr] || {};
+  const distTotal = (+r.tookDist||0) + (+r.gaveDist||0);
+  const mbTotal   = (+r.tookMb||0)   + (+r.gaveMb||0);
+  const distEl  = document.getElementById('skladDistPrev_' + dateStr);
+  const mbEl    = document.getElementById('skladMbPrev_' + dateStr);
+  const emptyEl = document.getElementById('skladEmpty_' + dateStr);
+  if (distEl)  distEl.textContent  = distTotal > 0 ? `Д: ${+r.tookDist||0}↓ ${+r.gaveDist||0}↑` : '';
+  if (mbEl)    mbEl.textContent    = mbTotal   > 0 ? `МБ: ${+r.tookMb||0}↓ ${+r.gaveMb||0}↑` : '';
+  if (emptyEl) emptyEl.textContent = distTotal + mbTotal === 0 ? '○' : '';
 }
 
 function refreshDetail(dateStr) {
@@ -696,7 +802,7 @@ function updateCellData(dateStr) {
   const wl = loadWorkLog().filter(x => x.date === dateStr);
   const tl = loadTravelLog().filter(x => x.date === dateStr);
   const tm = tl.reduce((s,x) => s+x.mins, 0);
-  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
   const total = (+r.mob||0)+(+r.prok||0)+sklad;
   const hd = hasData(dateStr) || wl.length > 0 || tm > 0;
 
@@ -727,14 +833,32 @@ function updateCellData(dateStr) {
 }
 
 function updateTotals() {
-  let mob=0, sklad=0, mbSklad=0, prok=0, missed=0;
+  let mob=0, sklad=0, mbSklad=0, tookDist=0, gaveDist=0, tookMb=0, gaveMb=0, prok=0, missed=0;
   Object.values(data).forEach(r => {
-    mob    += +r.mob    || 0;
-    sklad  += +r.sklad  || 0;
-    mbSklad+= +r.mbSklad|| 0;
-    prok   += +r.prok   || 0;
-    missed += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0) + (+r.missedParking||0);
+    mob     += +r.mob     || 0;
+    sklad   += +r.sklad   || 0;
+    mbSklad += +r.mbSklad || 0;
+    tookDist+= +r.tookDist|| 0;
+    gaveDist+= +r.gaveDist|| 0;
+    tookMb  += +r.tookMb  || 0;
+    gaveMb  += +r.gaveMb  || 0;
+    prok    += +r.prok    || 0;
+    missed  += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0) + (+r.missedParking||0);
   });
+
+  // Склад chip expanded breakdown
+  const elTookDist = document.getElementById('chip_tookDist');
+  const elGaveDist = document.getElementById('chip_gaveDist');
+  const elTookMb   = document.getElementById('chip_tookMb');
+  const elGaveMb   = document.getElementById('chip_gaveMb');
+  if (elTookDist) elTookDist.textContent = tookDist;
+  if (elGaveDist) elGaveDist.textContent = gaveDist;
+  if (elTookMb)   elTookMb.textContent   = tookMb;
+  if (elGaveMb)   elGaveMb.textContent   = gaveMb;
+
+  const skladTotal = tookDist + gaveDist + tookMb + gaveMb;
+  const elSkladChipVal = document.getElementById('totalSkladNew');
+  if (elSkladChipVal) elSkladChipVal.textContent = skladTotal > 0 ? skladTotal : 0;
 
   // Count days with mob/gave data
   const mobDays  = Object.values(data).filter(r => +r.mob  > 0).length;
@@ -768,7 +892,7 @@ function updateTotals() {
   if (elWorkDot) elWorkDot.classList.toggle('sr-only', workTotalMins === 0);
   document.getElementById('totalExtraTravel').textContent = toHM(tm);
 
-  const totalAll = mob + sklad + mbSklad;
+  const totalAll = mob + sklad + mbSklad + tookDist + gaveDist + tookMb + gaveMb;
   const elAll = document.getElementById('totalAll');
   if (elAll) elAll.textContent = totalAll;
   const elMissed = document.getElementById('totalMissed');
@@ -1203,6 +1327,10 @@ function toggleSalary() {
   salaryVisible = !salaryVisible;
   const num = document.getElementById('salaryNum');
   if (num) num.classList.toggle('salary-hidden', !salaryVisible);
+}
+
+function toggleSkladChip(el) {
+  el.classList.toggle('stat-chip--sklad-open');
 }
 
 // ── Archive page ──────────────────────────────
