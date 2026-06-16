@@ -430,6 +430,7 @@ input[type=number] { -moz-appearance: textfield; }
 .stat-chip--work   { border-top-color:#fb923c; cursor:pointer; } .stat-chip--work .stat-chip-val { color:#fb923c; }
 .stat-chip--mb     { border-top-color:#60a5fa; } .stat-chip--mb     .stat-chip-val { color:#60a5fa; }
 .stat-chip--prok   { border-top-color:#fbbf24; } .stat-chip--prok   .stat-chip-val { color:#fbbf24; }
+.stat-chip--inst   { border-top-color:#a78bfa; } .stat-chip--inst   .stat-chip-val { color:#a78bfa; }
 .stat-chip--missed { border-top-color:#f87171; } .stat-chip--missed .stat-chip-val { color:#f87171; }
 .stat-chip--travel { border-top-color:#818cf8; cursor:pointer; } .stat-chip--travel .stat-chip-val { color:#818cf8; font-size:11px; font-weight:600; }
 
@@ -469,8 +470,10 @@ input[type=number] { -moz-appearance: textfield; }
 .dp-tile--prok { border-color:#fbbf2420; } .dp-tile--prok .dp-tile-label { color:#fbbf24; } .dp-tile--prok .dp-tile-input { color:#fbbf24; }
 .dp-tile--gave { border-color:#34d39920; } .dp-tile--gave .dp-tile-label { color:#34d399; } .dp-tile--gave .dp-tile-input { color:#34d399; }
 .dp-tile--mb   { border-color:#60a5fa20; } .dp-tile--mb   .dp-tile-label { color:#60a5fa; } .dp-tile--mb   .dp-tile-input { color:#60a5fa; }
+.dp-tile--inst { border-color:#a78bfa20; } .dp-tile--inst .dp-tile-label { color:#a78bfa; } .dp-tile--inst .dp-tile-input { color:#a78bfa; }
 .dp-tile:focus-within { border-color:var(--accent); }
 .dp-tile--mob:focus-within  { border-color:#f472b6; }
+.dp-tile--inst:focus-within { border-color:#a78bfa; }
 .dp-tile--prok:focus-within { border-color:#fbbf24; }
 .dp-tile--gave:focus-within { border-color:#34d399; }
 .dp-tile--mb:focus-within   { border-color:#60a5fa; }

@@ -166,7 +166,7 @@ function setLang(l) {
 }
 
 // ── Constants ─────────────────────────────────
-const COLS = ['mob','sklad','mbSklad','tookDist','gaveDist','tookMb','gaveMb','prok','missed','missedMl','missedRefuse','missedLate','missedClosed','missedParking'];
+const COLS = ['mob','sklad','mbSklad','tookDist','gaveDist','tookMb','gaveMb','prok','inst','missed','missedMl','missedRefuse','missedLate','missedClosed','missedParking'];
 
 let now = new Date(), year = now.getFullYear(), month = now.getMonth();
 let data = {}, curHistTab = 'work';
@@ -315,7 +315,7 @@ function render() {
 
   if (activeFilter !== 'total') {
     // Filter view — card list
-    const filterColors = { mob:'#f472b6', gave:'#34d399', prok:'#fbbf24', mb:'#60a5fa', missed:'#f87171' };
+    const filterColors = { mob:'#f472b6', gave:'#34d399', prok:'#fbbf24', mb:'#60a5fa', missed:'#f87171', inst:'#a78bfa' };
     const color = filterColors[activeFilter] || '#e2e8f0';
 
     // Calculate summary
@@ -499,6 +499,11 @@ function openDetail(dateStr) {
           <span class="dp-sklad-mb" id="skladMbPrev_${dateStr}">${(+r.tookMb||0)+(+r.gaveMb||0) > 0 ? `МБ: ${+r.tookMb||0}↓ ${+r.gaveMb||0}↑` : ''}</span>
           <span class="dp-sklad-empty" id="skladEmpty_${dateStr}">${(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0) === 0 ? '○' : ''}</span>
         </div>
+      </div>
+      <div class="dp-tile dp-tile--inst" onclick="this.querySelector('input').focus()">
+        <div class="dp-tile-label">Инсталляция</div>
+        <input class="dp-tile-input" type="text" inputmode="text" value="${r.inst||''}" placeholder="0"
+          onblur="evalField(this,'${dateStr}','inst'); syncInstWork('${dateStr}')" onfocus="focusField(this,'${dateStr}','inst')">
       </div>
     </div>
 
@@ -709,6 +714,31 @@ function delWork(dateStr, id) {
   updateTotals();
 }
 
+// ── Auto-sync "Инсталляция" counter → "Другие работы" entry ──
+const INST_LABEL = 'Инсталляция дистрибутора';
+
+function syncInstWork(dateStr) {
+  const r = data[dateStr] || {};
+  const count = +r.inst || 0;
+  const log = loadWorkLog();
+  const existing = log.find(x => x.date === dateStr && x.desc && x.desc.startsWith(INST_LABEL));
+
+  if (count > 0) {
+    const newDesc = `${INST_LABEL} ×${count}`;
+    if (existing) {
+      existing.desc = newDesc;
+    } else {
+      log.push({ id: Date.now(), date: dateStr, desc: newDesc, mins: undefined });
+    }
+    saveWorkLog(log);
+  } else if (existing) {
+    saveWorkLog(log.filter(x => x.id !== existing.id));
+  }
+
+  refreshDayExtras(dateStr);
+  updateTotals();
+}
+
 // ── Travel log ────────────────────────────────
 function addTravel(dateStr) {
   const mins = parseInt(document.getElementById('tm_' + dateStr).value);
@@ -834,7 +864,7 @@ function updateCellData(dateStr) {
 }
 
 function updateTotals() {
-  let mob=0, sklad=0, mbSklad=0, tookDist=0, gaveDist=0, tookMb=0, gaveMb=0, prok=0, missed=0;
+  let mob=0, sklad=0, mbSklad=0, tookDist=0, gaveDist=0, tookMb=0, gaveMb=0, prok=0, inst=0, missed=0;
   Object.values(data).forEach(r => {
     mob     += +r.mob     || 0;
     sklad   += +r.sklad   || 0;
@@ -844,6 +874,7 @@ function updateTotals() {
     tookMb  += +r.tookMb  || 0;
     gaveMb  += +r.gaveMb  || 0;
     prok    += +r.prok    || 0;
+    inst    += +r.inst    || 0;
     missed  += (+r.missed||0) + (+r.missedMl||0) + (+r.missedRefuse||0) + (+r.missedLate||0) + (+r.missedClosed||0) + (+r.missedParking||0);
   });
 
@@ -879,6 +910,8 @@ function updateTotals() {
   if (elMbSklad) elMbSklad.textContent = mbSklad;
   const elProk = document.getElementById('totalProk');
   if (elProk) elProk.textContent = prok;
+  const elInst = document.getElementById('totalInst');
+  if (elInst) elInst.textContent = inst;
 
   const wl = loadWorkLog();
   const tl = loadTravelLog();
