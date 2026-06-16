@@ -1431,14 +1431,21 @@ function renderArchive() {
       const isActive = yr === year && mo === month;
       const hasFuture = !s && (yr > new Date().getFullYear() || (yr === new Date().getFullYear() && mo > new Date().getMonth()));
 
-      // Mini workday cells
+      // Mini workday cells — based on real per-day data
+      const monthData = (() => {
+        try { return JSON.parse(localStorage.getItem(`report_${yr}_${mo}`) || '{}'); }
+        catch(e) { return {}; }
+      })();
       const workdays = getWorkdays(yr, mo);
       const wdCount = workdays.length;
       let dayCells = '';
       for (let d = 0; d < Math.min(wdCount, 23); d++) {
-        const cellIntensity = total > 0 ? (0.3 + Math.random() * 0.7) * intensity : 0;
+        const dateStr = formatDate(workdays[d]);
+        const r = monthData[dateStr] || {};
+        const dayTotal = (+r.mob||0) + (+r.prok||0) + (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
+        const cellIntensity = dayTotal > 0 ? Math.min(dayTotal / Math.max(maxTotal / wdCount, 1), 1) : 0;
         const cellColor = getHeatColor(cellIntensity);
-        dayCells += `<div class="arc-day-cell" style="background:${total>0?cellColor:'#22222e'}"></div>`;
+        dayCells += `<div class="arc-day-cell" style="background:${dayTotal>0?cellColor:'#22222e'}"></div>`;
       }
 
       html += `<div class="arc-month-cell${isActive?' arc-month-cell--active':''}" 
