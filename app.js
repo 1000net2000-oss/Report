@@ -232,13 +232,44 @@ function getPreview(dateStr) {
 }
 
 function workItemHtml(x, dateStr) {
-  const minsHtml = x.mins ? `<span class="work-item-mins">${x.mins} мин</span>` : '';
-  return `<div class="work-item">
+  const minsHtml = `<span class="work-item-mins ${x.mins ? '' : 'work-item-mins--empty'}" onclick="startEditMins(this,'${dateStr}',${x.id})">${x.mins ? x.mins + ' мин' : '+ мин'}</span>`;
+  return `<div class="work-item" id="workItem_${x.id}">
     <div class="work-item-dot"></div>
     <div class="work-item-text">${x.desc}</div>
     ${minsHtml}
     <button class="work-item-del" onclick="delWork('${dateStr}',${x.id})">×</button>
   </div>`;
+}
+
+function startEditMins(el, dateStr, id) {
+  const item = el.closest('.work-item');
+  if (!item || item.classList.contains('work-item--editing')) return;
+  item.classList.add('work-item--editing');
+
+  const wl = loadWorkLog();
+  const entry = wl.find(x => x.id === id);
+  const currentMins = entry && entry.mins ? entry.mins : '';
+
+  el.outerHTML = `
+    <input class="inline-mins-input" type="number" inputmode="numeric" placeholder="мин" value="${currentMins}"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();saveEditMins(${id},'${dateStr}',this)}">
+    <button class="inline-save-btn" onclick="saveEditMins(${id},'${dateStr}',this.previousElementSibling)">OK</button>`;
+
+  const input = item.querySelector('.inline-mins-input');
+  if (input) { input.focus(); input.select(); }
+}
+
+function saveEditMins(id, dateStr, inputEl) {
+  const val = inputEl.value.trim();
+  const mins = val === '' ? null : Math.max(0, Math.round(+val) || 0);
+  const wl = loadWorkLog();
+  const entry = wl.find(x => x.id === id);
+  if (entry) {
+    entry.mins = mins || undefined;
+    saveWorkLog(wl);
+  }
+  refreshDayExtras(dateStr);
+  updateTotals();
 }
 
 function pill(mod, icon, label, value) {

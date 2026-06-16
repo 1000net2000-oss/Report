@@ -121,10 +121,16 @@ header { background: var(--surface); padding: 14px 16px 12px; border-bottom: 1px
 .day-time-chip span { display: block; font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 600; color: var(--orange); margin-top: 2px; }
 .day-time-chip.travel span { color: var(--accent2); }
 
-.work-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--surface2); border: 1px solid #2a2a38; border-radius: 7px; }
+.work-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--surface2); border: 1px solid #2a2a38; border-radius: 7px; transition: border-color 0.15s, background 0.15s; }
+.work-item--editing { border-color: #a78bfa50; background: #201a2e; }
 .work-item-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--orange); flex-shrink: 0; }
 .work-item-text { flex: 1; font-size: 12px; color: var(--text); }
-.work-item-mins { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.work-item-mins { font-size: 11px; color: var(--muted); white-space: nowrap; flex-shrink: 0; cursor: pointer; padding: 3px 7px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+.work-item-mins:active { opacity: 0.7; }
+.work-item-mins--empty { color: #a78bfa; background: #a78bfa15; }
+.inline-mins-input { width: 50px; background: #15151c; border: 1px solid #a78bfa50; border-radius: 6px; color: #a78bfa; font-size: 11px; padding: 4px 5px; text-align: center; flex-shrink: 0; }
+.inline-mins-input::placeholder { color: #50507a; }
+.inline-save-btn { background: #a78bfa; color: #15151c; border: none; border-radius: 6px; font-size: 10px; font-weight: 600; padding: 4px 8px; cursor: pointer; flex-shrink: 0; }
 .work-item-del { background: none; border: none; color: var(--muted); font-size: 1rem; cursor: pointer; margin-left: 4px; }
 .work-item-del:active { color: var(--danger); }
 
