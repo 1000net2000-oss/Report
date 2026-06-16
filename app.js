@@ -970,14 +970,18 @@ function renderChart() {
   const wrap = document.getElementById('chartWrap');
 
   // Collect totals
-  let mob=0, prok=0, sklad=0, mbSklad=0;
+  let mob=0, prok=0, sklad=0, mbSklad=0, tookDist=0, gaveDist=0, tookMb=0, gaveMb=0;
   Object.values(data).forEach(r => {
-    mob    += +r.mob    || 0;
-    prok   += +r.prok   || 0;
-    sklad  += +r.sklad  || 0;
-    mbSklad+= +r.mbSklad|| 0;
+    mob     += +r.mob     || 0;
+    prok    += +r.prok    || 0;
+    sklad   += +r.sklad   || 0;
+    mbSklad += +r.mbSklad || 0;
+    tookDist+= +r.tookDist|| 0;
+    gaveDist+= +r.gaveDist|| 0;
+    tookMb  += +r.tookMb  || 0;
+    gaveMb  += +r.gaveMb  || 0;
   });
-  const gave = sklad + mbSklad;
+  const gave = sklad + mbSklad + tookDist + gaveDist + tookMb + gaveMb;
   const total = mob + prok + gave;
 
   const _wl = loadWorkLog();
@@ -1068,7 +1072,7 @@ function renderChart() {
     const r = data[dateStr] || {};
     const mob    = +r.mob || 0;
     const prok   = +r.prok || 0;
-    const gave   = (+r.sklad||0) + (+r.mbSklad||0);
+    const gave   = (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     const wl     = _wl.filter(x => x.date === dateStr);
     const tl     = _tl.filter(x => x.date === dateStr);
     const work   = wl.reduce((s,x) => s+(x.mins||0), 0);
