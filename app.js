@@ -218,7 +218,8 @@ function getPreview(dateStr) {
   const tl = loadTravelLog().filter(x => x.date === dateStr);
   let chips = '';
   if (r.mob) chips += `<span class="preview-chip mob">М:${r.mob}</span>`;
-  if (r.sklad || r.mbSklad) chips += `<span class="preview-chip">О:${(+r.sklad||0)+(+r.mbSklad||0)}</span>`;
+  const skladSum = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
+  if (skladSum) chips += `<span class="preview-chip">О:${skladSum}</span>`;
   if (r.prok) chips += `<span class="preview-chip prok">П:${r.prok}</span>`;
   if (wl.length) {
     const workMins = wl.reduce((s, x) => s + (x.mins || 0), 0);
@@ -254,7 +255,7 @@ function getDayRows(dateStr, r, wl, tl) {
   const rows = [];
   if (r.mob)    rows.push(pill('mob',   'М', t('mobile'),   r.mob));
   if (r.prok)   rows.push(pill('prok',  'П', t('prok'),     r.prok));
-  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
   if (sklad)    rows.push(pill('distr', 'О', t('gave'),     sklad));
   if (wl.length) {
     const mStr = workMins > 0 ? ` · ${toHM(workMins)}` : '';
@@ -322,7 +323,7 @@ function render() {
     days.forEach(d => {
       const dateStr = formatDate(d);
       const r = data[dateStr] || {};
-      const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+      const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
       const missedTot = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0);
       const val = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTot : (+r[activeFilter]||0);
       if (val > 0) { filterTotal += val; filterDays++; }
@@ -345,7 +346,7 @@ function render() {
       const wl  = _wl.filter(x => x.date === dateStr);
       const tl  = _tl.filter(x => x.date === dateStr);
       const tm  = tl.reduce((s,x) => s+x.mins, 0);
-      const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+      const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
       const missedTotal = (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0);
       const mainVal = activeFilter === 'gave' ? sklad : activeFilter === 'missed' ? missedTotal : (+r[activeFilter]||0);
       if (!mainVal) return;
@@ -400,14 +401,14 @@ function render() {
     const wl  = _wl.filter(x => x.date === dateStr);
     const tl  = _tl.filter(x => x.date === dateStr);
     const tm  = tl.reduce((s,x) => s+x.mins, 0);
-    const total = (+r.mob||0) + (+r.prok||0) + (+r.sklad||0) + (+r.mbSklad||0);
+    const total = (+r.mob||0) + (+r.prok||0) + (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     const hd = hasData(dateStr) || wl.length > 0 || tm > 0;
 
     // Dominant color
     let domColor = '';
     if (+r.mob)    domColor = '#f472b6';
     else if (+r.prok)  domColor = '#fbbf24';
-    else if (+r.sklad||+r.mbSklad) domColor = '#34d399';
+    else if ((+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0)) domColor = '#34d399';
     else if (tm)   domColor = '#818cf8';
 
     const cell = document.createElement('div');
@@ -415,7 +416,7 @@ function render() {
     cell.dataset.date = dateStr;
     if (domColor && hd) cell.style.setProperty('--dom', domColor);
 
-    const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+    const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
     const workMinsCell = wl.reduce((s,x) => s+(x.mins||0), 0);
     const dots = [
       r.mob      ? `<span class="dc dc--mob">${r.mob}</span>`   : '',
@@ -470,7 +471,7 @@ function openDetail(dateStr) {
   const workMins = wl.reduce((s,x) => s+(x.mins||0), 0);
   const d   = new Date(dateStr.split('.').reverse().join('-'));
   const wd  = t('weekdays')[d.getDay()];
-  const sklad = (+r.sklad||0)+(+r.mbSklad||0);
+  const sklad = (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
   const total = (+r.mob||0)+(+r.prok||0)+sklad;
 
   document.getElementById('detailDate').textContent = dateStr;
@@ -856,22 +857,22 @@ function updateTotals() {
   if (elTookMb)   elTookMb.textContent   = tookMb;
   if (elGaveMb)   elGaveMb.textContent   = gaveMb;
 
-  const skladTotal = tookDist + gaveDist + tookMb + gaveMb;
+  const skladTotal = sklad + mbSklad + tookDist + gaveDist + tookMb + gaveMb;
   const elSkladChipVal = document.getElementById('totalSkladNew');
   if (elSkladChipVal) elSkladChipVal.textContent = skladTotal > 0 ? skladTotal : 0;
 
   // Count days with mob/gave data
   const mobDays  = Object.values(data).filter(r => +r.mob  > 0).length;
-  const gladDays = Object.values(data).filter(r => (+r.sklad||0)+(+r.mbSklad||0) > 0).length;
+  const gladDays = Object.values(data).filter(r => (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0) > 0).length;
   const mobAvg  = mobDays  > 0 ? (mob  / mobDays).toFixed(1)  : null;
-  const gaveAvg = gladDays > 0 ? ((sklad+mbSklad) / gladDays).toFixed(1) : null;
+  const gaveAvg = gladDays > 0 ? ((sklad+mbSklad+tookDist+gaveDist+tookMb+gaveMb) / gladDays).toFixed(1) : null;
 
   document.getElementById('totalMob').textContent = mob;
   const elMobAvg = document.getElementById('avgMob');
   if (elMobAvg) elMobAvg.textContent = mobAvg ? `~${mobAvg}/д` : '';
 
   const elSklad = document.getElementById('totalSklad');
-  if (elSklad) elSklad.textContent = sklad;
+  if (elSklad) elSklad.textContent = sklad + mbSklad + tookDist + gaveDist + tookMb + gaveMb;
   const elGaveAvg = document.getElementById('avgGave');
   if (elGaveAvg) elGaveAvg.textContent = gaveAvg ? `~${gaveAvg}/д` : '';
   const elMbSklad = document.getElementById('totalMbSklad');
@@ -1148,8 +1149,8 @@ function generatePDF() {
   let mob=0, sklad=0, mbSklad=0, prok=0, missed=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
-    sklad  += +r.sklad  || 0;
-    mbSklad+= +r.mbSklad|| 0;
+    sklad  += (+r.sklad||0) + (+r.tookDist||0) + (+r.gaveDist||0);
+    mbSklad+= (+r.mbSklad||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     prok   += +r.prok   || 0;
   });
   const wCount   = wl.length;
@@ -1174,11 +1175,13 @@ function generatePDF() {
     const dayWl = wl.filter(x => x.date === dateStr);
     const dayTm = tl.filter(x => x.date === dateStr).reduce((s,x) => s+x.mins, 0);
     if (!hasData(dateStr) && !dayWl.length && !dayTm) return '';
+    const rowSklad = (+r.sklad||0) + (+r.tookDist||0) + (+r.gaveDist||0);
+    const rowMb    = (+r.mbSklad||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     return `<tr>
       <td>${dateStr}</td><td>${wd}</td>
       <td>${r.mob||''}</td>
-      <td>${r.sklad||''}</td>
-      <td>${r.mbSklad||''}</td>
+      <td>${rowSklad||''}</td>
+      <td>${rowMb||''}</td>
       <td>${dayWl.length||''}</td>
       <td>${dayTm ? toHM(dayTm) : ''}</td>
     </tr>`;
@@ -1278,6 +1281,10 @@ function copyDaySummary(dateStr) {
   if (r.mob)    lines.push(`${t('mobile')}: ${r.mob}`);
   if (r.sklad)  lines.push(`${t('regularPDF')}: ${r.sklad}`);
   if (r.mbSklad) lines.push(`${t('mbPDF')}: ${r.mbSklad}`);
+  if (+r.tookDist) lines.push(`Забрал дистр.: ${r.tookDist}`);
+  if (+r.gaveDist) lines.push(`Отдал дистр.: ${r.gaveDist}`);
+  if (+r.tookMb)   lines.push(`Забрал МБ: ${r.tookMb}`);
+  if (+r.gaveMb)   lines.push(`Отдал МБ: ${r.gaveMb}`);
   if (wl.length) lines.push(`${t('otherWork')}: ${wl.length}`);
   if (tm)       lines.push(`${t('onRoad')}: ${toHM(tm)}`);
   const text = lines.join('\n');
@@ -1304,7 +1311,7 @@ function getBestDay() {
   let bestStation = { date: null, val: 0 };
   Object.entries(data).forEach(([date, r]) => {
     const mob = +r.mob || 0;
-    const station = (+r.sklad||0) + (+r.mbSklad||0);
+    const station = (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     if (mob > bestMob.val) bestMob = { date, val: mob };
     if (station > bestStation.val) bestStation = { date, val: station };
   });
@@ -1397,7 +1404,7 @@ function renderArchive() {
     let mob=0, gave=0;
     Object.values(d).forEach(r => {
       mob  += +r.mob    || 0;
-      gave += (+r.sklad||0) + (+r.mbSklad||0);
+      gave += (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     });
     const total = mob + gave;
     statsMap[`${y}_${m}`] = { y:+y, m:+m, mob, gave, total };
@@ -1486,8 +1493,8 @@ function shareSummary() {
   let mob=0, sklad=0, mbSklad=0;
   Object.values(data).forEach(r => {
     mob    += +r.mob    || 0;
-    sklad  += +r.sklad  || 0;
-    mbSklad+= +r.mbSklad|| 0;
+    sklad  += (+r.sklad||0) + (+r.tookDist||0) + (+r.gaveDist||0);
+    mbSklad+= (+r.mbSklad||0) + (+r.tookMb||0) + (+r.gaveMb||0);
   });
   const wl = loadWorkLog();
   const tl = loadTravelLog();
