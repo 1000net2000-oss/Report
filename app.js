@@ -153,7 +153,15 @@ const TRANSLATIONS = {
 };
 
 let lang = localStorage.getItem('lang') || 'ru';
-function t(key) { return TRANSLATIONS[lang][key] || key; }
+if (lang !== 'ru' && lang !== 'pl') {
+  // Defensive fix: corrupted value (e.g. double-JSON-encoded like '"ru"') from a buggy restore
+  try {
+    const parsed = JSON.parse(lang);
+    lang = (parsed === 'ru' || parsed === 'pl') ? parsed : 'ru';
+  } catch(e) { lang = 'ru'; }
+  localStorage.setItem('lang', lang);
+}
+function t(key) { return (TRANSLATIONS[lang] || TRANSLATIONS.ru)[key] || key; }
 
 function setLang(l) {
   lang = l;
@@ -1899,7 +1907,7 @@ function restoreData(event) {
     ? 'Wczytać kopię zapasową? Wszystkie bieżące dane zostaną nadpisane.'
     : 'Загрузить бэкап? Все текущие данные будут перезаписаны.';
   if (!confirm(confirmMsg)) return;
-  showToast('Читаю файл… (' + file.name + ', ' + file.size + ' байт)', false);
+  showToast('Читаю файл…', false);
 
   let handled = false;
   const watchdog = setTimeout(() => {
@@ -1917,24 +1925,19 @@ function restoreData(event) {
     clearTimeout(watchdog);
     try {
       const allData = JSON.parse(e.target.result);
-      showToast('JSON разобран, ключей: ' + Object.keys(allData).length, false);
-      Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
-      showToast('Данные сохранены в localStorage. Сейчас обновлю экран…', false);
-      if (allData.lang) lang = allData.lang;
+      Object.keys(allData).forEach(key => {
+        if (key === 'lang') return; // handled separately as plain string, not JSON
+        localStorage.setItem(key, JSON.stringify(allData[key]));
+      });
+      if (allData.lang && (allData.lang === 'ru' || allData.lang === 'pl')) {
+        lang = allData.lang;
+        localStorage.setItem('lang', lang);
+      }
       activeFilter = 'total';
-      setTimeout(() => {
-        try {
-          invalidateLogCache();
-          showToast('Кэш сброшен, вызываю load()…', false);
-          load();
-          showToast('load() OK, вызываю render()…', false);
-          render();
-          showToast(t('restored'), false);
-        } catch(err2) {
-          console.error('Render stage failed:', err2);
-          showToast('Ошибка на этапе render: ' + err2.message, true);
-        }
-      }, 50);
+      invalidateLogCache();
+      load();
+      render();
+      showToast(t('restored'), false);
     } catch(err) {
       console.error('Restore failed:', err);
       showToast((t('restoreError')) + (err && err.message ? ': ' + err.message : ''), true);
