@@ -1035,6 +1035,455 @@ function closeChart() {
   document.getElementById('pageMain').classList.add('active');
 }
 
+// ── Stats page ────────────────────────────────
+function openStats() {
+  document.getElementById('pageMain').classList.remove('active');
+  document.getElementById('pageStats').classList.add('active');
+  renderStats();
+}
+
+function closeStats() {
+  document.getElementById('pageStats').classList.remove('active');
+  document.getElementById('pageMain').classList.add('active');
+}
+
+function getMonthData(y, m) {
+  try { return JSON.parse(localStorage.getItem(`report_${y}_${m}`) || '{}'); }
+  catch(e) { return {}; }
+}
+
+function getMonthWorkLog(y, m) {
+  try { return JSON.parse(localStorage.getItem(`worklog_${y}_${m}`) || '[]'); }
+  catch(e) { return []; }
+}
+
+function getMonthTravelLog(y, m) {
+  try { return JSON.parse(localStorage.getItem(`travellog_${y}_${m}`) || '[]'); }
+  catch(e) { return []; }
+}
+
+function dayStationTotal(r) {
+  return (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
+}
+
+function dayMissedTotal(r) {
+  return (+r.missed||0)+(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0);
+}
+
+function renderStats() {
+  const data2 = getMonthData(year, month);
+  const wl2 = getMonthWorkLog(year, month);
+  const tl2 = getMonthTravelLog(year, month);
+  const workdays = getWorkdays(year, month);
+
+  document.getElementById('statsMonthLabel').textContent = `${t('months')[month]} ${year}`;
+
+  const dates = Object.keys(data2);
+  const hasAnyData = dates.length > 0 || wl2.length > 0 || tl2.length > 0;
+
+  const content = document.getElementById('statsContent');
+
+  if (!hasAnyData) {
+    content.innerHTML = `<div class="sp-no-data">Пока нет данных за этот месяц.<br>Заполни хотя бы пару дней — здесь появится статистика.</div>`;
+    return;
+  }
+
+  let html = '';
+  html += renderForecastSection(data2, workdays);
+  html += renderWeekdaySection(data2, workdays);
+  html += renderRecordsSection(data2, tl2, workdays);
+  html += renderStreaksSection(data2, workdays);
+  html += renderMissedSection(data2);
+  html += renderTrendSection(data2, tl2);
+  html += renderOtherWorkSection(wl2);
+  html += renderAvgPerVisitSection(data2, tl2);
+
+  content.innerHTML = html;
+}
+
+// ── Forecast ──
+function renderForecastSection(data2, workdays) {
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+  const passedDays = isCurrentMonth
+    ? workdays.filter(d => d <= today).length
+    : workdays.length;
+  if (passedDays === 0) return '';
+
+  let currentTotal = 0;
+  Object.values(data2).forEach(r => {
+    currentTotal += (+r.mob||0) + dayStationTotal(r);
+  });
+
+  const dailyAvg = currentTotal / passedDays;
+  const totalDays = workdays.length;
+  const projected = Math.round(dailyAvg * totalDays);
+  const pct = Math.min(100, Math.round((passedDays / totalDays) * 100));
+
+  // Only show forward-looking forecast if month isn't over yet
+  const isFinished = !isCurrentMonth && (new Date(year, month+1, 1) <= today);
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">${isFinished ? 'Итог месяца' : 'Прогноз месяца'}</div>
+      <div class="sp-forecast">
+        <div class="sp-forecast-glow"></div>
+        <div class="sp-forecast-row">
+          <div>
+            <div class="sp-forecast-label">${isFinished ? 'Итоговый показатель' : 'При текущем темпе закончишь с'}</div>
+            <div><span class="sp-forecast-num">${isFinished ? currentTotal : projected}</span><span class="sp-forecast-unit">визитов</span></div>
+          </div>
+          <div class="sp-forecast-pace">
+            <div class="sp-forecast-pace-val">${dailyAvg.toFixed(1)}</div>
+            <div class="sp-forecast-pace-lbl">в день</div>
+          </div>
+        </div>
+        <div class="sp-forecast-track">
+          <div class="sp-forecast-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="sp-forecast-days">День <b>${passedDays}</b> из ${totalDays} рабочих</div>
+      </div>
+    </div>`;
+}
+
+// ── Weekday comparison ──
+function renderWeekdaySection(data2, workdays) {
+  const wdNames = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const sums = [0,0,0,0,0,0,0];
+  const counts = [0,0,0,0,0,0,0];
+
+  workdays.forEach(d => {
+    const dateStr = formatDate(d);
+    const r = data2[dateStr];
+    if (!r) return;
+    const val = (+r.mob||0) + dayStationTotal(r);
+    if (val > 0) {
+      sums[d.getDay()] += val;
+      counts[d.getDay()]++;
+    }
+  });
+
+  // Only Mon-Fri (1-5) since these are workdays typically
+  const days = [1,2,3,4,5].map(i => ({
+    idx: i, name: wdNames[i],
+    avg: counts[i] > 0 ? sums[i] / counts[i] : 0
+  })).filter(d => counts[d.idx] > 0);
+
+  if (days.length < 2) return '';
+
+  const max = Math.max(...days.map(d => d.avg), 0.1);
+  const best = days.reduce((a,b) => b.avg > a.avg ? b : a, days[0]);
+  const worst = days.reduce((a,b) => b.avg < a.avg ? b : a, days[0]);
+  const diffPct = worst.avg > 0 ? Math.round(((best.avg - worst.avg) / best.avg) * 100) : 0;
+
+  const bars = days.map(d => `
+    <div class="sp-wd-col">
+      <span class="sp-wd-val ${d.idx === best.idx ? 'sp-wd-val--best' : ''}">${d.avg.toFixed(1)}</span>
+      <div class="sp-wd-bar ${d.idx === best.idx ? 'sp-wd-bar--best' : 'sp-wd-bar--mid'}" style="height:${Math.max((d.avg / max) * 70, 3)}px"></div>
+      <span class="sp-wd-name ${d.idx === best.idx ? 'sp-wd-name--best' : ''}">${d.name}</span>
+    </div>`).join('');
+
+  const insight = best.idx !== worst.idx
+    ? `Лучший день — <b>${weekdayFull(best.idx)}</b> (${best.avg.toFixed(1)} в среднем). По ${weekdayGenitive(worst.idx)} на ${diffPct}% меньше.`
+    : '';
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Мобильная + Склад по дням недели</div>
+      <div class="sp-card">
+        <div class="sp-wd-grid">${bars}</div>
+        ${insight ? `<div class="sp-wd-insight">${insight}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function weekdayFull(idx) {
+  return ['воскресенье','понедельник','вторник','среду','четверг','пятницу','субботу'][idx];
+}
+function weekdayGenitive(idx) {
+  return ['воскресеньям','понедельникам','вторникам','средам','четвергам','пятницам','субботам'][idx];
+}
+
+// ── Records ──
+function renderRecordsSection(data2, tl2, workdays) {
+  let bestMob = { date: null, val: 0 };
+  let bestStation = { date: null, val: 0 };
+  let bestVisits = { date: null, val: 0 };
+
+  Object.entries(data2).forEach(([dateStr, r]) => {
+    const mob = +r.mob || 0;
+    const station = dayStationTotal(r);
+    const visits = mob + station + (+r.prok||0);
+    if (mob > bestMob.val) bestMob = { date: dateStr, val: mob };
+    if (station > bestStation.val) bestStation = { date: dateStr, val: station };
+    if (visits > bestVisits.val) bestVisits = { date: dateStr, val: visits };
+  });
+
+  let bestTravel = { date: null, val: 0 };
+  const travelByDate = {};
+  tl2.forEach(x => { travelByDate[x.date] = (travelByDate[x.date]||0) + x.mins; });
+  Object.entries(travelByDate).forEach(([dateStr, mins]) => {
+    if (mins > bestTravel.val) bestTravel = { date: dateStr, val: mins };
+  });
+
+  const records = [
+    bestMob.val > 0     ? { icon: '📱', val: bestMob.val,         lbl: 'Лучший день · Мобильная', date: bestMob.date,     color: '#f472b6' } : null,
+    bestStation.val > 0 ? { icon: '📦', val: bestStation.val,     lbl: 'Лучший день · Склад',     date: bestStation.date, color: '#34d399' } : null,
+    bestTravel.val > 0  ? { icon: '🚗', val: toHM(bestTravel.val), lbl: 'Больше всего в пути',     date: bestTravel.date,  color: '#818cf8' } : null,
+    bestVisits.val > 0  ? { icon: '🏃', val: bestVisits.val,      lbl: 'Лучший общий день',        date: bestVisits.date,  color: '#fbbf24' } : null,
+  ].filter(Boolean);
+
+  if (records.length === 0) return '';
+
+  const cards = records.map(r => `
+    <div class="sp-record-card">
+      <span class="sp-record-icon">${r.icon}</span>
+      <div class="sp-record-val" style="color:${r.color}">${r.val}</div>
+      <div class="sp-record-lbl">${r.lbl}</div>
+      <div class="sp-record-date">${r.date}${year}</div>
+    </div>`).join('');
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Рекорды месяца</div>
+      <div class="sp-records-grid">${cards}</div>
+    </div>`;
+}
+
+// ── Streaks ──
+function renderStreaksSection(data2, workdays) {
+  // Streak 1: consecutive workdays without any "missed"
+  let cleanStreak = 0, maxCleanStreak = 0;
+  // Streak 2: consecutive workdays with (mob+station) >= 14
+  let thresholdStreak = 0, maxThresholdStreak = 0;
+
+  workdays.forEach(d => {
+    const dateStr = formatDate(d);
+    const r = data2[dateStr];
+    if (!r) { cleanStreak = 0; thresholdStreak = 0; return; }
+
+    const missed = dayMissedTotal(r);
+    if (missed === 0 && hasAnyDayData(r)) { cleanStreak++; maxCleanStreak = Math.max(maxCleanStreak, cleanStreak); }
+    else if (hasAnyDayData(r)) cleanStreak = 0;
+
+    const val = (+r.mob||0) + dayStationTotal(r);
+    if (val >= 14) { thresholdStreak++; maxThresholdStreak = Math.max(maxThresholdStreak, thresholdStreak); }
+    else if (hasAnyDayData(r)) thresholdStreak = 0;
+  });
+
+  if (maxCleanStreak === 0 && maxThresholdStreak === 0) return '';
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Серии</div>
+      <div class="sp-streak-row">
+        <div class="sp-streak-card">
+          <div class="sp-streak-num sp-streak-num--fire">${maxCleanStreak}</div>
+          <div class="sp-streak-lbl">дней подряд без<br>пропущенных визитов</div>
+        </div>
+        <div class="sp-streak-card">
+          <div class="sp-streak-num sp-streak-num--clean">${maxThresholdStreak}</div>
+          <div class="sp-streak-lbl">дней подряд<br>с показателем 14+</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function hasAnyDayData(r) {
+  return !!(r.mob || r.prok || r.sklad || r.mbSklad || r.tookDist || r.gaveDist || r.tookMb || r.gaveMb || r.inst ||
+    r.missed || r.missedMl || r.missedRefuse || r.missedLate || r.missedClosed || r.missedParking);
+}
+
+// ── Missed breakdown ──
+function renderMissedSection(data2) {
+  let ml=0, refuse=0, late=0, closed=0, parking=0;
+  Object.values(data2).forEach(r => {
+    ml      += +r.missedMl||0;
+    refuse  += +r.missedRefuse||0;
+    late    += +r.missedLate||0;
+    closed  += +r.missedClosed||0;
+    parking += +r.missedParking||0;
+  });
+
+  const total = ml + refuse + late + closed + parking;
+  if (total === 0) return '';
+
+  const items = [
+    { name: 'Отказ',     val: refuse,  color: '#f87171' },
+    { name: 'Закрыто',   val: closed,  color: '#fb923c' },
+    { name: 'Поздно',    val: late,    color: '#fbbf24' },
+    { name: 'Парковка',  val: parking, color: '#a78bfa' },
+    { name: 'ML',        val: ml,      color: '#60a5fa' },
+  ].filter(i => i.val > 0).sort((a,b) => b.val - a.val);
+
+  const rows = items.map(i => {
+    const pct = Math.round((i.val / total) * 100);
+    return `
+      <div class="sp-missed-row">
+        <span class="sp-missed-name">${i.name}</span>
+        <div class="sp-missed-track">
+          <div class="sp-missed-fill" style="width:${pct}%;background:${i.color}"></div>
+        </div>
+        <span class="sp-missed-pct" style="color:${i.color}">${pct}%</span>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Причины «Мимо»</div>
+      <div class="sp-card">
+        <div class="sp-missed-bars">${rows}</div>
+      </div>
+    </div>`;
+}
+
+// ── Trend vs previous month ──
+function renderTrendSection(data2, tl2) {
+  let prevMonth = month - 1, prevYear = year;
+  if (prevMonth < 0) { prevMonth = 11; prevYear--; }
+
+  const prevData = getMonthData(prevYear, prevMonth);
+  const prevTl = getMonthTravelLog(prevYear, prevMonth);
+
+  if (Object.keys(prevData).length === 0 && prevTl.length === 0) return '';
+
+  const sumField = (d, field) => Object.values(d).reduce((s,r) => s + (+r[field]||0), 0);
+  const sumStation = (d) => Object.values(d).reduce((s,r) => s + dayStationTotal(r), 0);
+  const sumMissed = (d) => Object.values(d).reduce((s,r) => s + dayMissedTotal(r), 0);
+  const sumTravel = (tl) => tl.reduce((s,x) => s + x.mins, 0);
+
+  const rows = [
+    { label: 'Мобильная',    old: sumField(prevData,'mob'),  val: sumField(data2,'mob') },
+    { label: 'Склад',        old: sumStation(prevData),      val: sumStation(data2) },
+    { label: 'Прок',         old: sumField(prevData,'prok'), val: sumField(data2,'prok') },
+    { label: 'Инсталляция',  old: sumField(prevData,'inst'), val: sumField(data2,'inst') },
+    { label: 'Мимо',         old: sumMissed(prevData),       val: sumMissed(data2), positiveIsDown: true },
+  ];
+
+  const travelOld = sumTravel(prevTl), travelNew = sumTravel(tl2);
+
+  let rowsHtml = rows.map(r => {
+    if (r.old === 0 && r.val === 0) return '';
+    const pct = r.old > 0 ? Math.abs(Math.round(((r.val - r.old) / r.old) * 100)) : null;
+    let up;
+    if (r.positiveIsDown) up = r.val <= r.old;
+    else up = r.val >= r.old;
+    const same = r.val === r.old;
+    return `
+      <div class="sp-trend-row">
+        <span class="sp-trend-label">${r.label}</span>
+        ${same ? `<span class="sp-trend-nochange">без изменений</span>` : `
+        <div class="sp-trend-vals">
+          <span class="sp-trend-old">${r.old}</span>
+          <span class="sp-trend-arrow">→</span>
+          <span class="sp-trend-new">${r.val}</span>
+          <span class="sp-trend-delta ${up ? 'sp-trend-delta--up' : 'sp-trend-delta--down'}">${up ? '↑' : '↓'} ${pct !== null ? pct + '%' : ''}</span>
+        </div>`}
+      </div>`;
+  }).join('');
+
+  if (travelOld > 0 || travelNew > 0) {
+    const up = travelNew <= travelOld;
+    const same = travelNew === travelOld;
+    rowsHtml += `
+      <div class="sp-trend-row">
+        <span class="sp-trend-label">Время в пути</span>
+        ${same ? `<span class="sp-trend-nochange">без изменений</span>` : `
+        <div class="sp-trend-vals">
+          <span class="sp-trend-old">${toHM(travelOld)}</span>
+          <span class="sp-trend-arrow">→</span>
+          <span class="sp-trend-new">${toHM(travelNew)}</span>
+          <span class="sp-trend-delta ${up ? 'sp-trend-delta--up' : 'sp-trend-delta--down'}">${up ? '↓ меньше' : '↑ больше'}</span>
+        </div>`}
+      </div>`;
+  }
+
+  if (!rowsHtml) return '';
+
+  const prevMonthName = t('months')[prevMonth];
+  const curMonthName = t('months')[month];
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">${prevMonthName} → ${curMonthName}</div>
+      <div class="sp-card">${rowsHtml}</div>
+    </div>`;
+}
+
+// ── Other work ──
+function renderOtherWorkSection(wl2) {
+  if (wl2.length === 0) return '';
+
+  const totalMins = wl2.reduce((s,x) => s + (x.mins||0), 0);
+  const avgMins = wl2.length > 0 ? Math.round(totalMins / wl2.length) : 0;
+
+  // Count by description (normalize "×N" suffix for grouping similar entries loosely, but keep exact text grouping otherwise)
+  const counts = {};
+  wl2.forEach(x => {
+    const key = x.desc || 'Без названия';
+    counts[key] = (counts[key]||0) + 1;
+  });
+
+  const top = Object.entries(counts)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 3);
+
+  const colors = ['#a78bfa', '#60a5fa', '#fb923c'];
+  const maxCount = top.length > 0 ? top[0][1] : 1;
+
+  const rows = top.map(([name, count], i) => `
+    <div class="sp-missed-row">
+      <span class="sp-ow-name">${name}</span>
+      <div class="sp-ow-track">
+        <div class="sp-ow-fill" style="width:${(count/maxCount)*100}%;background:${colors[i]||'#a78bfa'}"></div>
+      </div>
+      <span class="sp-ow-count" style="color:${colors[i]||'#a78bfa'}">×${count}</span>
+    </div>`).join('');
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Другие работы</div>
+      <div class="sp-card">
+        <div class="sp-otherwork-stats">
+          <div class="sp-ow-stat">
+            <div class="sp-ow-stat-val">${toHM(totalMins)}</div>
+            <div class="sp-ow-stat-lbl">всего времени<br>за месяц</div>
+          </div>
+          <div class="sp-ow-stat">
+            <div class="sp-ow-stat-val">${avgMins} м</div>
+            <div class="sp-ow-stat-lbl">в среднем<br>на запись</div>
+          </div>
+        </div>
+        <div class="sp-missed-bars">${rows}</div>
+      </div>
+    </div>`;
+}
+
+// ── Avg time per visit ──
+function renderAvgPerVisitSection(data2, tl2) {
+  const totalTravel = tl2.reduce((s,x) => s + x.mins, 0);
+  let totalVisits = 0;
+  Object.values(data2).forEach(r => {
+    totalVisits += (+r.mob||0) + dayStationTotal(r) + (+r.prok||0);
+  });
+
+  if (totalTravel === 0 || totalVisits === 0) return '';
+
+  const avgPerVisit = (totalTravel / totalVisits).toFixed(1);
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Эффективность пути</div>
+      <div class="sp-card sp-avg-card">
+        <div class="sp-avg-text">Среднее время в пути на <b>один визит</b> в этом месяце</div>
+        <div>
+          <div class="sp-avg-num">${avgPerVisit}</div>
+          <div class="sp-avg-unit">минут</div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderChart() {
   load();
   document.getElementById('chartPageTitle').textContent  = lang === 'pl' ? 'Diagram' : 'Диаграмма';

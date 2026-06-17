@@ -40,6 +40,9 @@
         <button id="btnChart" class="hdr-btn hdr-btn--icon" onclick="openChart()" title="График">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         </button>
+        <button id="btnStats" class="hdr-btn hdr-btn--icon" onclick="openStats()" title="Статистика">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14"/></svg>
+        </button>
       </div>
     </div>
     <div class="month-selector">
@@ -161,6 +164,18 @@
   </div>
   <div class="chart-month-lbl" id="chartMonthLabel"></div>
   <div class="chart-wrap" id="chartWrap"></div>
+</div>
+
+<!-- ══ STATS PAGE ══ -->
+<div class="page" id="pageStats">
+  <div class="stats-page-header">
+    <button class="back-btn" onclick="closeStats()">←</button>
+    <div>
+      <div class="stats-page-title">Статистика</div>
+      <div class="stats-page-sub" id="statsMonthLabel"></div>
+    </div>
+  </div>
+  <div class="stats-page-content" id="statsContent"></div>
 </div>
 
 <!-- ══ ARCHIVE PAGE ══ -->
