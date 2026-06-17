@@ -1917,13 +1917,24 @@ function restoreData(event) {
     clearTimeout(watchdog);
     try {
       const allData = JSON.parse(e.target.result);
+      showToast('JSON разобран, ключей: ' + Object.keys(allData).length, false);
       Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
+      showToast('Данные сохранены в localStorage. Сейчас обновлю экран…', false);
       if (allData.lang) lang = allData.lang;
       activeFilter = 'total';
-      invalidateLogCache();
-      load();
-      render();
-      showToast(t('restored'), false);
+      setTimeout(() => {
+        try {
+          invalidateLogCache();
+          showToast('Кэш сброшен, вызываю load()…', false);
+          load();
+          showToast('load() OK, вызываю render()…', false);
+          render();
+          showToast(t('restored'), false);
+        } catch(err2) {
+          console.error('Render stage failed:', err2);
+          showToast('Ошибка на этапе render: ' + err2.message, true);
+        }
+      }, 50);
     } catch(err) {
       console.error('Restore failed:', err);
       showToast((t('restoreError')) + (err && err.message ? ': ' + err.message : ''), true);
