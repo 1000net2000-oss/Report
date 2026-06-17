@@ -1877,11 +1877,19 @@ function restoreData(event) {
       const allData = JSON.parse(e.target.result);
       Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
       if (allData.lang) lang = allData.lang;
+      activeFilter = 'total';
       invalidateLogCache();
       load();
       render();
       alert(t('restored'));
-    } catch(err) { alert(t('restoreError')); }
+    } catch(err) {
+      console.error('Restore failed:', err);
+      alert(t('restoreError') + (err && err.message ? '\n' + err.message : ''));
+    }
+  };
+  reader.onerror = () => {
+    console.error('FileReader error:', reader.error);
+    alert(t('restoreError'));
   };
   reader.readAsText(file);
 }
