@@ -1899,9 +1899,22 @@ function restoreData(event) {
     ? 'Wczytać kopię zapasową? Wszystkie bieżące dane zostaną nadpisane.'
     : 'Загрузить бэкап? Все текущие данные будут перезаписаны.';
   if (!confirm(confirmMsg)) return;
-  showToast('Читаю файл…', false);
+  showToast('Читаю файл… (' + file.name + ', ' + file.size + ' байт)', false);
+
+  let handled = false;
+  const watchdog = setTimeout(() => {
+    if (!handled) {
+      handled = true;
+      showToast('Файл не прочитан за 5 сек. Тип: ' + file.type + ', размер: ' + file.size, true);
+    }
+  }, 5000);
+
   const reader = new FileReader();
+
   reader.onload = e => {
+    if (handled) return;
+    handled = true;
+    clearTimeout(watchdog);
     try {
       const allData = JSON.parse(e.target.result);
       Object.keys(allData).forEach(key => localStorage.setItem(key, JSON.stringify(allData[key])));
@@ -1916,11 +1929,22 @@ function restoreData(event) {
       showToast((t('restoreError')) + (err && err.message ? ': ' + err.message : ''), true);
     }
   };
+
   reader.onerror = () => {
+    if (handled) return;
+    handled = true;
+    clearTimeout(watchdog);
     console.error('FileReader error:', reader.error);
-    showToast(t('restoreError') + ': FileReader error', true);
+    showToast(t('restoreError') + ': ' + (reader.error ? reader.error.name : 'unknown'), true);
   };
-  reader.readAsText(file);
+
+  try {
+    reader.readAsText(file);
+  } catch(syncErr) {
+    handled = true;
+    clearTimeout(watchdog);
+    showToast('Не удалось начать чтение: ' + syncErr.message, true);
+  }
 }
 
 
