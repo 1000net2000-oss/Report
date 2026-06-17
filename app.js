@@ -1863,6 +1863,34 @@ function backupData() {
   }
 }
 
+function showToast(msg, isError) {
+  let toast = document.getElementById('restoreToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'restoreToast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '24px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.padding = '12px 18px';
+    toast.style.borderRadius = '12px';
+    toast.style.fontSize = '13px';
+    toast.style.fontWeight = '600';
+    toast.style.zIndex = '99999';
+    toast.style.maxWidth = '85vw';
+    toast.style.textAlign = 'center';
+    toast.style.boxShadow = '0 4px 20px rgba(0,0,0,0.4)';
+    document.body.appendChild(toast);
+  }
+  toast.style.background = isError ? '#3a1414' : '#143a1f';
+  toast.style.color = isError ? '#f87171' : '#34d399';
+  toast.style.border = isError ? '1px solid #f8717150' : '1px solid #34d39950';
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => { toast.style.display = 'none'; }, 5000);
+}
+
 function restoreData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1871,6 +1899,7 @@ function restoreData(event) {
     ? 'Wczytać kopię zapasową? Wszystkie bieżące dane zostaną nadpisane.'
     : 'Загрузить бэкап? Все текущие данные будут перезаписаны.';
   if (!confirm(confirmMsg)) return;
+  showToast('Читаю файл…', false);
   const reader = new FileReader();
   reader.onload = e => {
     try {
@@ -1881,15 +1910,15 @@ function restoreData(event) {
       invalidateLogCache();
       load();
       render();
-      alert(t('restored'));
+      showToast(t('restored'), false);
     } catch(err) {
       console.error('Restore failed:', err);
-      alert(t('restoreError') + (err && err.message ? '\n' + err.message : ''));
+      showToast((t('restoreError')) + (err && err.message ? ': ' + err.message : ''), true);
     }
   };
   reader.onerror = () => {
     console.error('FileReader error:', reader.error);
-    alert(t('restoreError'));
+    showToast(t('restoreError') + ': FileReader error', true);
   };
   reader.readAsText(file);
 }
