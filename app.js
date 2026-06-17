@@ -1208,29 +1208,39 @@ function weekdayGenitive(idx) {
 function renderRecordsSection(data2, tl2, workdays) {
   let bestMob = { date: null, val: 0 };
   let bestStation = { date: null, val: 0 };
-  let bestVisits = { date: null, val: 0 };
 
   Object.entries(data2).forEach(([dateStr, r]) => {
     const mob = +r.mob || 0;
     const station = dayStationTotal(r);
-    const visits = mob + station + (+r.prok||0);
     if (mob > bestMob.val) bestMob = { date: dateStr, val: mob };
     if (station > bestStation.val) bestStation = { date: dateStr, val: station };
-    if (visits > bestVisits.val) bestVisits = { date: dateStr, val: visits };
   });
 
-  let bestTravel = { date: null, val: 0 };
-  const travelByDate = {};
-  tl2.forEach(x => { travelByDate[x.date] = (travelByDate[x.date]||0) + x.mins; });
-  Object.entries(travelByDate).forEach(([dateStr, mins]) => {
-    if (mins > bestTravel.val) bestTravel = { date: dateStr, val: mins };
+  // Больше всего "Других работ" по времени за день
+  let bestOtherWork = { date: null, val: 0 };
+  const wl2 = getMonthWorkLog(year, month);
+  const workMinsByDate = {};
+  wl2.forEach(x => { workMinsByDate[x.date] = (workMinsByDate[x.date]||0) + (x.mins||0); });
+  Object.entries(workMinsByDate).forEach(([dateStr, mins]) => {
+    if (mins > bestOtherWork.val) bestOtherWork = { date: dateStr, val: mins };
+  });
+
+  // День с наибольшим числом разных типов активности (Мобильная, Склад, Прок, Инсталляция)
+  let bestVariety = { date: null, val: 0 };
+  Object.entries(data2).forEach(([dateStr, r]) => {
+    let types = 0;
+    if (+r.mob) types++;
+    if (dayStationTotal(r) > 0) types++;
+    if (+r.prok) types++;
+    if (+r.inst) types++;
+    if (types > bestVariety.val) bestVariety = { date: dateStr, val: types };
   });
 
   const records = [
-    bestMob.val > 0     ? { icon: '📱', val: bestMob.val,         lbl: 'Лучший день · Мобильная', date: bestMob.date,     color: '#f472b6' } : null,
-    bestStation.val > 0 ? { icon: '📦', val: bestStation.val,     lbl: 'Лучший день · Склад',     date: bestStation.date, color: '#34d399' } : null,
-    bestTravel.val > 0  ? { icon: '🚗', val: toHM(bestTravel.val), lbl: 'Больше всего в пути',     date: bestTravel.date,  color: '#818cf8' } : null,
-    bestVisits.val > 0  ? { icon: '🏃', val: bestVisits.val,      lbl: 'Лучший общий день',        date: bestVisits.date,  color: '#fbbf24' } : null,
+    bestMob.val > 0       ? { icon: '📱', val: bestMob.val,          lbl: 'Лучший день · Мобильная',        date: bestMob.date,       color: '#f472b6' } : null,
+    bestStation.val > 0   ? { icon: '📦', val: bestStation.val,      lbl: 'Лучший день · Склад',            date: bestStation.date,   color: '#34d399' } : null,
+    bestOtherWork.val > 0 ? { icon: '🛠️', val: toHM(bestOtherWork.val), lbl: 'Больше всего Других работ',   date: bestOtherWork.date, color: '#fb923c' } : null,
+    bestVariety.val >= 2  ? { icon: '🎯', val: bestVariety.val,       lbl: 'Самый разносторонний день',      date: bestVariety.date,   color: '#fbbf24' } : null,
   ].filter(Boolean);
 
   if (records.length === 0) return '';
