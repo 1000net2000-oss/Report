@@ -1464,7 +1464,7 @@ function renderAvgPerVisitSection(data2, tl2) {
   const totalTravel = tl2.reduce((s,x) => s + x.mins, 0);
   let totalVisits = 0;
   Object.values(data2).forEach(r => {
-    totalVisits += (+r.mob||0) + dayStationTotal(r) + (+r.prok||0);
+    totalVisits += (+r.mob||0);
   });
 
   if (totalTravel === 0 || totalVisits === 0) return '';
@@ -1475,7 +1475,7 @@ function renderAvgPerVisitSection(data2, tl2) {
     <div class="sp-section">
       <div class="sp-section-label">Эффективность пути</div>
       <div class="sp-card sp-avg-card">
-        <div class="sp-avg-text">Среднее время в пути на <b>один визит</b> в этом месяце</div>
+        <div class="sp-avg-text">Среднее время в пути на <b>один визит</b> (Мобильная) в этом месяце</div>
         <div>
           <div class="sp-avg-num">${avgPerVisit}</div>
           <div class="sp-avg-unit">минут</div>
