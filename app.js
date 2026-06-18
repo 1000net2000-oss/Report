@@ -1745,6 +1745,20 @@ function toggleSkladChip(el) {
   el.classList.toggle('stat-chip--sklad-open');
 }
 
+function toggleMoreMenu() {
+  const menu = document.getElementById('moreMenu');
+  menu.classList.toggle('more-menu--open');
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('moreMenu');
+  const btn = document.getElementById('btnMore');
+  if (!menu || !btn) return;
+  if (menu.classList.contains('more-menu--open') && !menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    menu.classList.remove('more-menu--open');
+  }
+});
+
 // ── Archive page ──────────────────────────────
 function openArchive() {
   document.getElementById('pageMain').classList.remove('active');
@@ -2294,6 +2308,5 @@ function restoreData(event) {
 // ── Init ──────────────────────────────────────
 document.getElementById('flagRu').classList.toggle('active', lang === 'ru');
 document.getElementById('flagPl').classList.toggle('active', lang === 'pl');
-document.getElementById('btnBackup').addEventListener('click', backupData);
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
