@@ -511,6 +511,8 @@ input[type=number] { -moz-appearance: textfield; }
 .missed-entry-label { flex:1; font-size:11px; font-weight:500; }
 .missed-entry-val { font-family:'Unbounded',sans-serif; font-size:15px; font-weight:700; min-width:16px; text-align:center; }
 .missed-entry button { background:#22222e; border:none; border-radius:6px; width:26px; height:26px; font-size:14px; cursor:pointer; }
+.missed-entry-del { background:none !important; width:18px !important; height:18px !important; font-size:13px !important; opacity:0.6; }
+.missed-entry-del:active { opacity:1; }
 .filter-missed-cats { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
 .fmc { font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; }
 .fmc--ml     { background:#fbbf2420; color:#fbbf24; }

@@ -557,13 +557,14 @@ function openDetail(dateStr) {
         ${[['missedMl','📋','Расхождение','#fbbf24'],
            ['missedRefuse','🚫','Отказ','#f87171'],
            ['missedLate','⏱','Не успел','#818cf8'],
-           ['missedClosed','🔒','Закрыто','#60a5fa'],['missedParking','🅿️','Паркинг','#a78bfa']].filter(([key])=>(+r[key]||0)>0).map(([key,icon,label,color])=>
+           ['missedClosed','🔒','Закрыто','#60a5fa'],['missedParking','🅿️','Паркинг','#a78bfa']].filter(([key])=>r[key]!==undefined&&r[key]!==null).map(([key,icon,label,color])=>
           `<div class="missed-entry" style="background:${color}12;border-color:${color}30">
             <span>${icon}</span>
             <span class="missed-entry-label" style="color:#e2e8f0">${label}</span>
             <button onclick="changeMissedCat('${dateStr}','${key}',-1)" style="color:${color}">−</button>
             <span class="missed-entry-val" id="${key}_${dateStr}" style="color:${color}">${+r[key]||0}</span>
             <button onclick="changeMissedCat('${dateStr}','${key}',1)" style="color:${color}">+</button>
+            <button class="missed-entry-del" onclick="removeMissedCat('${dateStr}','${key}')" style="color:${color}99">×</button>
           </div>`).join('')}
       </div>
     </div>
@@ -790,7 +791,9 @@ function toggleMissedPicker(dateStr) {
 
 function addMissedCat(dateStr, key) {
   if (!data[dateStr]) data[dateStr] = {};
-  data[dateStr][key] = (+data[dateStr][key]||0) + 1;
+  if (data[dateStr][key] === undefined || data[dateStr][key] === null) {
+    data[dateStr][key] = 0;
+  }
   save();
   toggleMissedPicker(dateStr);
   refreshDetail(dateStr);
@@ -800,6 +803,14 @@ function addMissedCat(dateStr, key) {
 function changeMissedCat(dateStr, key, delta) {
   if (!data[dateStr]) data[dateStr] = {};
   data[dateStr][key] = Math.max(0, (+data[dateStr][key]||0) + delta);
+  save();
+  refreshDetail(dateStr);
+  updateCellData(dateStr);
+  updateTotals();
+}
+
+function removeMissedCat(dateStr, key) {
+  if (data[dateStr]) delete data[dateStr][key];
   save();
   refreshDetail(dateStr);
   updateCellData(dateStr);
