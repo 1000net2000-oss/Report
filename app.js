@@ -395,12 +395,6 @@ function render() {
       card.className = 'filter-card';
       card.style.setProperty('--fc', color);
 
-      const workHtml = wl.length ? wl.map(x =>
-        `<div class="filter-work-item">
-          <span class="filter-work-desc">${x.desc}</span>
-          ${x.mins ? `<span class="filter-work-time">${toHM(x.mins)}</span>` : ''}
-        </div>`).join('') : '';
-
       const missedBreakdown = activeFilter === 'missed' ? `
         <div class="filter-missed-cats">
           ${r.missedMl     > 0 ? `<span class="fmc fmc--ml">📋 ${r.missedMl}</span>` : ''}
@@ -416,12 +410,10 @@ function render() {
             <span class="filter-card-wd">${wd}</span>
           </div>
           <div class="filter-card-right">
-            ${tm ? `<span class="filter-card-travel">🚗 ${toHM(tm)}</span>` : ''}
             <span class="filter-card-val">${mainVal}</span>
           </div>
         </div>
-        ${missedBreakdown}
-        ${workHtml ? `<div class="filter-work-list">${workHtml}</div>` : ''}`;
+        ${missedBreakdown}`;
 
       card.addEventListener('click', () => openDetail(dateStr));
       list.appendChild(card);
@@ -548,7 +540,7 @@ function openDetail(dateStr) {
 
     <div class="missed-block">
       <div class="missed-block-hdr">
-        <span class="section-label missed-label">Мимо · <span id="missedTotal_${dateStr}" style="font-size:11px">${(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)}</span></span>
+        <span class="section-label missed-label">Мимо · <span id="missedTotal_${dateStr}" style="font-size:11px">${(+r.missedMl||0)+(+r.missedRefuse||0)+(+r.missedLate||0)+(+r.missedClosed||0)+(+r.missedParking||0)}</span></span>
         <button class="missed-add-btn" onclick="toggleMissedPicker('${dateStr}')">+</button>
       </div>
       <div class="missed-picker" id="missedPicker_${dateStr}" style="display:none">
