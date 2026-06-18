@@ -1459,8 +1459,12 @@ function renderOtherWorkSection(wl2) {
       <div class="sp-card">
         <div class="sp-otherwork-stats">
           <div class="sp-ow-stat">
+            <div class="sp-ow-stat-val">${wl2.length}</div>
+            <div class="sp-ow-stat-lbl">записей<br>за месяц</div>
+          </div>
+          <div class="sp-ow-stat">
             <div class="sp-ow-stat-val">${toHM(totalMins)}</div>
-            <div class="sp-ow-stat-lbl">всего времени<br>за месяц</div>
+            <div class="sp-ow-stat-lbl">всего<br>времени</div>
           </div>
           <div class="sp-ow-stat">
             <div class="sp-ow-stat-val">${avgMins} м</div>

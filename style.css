@@ -854,10 +854,10 @@ input[type=number] { -moz-appearance: textfield; }
 .sp-trend-nochange { font-size: 11px; color: #46466a; }
 
 /* Other work section */
-.sp-otherwork-stats { display: flex; gap: 10px; margin-bottom: 16px; }
-.sp-ow-stat { flex: 1; background: #1e1e28; border-radius: 12px; padding: 10px 8px; text-align: center; }
-.sp-ow-stat-val { font-family: 'Unbounded', sans-serif; font-size: 20px; font-weight: 700; color: #fb923c; }
-.sp-ow-stat-lbl { font-size: 10px; color: #5c5c78; margin-top: 4px; line-height: 1.4; }
+.sp-otherwork-stats { display: flex; gap: 8px; margin-bottom: 16px; }
+.sp-ow-stat { flex: 1; background: #1e1e28; border-radius: 12px; padding: 10px 6px; text-align: center; }
+.sp-ow-stat-val { font-family: 'Unbounded', sans-serif; font-size: 18px; font-weight: 700; color: #fb923c; }
+.sp-ow-stat-lbl { font-size: 9px; color: #5c5c78; margin-top: 4px; line-height: 1.3; }
 .sp-ow-name { flex: 1; color: #b0b0d0; font-size: 11px; }
 .sp-ow-track { flex: 0 0 60px; height: 8px; background: #1c1c26; border-radius: 5px; overflow: hidden; }
 .sp-ow-fill { height: 100%; border-radius: 5px; }
