@@ -37,9 +37,6 @@
         <button id="btnArchive" class="hdr-btn hdr-btn--icon" onclick="openArchive()" title="Архив">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
         </button>
-        <button id="btnChart" class="hdr-btn hdr-btn--icon" onclick="openChart()" title="График">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </button>
         <button id="btnStats" class="hdr-btn hdr-btn--icon" onclick="openStats()" title="Статистика">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L7 14"/></svg>
         </button>
@@ -154,16 +151,6 @@
     <button class="hist-tab" id="tabTravel" onclick="switchTab('travel')">🚗 В пути</button>
   </div>
   <div class="hist-content" id="histContent"></div>
-</div>
-
-<!-- ══ CHART PAGE ══ -->
-<div class="page" id="pageChart">
-  <div class="hist-header">
-    <button class="back-btn" onclick="closeChart()">←</button>
-    <div class="hist-title hist-title--accent2" id="chartPageTitle">График</div>
-  </div>
-  <div class="chart-month-lbl" id="chartMonthLabel"></div>
-  <div class="chart-wrap" id="chartWrap"></div>
 </div>
 
 <!-- ══ STATS PAGE ══ -->

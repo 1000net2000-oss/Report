@@ -170,7 +170,7 @@ function setLang(l) {
   document.getElementById('flagPl').classList.toggle('active', l === 'pl');
   render();
   if (document.getElementById('pageHistory').classList.contains('active')) renderHistory();
-  if (document.getElementById('pageChart').classList.contains('active')) renderChart();
+  if (document.getElementById('pageStats').classList.contains('active')) renderStats();
 }
 
 // ── Constants ─────────────────────────────────
@@ -1026,18 +1026,6 @@ function focusField(input, dateStr, col) {
 function copySummary() { shareSummary(); }
 
 // ── Chart page (vanilla canvas, no CDN) ───────
-function openChart() {
-  document.getElementById('pageMain').classList.remove('active');
-  document.getElementById('pageHistory').classList.remove('active');
-  document.getElementById('pageChart').classList.add('active');
-  renderChart();
-}
-
-function closeChart() {
-  document.getElementById('pageChart').classList.remove('active');
-  document.getElementById('pageMain').classList.add('active');
-}
-
 // ── Stats page ────────────────────────────────
 function openStats() {
   document.getElementById('pageMain').classList.remove('active');
@@ -1092,6 +1080,7 @@ function renderStats() {
   }
 
   let html = '';
+  html += renderSummarySection(data2);
   html += renderForecastSection(data2, workdays);
   html += renderWeekdaySection(data2, workdays);
   html += renderRecordsSection(data2, tl2, workdays);
@@ -1102,6 +1091,56 @@ function renderStats() {
   html += renderAvgPerVisitSection(data2, tl2);
 
   content.innerHTML = html;
+}
+
+// ── Summary bar (replaces old standalone chart page) ──
+function renderSummarySection(data2) {
+  let mob = 0, sklad = 0;
+  Object.values(data2).forEach(r => {
+    mob += +r.mob || 0;
+    sklad += dayStationTotal(r);
+  });
+
+  const total = mob + sklad;
+  if (total === 0) return '';
+
+  const segments = [
+    { label: 'Мобильная', val: mob,   color: '#f472b6' },
+    { label: 'Склад',     val: sklad, color: '#34d399' },
+  ].filter(s => s.val > 0);
+
+  const workdaysWithData = Object.keys(data2).filter(d => (+data2[d].mob||0) + dayStationTotal(data2[d]) > 0).length;
+  const avgPerDay = workdaysWithData > 0 ? (total / workdaysWithData).toFixed(1) : 0;
+
+  const bar = segments.map(s => {
+    const pct = (s.val / total) * 100;
+    return `<div class="sp-stack-seg" style="width:${pct}%;background:${s.color}">${pct > 12 ? `<span class="sp-stack-seg-label">${Math.round(pct)}%</span>` : ''}</div>`;
+  }).join('');
+
+  const legend = segments.map(s => `
+    <div class="sp-stack-leg-item">
+      <div class="sp-stack-dot" style="background:${s.color}"></div>
+      <span class="sp-stack-leg-text">${s.label} <b>${s.val}</b></span>
+    </div>`).join('');
+
+  return `
+    <div class="sp-section">
+      <div class="sp-section-label">Сводка за месяц</div>
+      <div class="sp-card">
+        <div class="sp-stack-bar">${bar}</div>
+        <div class="sp-stack-legend">${legend}</div>
+        <div class="sp-grid-stats">
+          <div class="sp-grid-stat">
+            <div class="sp-grid-stat-lbl">Всего за месяц</div>
+            <div class="sp-grid-stat-val" style="color:#e8e8f0">${total}</div>
+          </div>
+          <div class="sp-grid-stat">
+            <div class="sp-grid-stat-lbl">В среднем/день</div>
+            <div class="sp-grid-stat-val" style="color:#818cf8">${avgPerDay}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ── Forecast ──
@@ -1498,182 +1537,6 @@ function renderAvgPerVisitSection(data2, tl2) {
           <div class="sp-avg-unit">минут</div>
         </div>
       </div>
-    </div>`;
-}
-
-function renderChart() {
-  load();
-  document.getElementById('chartPageTitle').textContent  = lang === 'pl' ? 'Diagram' : 'Диаграмма';
-  document.getElementById('chartMonthLabel').textContent = `${t('months')[month]} ${year}`;
-
-  const wrap = document.getElementById('chartWrap');
-
-  // Collect totals
-  let mob=0, prok=0, sklad=0, mbSklad=0, tookDist=0, gaveDist=0, tookMb=0, gaveMb=0;
-  Object.values(data).forEach(r => {
-    mob     += +r.mob     || 0;
-    prok    += +r.prok    || 0;
-    sklad   += +r.sklad   || 0;
-    mbSklad += +r.mbSklad || 0;
-    tookDist+= +r.tookDist|| 0;
-    gaveDist+= +r.gaveDist|| 0;
-    tookMb  += +r.tookMb  || 0;
-    gaveMb  += +r.gaveMb  || 0;
-  });
-  const gave = sklad + mbSklad + tookDist + gaveDist + tookMb + gaveMb;
-  const total = mob + prok + gave;
-
-  const _wl = loadWorkLog();
-  const _tl = loadTravelLog();
-  const workMins   = _wl.reduce((s,x) => s+(x.mins||0), 0);
-  const travelMins = _tl.reduce((s,x) => s+x.mins, 0);
-
-  if (total === 0) {
-    wrap.innerHTML = `<div class="chart-empty">${lang==='pl'?'Brak danych':'Нет данных'}</div>`;
-    return;
-  }
-
-  const segments = [
-    { label: t('mobile'),  val: mob,  color:'#f472b6' },
-    { label: t('prok'),    val: prok, color:'#fbbf24' },
-    { label: t('gave'),    val: gave, color:'#34d399' },
-  ].filter(s => s.val > 0);
-
-  // Build SVG donut
-  const cx=110, cy=110, r=80, thick=28;
-  let angle = -90;
-
-  const polarToXY = (deg, radius) => {
-    const rad = deg * Math.PI / 180;
-    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
-  };
-
-  const arcPath = (startDeg, endDeg, radius) => {
-    const s = polarToXY(startDeg, radius);
-    const e = polarToXY(endDeg - 0.5, radius);
-    const large = endDeg - startDeg > 180 ? 1 : 0;
-    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 1 ${e.x} ${e.y}`;
-  };
-
-  const paths = segments.map(s => {
-    const deg = (s.val / total) * 360;
-    const start = angle;
-    angle += deg;
-    const path = arcPath(start, angle, r);
-    return `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="${thick}" stroke-linecap="butt"/>`;
-  }).join('');
-
-  wrap.innerHTML = `
-    <div style="padding:16px">
-      <svg width="220" height="220" style="display:block;margin:0 auto">
-        ${paths}
-        <circle cx="${cx}" cy="${cy}" r="${r-thick/2-2}" fill="#0f0f12"/>
-        <text x="${cx}" y="${cy-8}" text-anchor="middle" fill="#e2e8f0" font-size="26" font-weight="700" font-family="'Unbounded',sans-serif">${total}</text>
-        <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#64748b" font-size="10">${lang==='pl'?'łącznie':'всего'}</text>
-      </svg>
-
-      <div class="donut-legend">
-        ${segments.map(s => `
-          <div class="donut-leg-item">
-            <div class="donut-leg-color" style="background:${s.color}"></div>
-            <div class="donut-leg-body">
-              <div class="donut-leg-label">${s.label}</div>
-              <div class="donut-leg-row">
-                <span class="donut-leg-val" style="color:${s.color}">${s.val}</span>
-                <span class="donut-leg-pct">${Math.round(s.val/total*100)}%</span>
-              </div>
-            </div>
-          </div>`).join('')}
-      </div>
-
-      <div class="donut-secondary">
-        ${workMins > 0 ? `<div class="donut-sec-item" style="border-left-color:#fb923c">
-          <div class="donut-sec-lbl">${lang==='pl'?'Inne prace':'Другие работы'}</div>
-          <div class="donut-sec-val" style="color:#fb923c">${toHM(workMins)}</div>
-        </div>` : ''}
-        ${travelMins > 0 ? `<div class="donut-sec-item" style="border-left-color:#818cf8">
-          <div class="donut-sec-lbl">${lang==='pl'?'W drodze':'В пути'}</div>
-          <div class="donut-sec-val" style="color:#818cf8">${toHM(travelMins)}</div>
-        </div>` : ''}
-      </div>
-    </div>`;
-}
-
-
-
-  const workdays = getWorkdays(year, month);
-  const _wl = loadWorkLog();
-  const _tl = loadTravelLog();
-
-  const allRows = [];
-  workdays.forEach(d => {
-    const dateStr = formatDate(d);
-    const r = data[dateStr] || {};
-    const mob    = +r.mob || 0;
-    const prok   = +r.prok || 0;
-    const gave   = (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
-    const wl     = _wl.filter(x => x.date === dateStr);
-    const tl     = _tl.filter(x => x.date === dateStr);
-    const work   = wl.reduce((s,x) => s+(x.mins||0), 0);
-    const travel = tl.reduce((s,x) => s+x.mins, 0);
-    allRows.push({ label: dateStr.slice(0,5), mob, prok, gave, work, travel });
-  });
-
-  const metrics = [
-    { key:'mob',    label:'Моб',    color:'#f472b6', isTime:false },
-    { key:'prok',   label:'Прок',   color:'#fbbf24', isTime:false },
-    { key:'gave',   label:'Отдал',  color:'#34d399', isTime:false },
-    { key:'work',   label:'Работы', color:'#fb923c', isTime:true  },
-    { key:'travel', label:'Путь',   color:'#818cf8', isTime:true  },
-  ];
-
-  const wrap = document.getElementById('chartWrap');
-
-  const renderMetric = () => {
-    const active = metrics.find(m => m.key === chartMetric);
-    const vals = allRows.map(r => r[chartMetric]);
-    const maxV = Math.max(...vals, 1);
-    const total = vals.reduce((a,b)=>a+b,0);
-    const filledRows = allRows.filter(r => r[chartMetric] > 0);
-    const avg = filledRows.length > 0 ? (total/filledRows.length).toFixed(1) : 0;
-    const best = allRows.reduce((a,b) => b[chartMetric]>a[chartMetric]?b:a);
-
-    const fmt = (v) => active.isTime ? toHM(v) : v;
-
-    wrap.innerHTML = `
-      <div class="ch-metric-tabs">
-        ${metrics.map(m => `<button class="ch-metric-btn${chartMetric===m.key?' active':''}"
-          style="${chartMetric===m.key?`color:${m.color};border-color:${m.color};background:${m.color}18`:''}"
-          onclick="chartMetric='${m.key}';renderChart()">${m.label}</button>`).join('')}
-      </div>
-
-      <div class="ch-kpi">
-        <div class="ch-kpi-item">
-          <div class="ch-kpi-label">Итого</div>
-          <div class="ch-kpi-val" style="color:${active.color}">${fmt(total)}</div>
-        </div>
-        <div class="ch-kpi-item">
-          <div class="ch-kpi-label">Среднее/д</div>
-          <div class="ch-kpi-val">${active.isTime ? toHM(Math.round(+avg)) : avg}</div>
-        </div>
-        <div class="ch-kpi-item">
-          <div class="ch-kpi-label">Лучший</div>
-          <div class="ch-kpi-val" style="color:${active.color};font-size:10px">${best[chartMetric]>0?`${best.label} · ${fmt(best[chartMetric])}`:'—'}</div>
-        </div>
-      </div>
-
-      ${allRows.map(r => {
-        const val = r[chartMetric];
-        const pct = Math.round((val/maxV)*100);
-        const isEmpty = val === 0;
-        return `<div class="ch-clean-row${isEmpty?' ch-clean-row--empty':''}">
-          <div class="ch-clean-date">${r.label}</div>
-          <div class="ch-clean-bar-wrap">
-            ${!isEmpty ? `<div class="ch-clean-bar" style="width:${pct}%;background:${active.color};box-shadow:0 0 8px ${active.color}44"></div>` : ''}
-          </div>
-          <div class="ch-clean-val" style="${isEmpty?'':'color:'+active.color}">${isEmpty?'—':fmt(val)}</div>
-        </div>`;
-      }).join('')}
     </div>`;
 }
 
@@ -2087,7 +1950,7 @@ function openHistory(tab) {
 
 function openMain() {
   document.getElementById('pageHistory').classList.remove('active');
-  document.getElementById('pageChart').classList.remove('active');
+  document.getElementById('pageStats').classList.remove('active');
   document.getElementById('pageArchive').classList.remove('active');
   document.getElementById('pageMain').classList.add('active');
 }

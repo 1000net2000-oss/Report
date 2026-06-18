@@ -211,9 +211,6 @@ input[type=number] { -moz-appearance: textfield; }
 #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: #22222eee; color: var(--accent); border: 1px solid #2a2a38; border-radius: 20px; padding: 8px 18px; font-size: 13px; font-family: 'Unbounded', sans-serif; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 400; white-space: nowrap; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-.chart-month-lbl { padding: 10px 16px 4px; font-family: 'Unbounded', sans-serif; font-size: 12px; color: var(--muted); }
-.chart-wrap { padding: 12px 16px 24px; min-height: 200px; }
-
 .work-count-num { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: var(--orange); }
 .work-sep { color: #3a3a4e; font-size: 14px; font-weight: 400; }
 .work-time-lbl { font-size: 11px; color: var(--muted); font-weight: 500; font-family: 'Inter', sans-serif; }
@@ -357,21 +354,6 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* ── MONTH DAY COUNTER ── */
 .month-day-counter { font-size: 10px; color: #e2e8f0; text-align: center; margin-top: 2px; }
-
-/* ── CHART ── */
-.chart-wrap { padding: 0 16px 24px; }
-.chart-empty { text-align:center; color:#64748b; padding:40px 0; font-size:13px; }
-.ch-legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; padding-top:8px; }
-.ch-leg-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#64748b; }
-.ch-leg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
-
-.ch-row { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #1e1e28; align-items:flex-start; }
-.ch-label { width:38px; flex-shrink:0; font-family:'Unbounded',sans-serif; font-size:10px; font-weight:700; color:#64748b; padding-top:3px; }
-.ch-bars { flex:1; display:flex; flex-direction:column; gap:4px; }
-.ch-bar-row { display:flex; align-items:center; gap:6px; }
-.ch-bar-wrap { flex:1; height:6px; background:#1e1e28; border-radius:3px; overflow:hidden; }
-.ch-bar { height:100%; border-radius:3px; min-width:3px; }
-.ch-val { font-size:10px; font-weight:600; width:52px; text-align:right; flex-shrink:0; white-space:nowrap; }
 
 /* ── MISSED (Мимо) ── */
 .stat-tile--missed { border-left: 3px solid #f87171; }
@@ -520,40 +502,6 @@ input[type=number] { -moz-appearance: textfield; }
 .fmc--late   { background:#818cf820; color:#818cf8; }
 .fmc--closed { background:#60a5fa20; color:#60a5fa; }
 
-/* ── CLEAN CHART ── */
-.ch-metric-tabs { display:flex; gap:6px; padding:12px 16px 8px; overflow-x:auto; scrollbar-width:none; }
-.ch-metric-btn { flex-shrink:0; background:#1e1e28; border:1px solid #2a2a38; border-radius:10px; padding:7px 14px; cursor:pointer; font-family:'Unbounded',sans-serif; font-size:10px; font-weight:700; color:#64748b; }
-
-.ch-kpi { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:0 16px 12px; }
-.ch-kpi-item { background:#1e1e28; border-radius:10px; padding:8px 10px; }
-.ch-kpi-label { font-size:8px; color:#64748b; margin-bottom:4px; }
-.ch-kpi-val { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; color:#e2e8f0; }
-
-.ch-clean-row { display:flex; align-items:center; gap:10px; padding:5px 16px; }
-.ch-clean-row--empty { opacity:0.2; }
-.ch-clean-date { width:38px; font-family:'Unbounded',sans-serif; font-size:9px; font-weight:600; color:#94a3b8; flex-shrink:0; }
-.ch-clean-bar-wrap { flex:1; height:10px; background:#1e1e28; border-radius:5px; overflow:hidden; }
-.ch-clean-bar { height:100%; border-radius:5px; }
-.ch-clean-val { width:54px; text-align:right; font-family:'Unbounded',sans-serif; font-size:10px; font-weight:700; color:#2a2a38; flex-shrink:0; }
-
-.ch-avg-row { display:flex; justify-content:space-between; align-items:center; margin:12px 16px 0; padding:8px 12px; border-radius:10px; border:1px solid; }
-.ch-avg-lbl { font-size:10px; color:#64748b; }
-.ch-avg-val { font-family:'Unbounded',sans-serif; font-size:10px; font-weight:700; }
-
-/* ── DONUT CHART ── */
-.donut-legend { display:flex; flex-direction:column; gap:10px; margin-top:16px; }
-.donut-leg-item { display:flex; align-items:center; gap:10px; background:#1e1e28; border-radius:12px; padding:10px 14px; }
-.donut-leg-color { width:12px; height:36px; border-radius:3px; flex-shrink:0; }
-.donut-leg-body { flex:1; }
-.donut-leg-label { font-size:10px; color:#64748b; margin-bottom:4px; }
-.donut-leg-row { display:flex; align-items:baseline; gap:8px; }
-.donut-leg-val { font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; }
-.donut-leg-pct { font-size:10px; color:#64748b; }
-
-.donut-secondary { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
-.donut-sec-item { background:#1e1e28; border-radius:12px; padding:10px 12px; border-left:3px solid; }
-.donut-sec-lbl { font-size:9px; color:#64748b; margin-bottom:4px; }
-.donut-sec-val { font-family:'Unbounded',sans-serif; font-size:13px; font-weight:700; }
 .fmc--parking { background:#a78bfa20; color:#a78bfa; }
 
 /* ── СКЛАД PANEL ── */
@@ -871,3 +819,17 @@ input[type=number] { -moz-appearance: textfield; }
 .sp-avg-unit { font-size: 10px; color: #5c5c78; text-align: right; margin-top: 2px; }
 
 .sp-no-data { text-align: center; padding: 40px 20px; color: #5c5c78; font-size: 13px; line-height: 1.6; }
+
+/* ── Summary stack bar (replaces old chart page) ── */
+.sp-stack-bar { height: 28px; border-radius: 8px; overflow: hidden; display: flex; margin-bottom: 14px; }
+.sp-stack-seg { height: 100%; display: flex; align-items: center; justify-content: center; transition: width 0.3s ease; }
+.sp-stack-seg-label { font-size: 10px; font-weight: 700; color: #0f0f12; }
+.sp-stack-legend { display: flex; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+.sp-stack-leg-item { display: flex; align-items: center; gap: 5px; }
+.sp-stack-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sp-stack-leg-text { font-size: 11px; color: #9090b0; }
+.sp-stack-leg-text b { color: var(--text); font-family: 'Unbounded', sans-serif; }
+.sp-grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sp-grid-stat { background: #1e1e28; border-radius: 12px; padding: 10px; }
+.sp-grid-stat-lbl { font-size: 9px; color: #5c5c78; margin-bottom: 4px; }
+.sp-grid-stat-val { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; }
