@@ -211,6 +211,19 @@ function getWorkdays(y, m) {
   return days;
 }
 
+// Groups a flat list of workdays (Date objects) into week chunks.
+// A new week starts whenever the weekday resets to Monday (or the first day).
+function groupIntoWeeks(days) {
+  const weeks = [];
+  let current = [];
+  days.forEach(d => {
+    if (d.getDay() === 1 && current.length) { weeks.push(current); current = []; }
+    current.push(d);
+  });
+  if (current.length) weeks.push(current);
+  return weeks;
+}
+
 function formatDate(d) {
   return `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.`;
 }
@@ -424,15 +437,18 @@ function render() {
     return;
   }
 
-  // Normal grid view
-  days.forEach(d => {
+  // Normal grid view — grouped into collapsible weeks
+  const today2 = new Date();
+  const todayStr = formatDate(today2);
+  const weeks = groupIntoWeeks(days);
+
+  function buildDayCell(d) {
     const dateStr = formatDate(d);
     const wd  = t('weekdays')[d.getDay()];
     const r   = data[dateStr] || {};
     const wl  = _wl.filter(x => x.date === dateStr);
     const tl  = _tl.filter(x => x.date === dateStr);
     const tm  = tl.reduce((s,x) => s+x.mins, 0);
-    const total = (+r.mob||0) + (+r.prok||0) + (+r.sklad||0) + (+r.mbSklad||0) + (+r.tookDist||0) + (+r.gaveDist||0) + (+r.tookMb||0) + (+r.gaveMb||0);
     const hd = hasData(dateStr) || wl.length > 0 || tm > 0;
 
     // Dominant color
@@ -476,7 +492,52 @@ function render() {
     cell.addEventListener('touchend',   () => clearTimeout(pressTimer), { passive:true });
     cell.addEventListener('touchmove',  () => clearTimeout(pressTimer), { passive:true });
     cell.addEventListener('click', () => openDetail(dateStr));
-    list.appendChild(cell);
+    return cell;
+  }
+
+  weeks.forEach((weekDays, wi) => {
+    let weekMob = 0, weekSklad = 0;
+    weekDays.forEach(d => {
+      const dateStr = formatDate(d);
+      const r = data[dateStr] || {};
+      weekMob   += (+r.mob || 0);
+      weekSklad += (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
+    });
+
+    const isCurrentWeek = weekDays.some(d => formatDate(d) === todayStr);
+    const block = document.createElement('div');
+    block.className = 'week-block';
+
+    const firstStr = formatDate(weekDays[0]).slice(0,5);
+    const lastStr  = formatDate(weekDays[weekDays.length-1]).slice(0,5);
+    const rangeLabel = weekDays.length > 1 ? `${firstStr}–${lastStr}` : firstStr;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'week-hdr' + (isCurrentWeek ? ' week-hdr--open' : '');
+    hdr.innerHTML = `
+      <div class="week-hdr-left">
+        <span class="week-hdr-num">Неделя ${wi+1}</span>
+        <span class="week-hdr-range">${rangeLabel}</span>
+      </div>
+      <div class="week-hdr-metrics">
+        <span class="week-mc week-mc--mob">М ${weekMob}</span>
+        <span class="week-mc week-mc--sklad">С ${weekSklad}</span>
+        <span class="week-chevron${isCurrentWeek ? ' week-chevron--open' : ''}">▾</span>
+      </div>`;
+
+    const body = document.createElement('div');
+    body.className = 'week-body' + (isCurrentWeek ? ' week-body--open' : '');
+    weekDays.forEach(d => body.appendChild(buildDayCell(d)));
+
+    hdr.addEventListener('click', () => {
+      hdr.classList.toggle('week-hdr--open');
+      body.classList.toggle('week-body--open');
+      hdr.querySelector('.week-chevron').classList.toggle('week-chevron--open');
+    });
+
+    block.appendChild(hdr);
+    block.appendChild(body);
+    list.appendChild(block);
   });
 
   updateTotals();
@@ -903,6 +964,25 @@ function updateCellData(dateStr) {
 
   const indEl = cell.querySelector('.day-cell-indicators');
   if (indEl) indEl.innerHTML = indicators;
+
+  // Refresh this day's week metrics (mob/sklad chips in the week header)
+  const weekBody = cell.closest('.week-body');
+  if (weekBody) {
+    const hdr = weekBody.previousElementSibling;
+    if (hdr && hdr.classList.contains('week-hdr')) {
+      let weekMob = 0, weekSklad = 0;
+      weekBody.querySelectorAll('.day-cell').forEach(c => {
+        const ds = c.dataset.date;
+        const rr = data[ds] || {};
+        weekMob   += (+rr.mob || 0);
+        weekSklad += (+rr.sklad||0)+(+rr.mbSklad||0)+(+rr.tookDist||0)+(+rr.gaveDist||0)+(+rr.tookMb||0)+(+rr.gaveMb||0);
+      });
+      const mobEl   = hdr.querySelector('.week-mc--mob');
+      const skladEl = hdr.querySelector('.week-mc--sklad');
+      if (mobEl)   mobEl.textContent   = `М ${weekMob}`;
+      if (skladEl) skladEl.textContent = `С ${weekSklad}`;
+    }
+  }
 }
 
 function updateTotals() {
