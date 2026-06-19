@@ -351,6 +351,18 @@ input[type=number] { -moz-appearance: textfield; }
 .week-body .day-cell-wd { font-size: 8px; }
 .week-body .dc { font-size: 7px; padding: 1px 3px; }
 
+/* ── WEEK TREND (vs previous week) ── */
+.week-trend { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 5px; }
+.week-trend--up   { background: #34d39915; color: #34d399; }
+.week-trend--down { background: #f8717115; color: #f87171; }
+.week-trend--flat { background: #64748b15; color: #64748b; }
+
+/* ── BEST WEEK HIGHLIGHT ── */
+.week-block--best { border-color: #d4a01760; box-shadow: 0 0 0 1px #d4a01730; }
+.week-block--best .week-hdr { background: #1e1a10; }
+.week-block--best .week-hdr--open { background: #221c10; }
+.week-block--best .week-hdr-num { color: #d4a017; }
+
 .day-cell { background: #18181f; border-radius: 12px; border: 1px solid #1e1e28; padding: 8px; min-height: 80px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; opacity: 0.35; transition: border-color 0.15s, background 0.15s; }
 .day-cell--data { opacity: 1; border-color: #2e3a4e; background: #1e1e28; }
 .day-cell--active { border-color: var(--dom, #818cf8) !important; background: #1e1e32 !important; opacity: 1 !important; }
@@ -489,11 +501,10 @@ input[type=number] { -moz-appearance: textfield; }
 /* ── COMPACT WAREHOUSE/HIGHWAY CHIPS (moved to top) ── */
 .stats-warehouse-compact { display: flex; gap: 7px; padding: 0 14px 8px; }
 .swc-tile { flex: 1; display: flex; align-items: baseline; gap: 5px; background: #1e1e28; border-radius: 9px; padding: 6px 10px; border-top: 2px solid transparent; }
-.swc-tile--warehouse { border-top-color: #f87171; }
-.swc-tile--highway   { border-top-color: #f87171; }
+.swc-tile--warehouse { border-top-color: #818cf8; }
+.swc-tile--highway   { border-top-color: #60a5fa; }
 .swc-label { font-size: 9px; color: #64748b; flex-shrink: 0; }
-.swc-val   { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; }
-.swc-val--danger { color: #f87171; }
+.swc-val   { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: #e2e8f0; }
 .swc-days  { font-size: 9px; color: #64748b; }
 
 /* ── FILTER VIEW ── */

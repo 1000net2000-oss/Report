@@ -495,29 +495,53 @@ function render() {
     return cell;
   }
 
-  weeks.forEach((weekDays, wi) => {
-    let weekMob = 0, weekSklad = 0;
+  // Precompute totals (mob+sklad) for every week to find the best week and enable week-over-week comparison
+  const weekTotals = weeks.map(weekDays => {
+    let m = 0, s = 0;
     weekDays.forEach(d => {
       const dateStr = formatDate(d);
       const r = data[dateStr] || {};
-      weekMob   += (+r.mob || 0);
-      weekSklad += (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
+      m += (+r.mob || 0);
+      s += (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
     });
+    return { mob: m, sklad: s, total: m + s };
+  });
+  let bestWeekIdx = -1, bestWeekVal = 0;
+  weekTotals.forEach((wt, i) => { if (wt.total > bestWeekVal) { bestWeekVal = wt.total; bestWeekIdx = i; } });
+  // Only highlight a "best" week if there's actually data and more than one week to compare
+  const showBestWeek = weeks.length > 1 && bestWeekVal > 0;
+
+  weeks.forEach((weekDays, wi) => {
+    const weekMob = weekTotals[wi].mob, weekSklad = weekTotals[wi].sklad, weekTotal = weekTotals[wi].total;
 
     const isCurrentWeek = weekDays.some(d => formatDate(d) === todayStr);
+    const isBestWeek = showBestWeek && wi === bestWeekIdx;
     const block = document.createElement('div');
-    block.className = 'week-block';
+    block.className = 'week-block' + (isBestWeek ? ' week-block--best' : '');
 
     const firstStr = formatDate(weekDays[0]).slice(0,5);
     const lastStr  = formatDate(weekDays[weekDays.length-1]).slice(0,5);
     const rangeLabel = weekDays.length > 1 ? `${firstStr}–${lastStr}` : firstStr;
 
+    // Compare against previous week's total (mob+sklad)
+    let trendHtml = '';
+    if (wi > 0) {
+      const prevTotal = weekTotals[wi-1].total;
+      if (prevTotal > 0 || weekTotal > 0) {
+        const diff = weekTotal - prevTotal;
+        if (diff > 0)      trendHtml = `<span class="week-trend week-trend--up">▲ ${diff}</span>`;
+        else if (diff < 0) trendHtml = `<span class="week-trend week-trend--down">▼ ${Math.abs(diff)}</span>`;
+        else                trendHtml = `<span class="week-trend week-trend--flat">= 0</span>`;
+      }
+    }
+
     const hdr = document.createElement('div');
     hdr.className = 'week-hdr' + (isCurrentWeek ? ' week-hdr--open' : '');
     hdr.innerHTML = `
       <div class="week-hdr-left">
-        <span class="week-hdr-num">Неделя ${wi+1}</span>
+        <span class="week-hdr-num">Неделя ${wi+1}${isBestWeek ? ' 🏆' : ''}</span>
         <span class="week-hdr-range">${rangeLabel}</span>
+        ${trendHtml}
       </div>
       <div class="week-hdr-metrics">
         <span class="week-mc week-mc--mob">М ${weekMob}</span>
@@ -983,6 +1007,53 @@ function updateCellData(dateStr) {
       if (skladEl) skladEl.textContent = `С ${weekSklad}`;
     }
   }
+
+  refreshWeekTrendsAndBest();
+}
+
+// Recomputes week-over-week trend arrows and the best-week trophy without
+// rebuilding day cells, so open/closed accordion state is preserved.
+function refreshWeekTrendsAndBest() {
+  const blocks = Array.from(document.querySelectorAll('.week-block'));
+  if (!blocks.length) return;
+
+  const totals = blocks.map(block => {
+    let mob = 0, sklad = 0;
+    block.querySelectorAll('.day-cell').forEach(c => {
+      const r = data[c.dataset.date] || {};
+      mob   += (+r.mob || 0);
+      sklad += (+r.sklad||0)+(+r.mbSklad||0)+(+r.tookDist||0)+(+r.gaveDist||0)+(+r.tookMb||0)+(+r.gaveMb||0);
+    });
+    return mob + sklad;
+  });
+
+  let bestIdx = -1, bestVal = 0;
+  totals.forEach((v, i) => { if (v > bestVal) { bestVal = v; bestIdx = i; } });
+  const showBest = blocks.length > 1 && bestVal > 0;
+
+  blocks.forEach((block, i) => {
+    block.classList.toggle('week-block--best', showBest && i === bestIdx);
+    const numEl = block.querySelector('.week-hdr-num');
+    if (numEl) {
+      const base = numEl.textContent.replace(' 🏆', '');
+      numEl.textContent = (showBest && i === bestIdx) ? base + ' 🏆' : base;
+    }
+
+    const left = block.querySelector('.week-hdr-left');
+    if (!left) return;
+    let trendEl = left.querySelector('.week-trend');
+    if (i === 0) {
+      if (trendEl) trendEl.remove();
+      return;
+    }
+    const diff = totals[i] - totals[i-1];
+    let html = '';
+    if (diff > 0)      html = `<span class="week-trend week-trend--up">▲ ${diff}</span>`;
+    else if (diff < 0) html = `<span class="week-trend week-trend--down">▼ ${Math.abs(diff)}</span>`;
+    else                html = `<span class="week-trend week-trend--flat">= 0</span>`;
+    if (trendEl) trendEl.outerHTML = html;
+    else left.insertAdjacentHTML('beforeend', html);
+  });
 }
 
 function updateTotals() {
