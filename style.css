@@ -486,6 +486,16 @@ input[type=number] { -moz-appearance: textfield; }
 
 .stats-warehouse { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 14px 12px; }
 
+/* ── COMPACT WAREHOUSE/HIGHWAY CHIPS (moved to top) ── */
+.stats-warehouse-compact { display: flex; gap: 7px; padding: 0 14px 8px; }
+.swc-tile { flex: 1; display: flex; align-items: baseline; gap: 5px; background: #1e1e28; border-radius: 9px; padding: 6px 10px; border-top: 2px solid transparent; }
+.swc-tile--warehouse { border-top-color: #f87171; }
+.swc-tile--highway   { border-top-color: #f87171; }
+.swc-label { font-size: 9px; color: #64748b; flex-shrink: 0; }
+.swc-val   { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; }
+.swc-val--danger { color: #f87171; }
+.swc-days  { font-size: 9px; color: #64748b; }
+
 /* ── FILTER VIEW ── */
 .stat-chip { cursor: pointer; }
 .stat-chip--active { border: 2px solid var(--fc, #818cf8) !important; background: #1e1e32 !important; }
